@@ -1,32 +1,12 @@
 import { useAuth } from '@/contexts/AuthContext';
-import { userService, UserProfile } from '@/lib/supabase';
+import { UserManagement } from '@/components/UserManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Settings, Database, Users, Activity, Shield, Clock, User, Crown } from 'lucide-react';
-import { useState, useEffect } from 'react';
 
 export function AdminTab() {
   const { isAdmin, userProfile } = useAuth();
-  const [userProfiles, setUserProfiles] = useState<UserProfile[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (isAdmin) {
-      loadUserProfiles();
-    }
-  }, [isAdmin]);
-
-  const loadUserProfiles = async () => {
-    try {
-      const profiles = await userService.getAllUserProfiles();
-      setUserProfiles(profiles);
-    } catch (error) {
-      console.error('Error loading user profiles:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (!isAdmin) {
     return (
@@ -260,48 +240,8 @@ export function AdminTab() {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold text-black">User Management</CardTitle>
-          <CardDescription className="text-gray-600">Current system users and their roles</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="text-center py-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {userProfiles.map((profile) => (
-                <div key={profile.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                      {getRoleIcon(profile.role)}
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-black text-sm">
-                        {profile.display_name || 'Unknown User'}
-                      </h4>
-                      <p className="text-xs text-gray-600">{profile.email}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge className={`text-xs ${getRoleColor(profile.role)}`}>
-                      {profile.role}
-                    </Badge>
-                    <span className="text-xs text-gray-500">
-                      {profile.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-                </div>
-              ))}
-              {userProfiles.length === 0 && (
-                <p className="text-gray-500 text-center py-4">No users found</p>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* User Management Section */}
+      <UserManagement />
 
       <Card>
         <CardHeader>
@@ -311,18 +251,18 @@ export function AdminTab() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center p-4 bg-gray-50 rounded-lg">
-              <div className="text-2xl font-bold text-black">{userProfiles.length}</div>
+              <div className="text-2xl font-bold text-black">--</div>
               <div className="text-sm text-gray-600">Total Users</div>
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-lg">
               <div className="text-2xl font-bold text-black">
-                {userProfiles.filter(p => p.role === 'admin' || p.role === 'super_admin').length}
+                --
               </div>
               <div className="text-sm text-gray-600">Admins</div>
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-lg">
               <div className="text-2xl font-bold text-black">
-                {userProfiles.filter(p => p.is_active).length}
+                --
               </div>
               <div className="text-sm text-gray-600">Active Users</div>
             </div>

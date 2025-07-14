@@ -250,6 +250,85 @@ export const userService = {
     }
   },
 
+  // Create new user (admin only)
+  async createUser(userData: {
+    email: string;
+    password: string;
+    displayName?: string;
+    role: UserProfile['role'];
+  }): Promise<{ data: any; error: any }> {
+    try {
+      // Create auth user
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: userData.email,
+        password: userData.password,
+        email_confirm: true,
+        user_metadata: {
+          display_name: userData.displayName || userData.email.split('@')[0]
+        }
+      });
+
+      if (authError) {
+        console.error('Error creating auth user:', authError);
+        return { data: null, error: authError };
+      }
+
+      // Create user profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('user_profiles')
+        .insert({
+          user_id: authData.user.id,
+          email: userData.email,
+          display_name: userData.displayName || userData.email.split('@')[0],
+          role: userData.role,
+          is_active: true
+        })
+        .select()
+        .single();
+
+      if (profileError) {
+        console.error('Error creating user profile:', profileError);
+        return { data: null, error: profileError };
+      }
+
+      // Log the activity
+      await logActivity('create_user', 'user', authData.user.id, { 
+        email: userData.email,
+        role: userData.role 
+      });
+
+      return { data: { user: authData.user, profile: profileData }, error: null };
+
+    } catch (error) {
+      console.error('Error in createUser:', error);
+      return { data: null, error };
+    }
+  },
+
+  // Delete user (admin only)
+  async deleteUser(userId: string): Promise<void> {
+    // First delete the user profile
+    const { error: profileError } = await supabase
+      .from('user_profiles')
+      .delete()
+      .eq('user_id', userId);
+
+    if (profileError) {
+      console.error('Error deleting user profile:', profileError);
+      throw profileError;
+    }
+
+    // Then delete the auth user
+    const { error: authError } = await supabase.auth.admin.deleteUser(userId);
+
+    if (authError) {
+      console.error('Error deleting auth user:', authError);
+      throw authError;
+    }
+
+    // Log the activity
+    await logActivity('delete_user', 'user', userId);
+  },
   // Get activity logs
   async getActivityLogs(limit: number = 50): Promise<ActivityLog[]> {
     const { data, error } = await supabase
