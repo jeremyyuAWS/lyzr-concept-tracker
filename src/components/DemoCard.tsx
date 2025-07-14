@@ -42,6 +42,8 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
   const [isUpdatingFeatured, setIsUpdatingFeatured] = useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const handleTryApp = async () => {
     try {
@@ -120,6 +122,27 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
   const handleVideoPause = () => {
     setIsVideoPlaying(false);
   };
+
+  const handleVideoToggle = () => {
+    if (videoRef.current) {
+      if (isVideoPlaying) {
+        videoRef.current.pause();
+        setIsVideoPlaying(false);
+      } else {
+        videoRef.current.currentTime = 0;
+        videoRef.current.play();
+        setIsVideoPlaying(true);
+      }
+    }
+  };
+
+  const handleVideoPlay = () => {
+    setIsVideoPlaying(true);
+  };
+
+  const handleVideoPause = () => {
+    setIsVideoPlaying(false);
+  };
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -130,7 +153,7 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
 
   return (
     <>
-    <Card className="group hover:shadow-lg transition-all duration-300 border-gray-200 bg-white">
+    <Card className="group hover:shadow-lg transition-all duration-300 border-gray-200 bg-white group/video">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -240,6 +263,51 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
           </div>
         )}
         
+        {/* Video Player */}
+        {demo.video_url && (
+          <div className="mb-4">
+            <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
+              <video
+                ref={videoRef}
+                controls
+                className="w-full h-full object-cover"
+                poster={demo.screenshot_url}
+                onPlay={handleVideoPlay}
+                onPause={handleVideoPause}
+                onEnded={() => setIsVideoPlaying(false)}
+              >
+                <source src={demo.video_url} type="video/mp4" />
+                <source src={demo.video_url} type="video/webm" />
+                <source src={demo.video_url} type="video/ogg" />
+                Your browser does not support the video tag.
+              </video>
+              
+              {/* Play/Pause Overlay Button */}
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/video:opacity-100 transition-opacity duration-200 pointer-events-none">
+                <Button
+                  onClick={handleVideoToggle}
+                  className="bg-black/70 hover:bg-black/90 text-white rounded-full w-16 h-16 p-0 pointer-events-auto"
+                  size="sm"
+                >
+                  {isVideoPlaying ? (
+                    <Pause className="w-8 h-8" />
+                  ) : (
+                    <Play className="w-8 h-8 ml-1" />
+                  )}
+                </Button>
+              </div>
+              
+              {/* Video indicator */}
+              <div className="absolute top-2 left-2">
+                <Badge className="bg-black/70 text-white border-0">
+                  <Play className="w-3 h-3 mr-1" />
+                  Video
+                </Badge>
+              </div>
+            </div>
+          </div>
+        )}
+        
         <div className="space-y-4">
           <div className="flex flex-wrap gap-1.5">
             {demo.tags.map((tag) => (
@@ -272,6 +340,22 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
             </Button>
             
             <div className="flex gap-1">
+              {demo.video_url && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleVideoToggle}
+                  className="p-2 border-gray-300 hover:border-gray-400 bg-gray-50 hover:bg-gray-100"
+                  title={isVideoPlaying ? "Pause video" : "Play video"}
+                >
+                  {isVideoPlaying ? (
+                    <Pause className="w-4 h-4" />
+                  ) : (
+                    <Play className="w-4 h-4" />
+                  )}
+                </Button>
+              )}
+              
               {demo.video_url && (
                 <Button
                   variant="outline"
