@@ -33,6 +33,11 @@ export async function verifyDatabaseSetup() {
     }
     
     // Check storage bucket
+    console.log('✅ Database setup verified!');
+    return { success: true };
+    
+  } catch (error: any) {
+    console.error('❌ Database setup verification failed:', error);
     return { success: false, error: error.message };
   }
 }
