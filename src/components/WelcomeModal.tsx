@@ -506,7 +506,7 @@ export function WelcomeModal({ isOpen, onClose }: WelcomeModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-6xl max-h-[90vh] overflow-y-auto mx-auto [&>button.absolute]:bg-white [&>button.absolute]:text-black [&>button.absolute:hover]:bg-gray-100 [&>button.absolute]:rounded-md">
+      <DialogContent className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-6xl max-h-[90vh] overflow-y-auto bg-white p-6 rounded-lg shadow-lg [&>button.absolute]:bg-white [&>button.absolute]:text-black [&>button.absolute:hover]:bg-gray-100 [&>button.absolute]:rounded-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 text-black">
             <div className="text-gray-600">
