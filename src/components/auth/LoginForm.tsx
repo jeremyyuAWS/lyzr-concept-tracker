@@ -54,9 +54,8 @@ export function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl mx-auto">
-        <Card className="w-full shadow-xl border-0">
+    <div className="min-h-screen w-full bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-xl border-0 mx-auto">
           <CardHeader className="text-center pb-6">
             <div className="flex items-center justify-center mb-6">
               <img 
@@ -87,7 +86,7 @@ export function LoginForm() {
               )}
             
               <div className="space-y-3">
-                <Label htmlFor="email" className="text-sm font-medium text-black">
+                <Label htmlFor="email" className="text-sm font-medium text-black block text-left">
                   Email
                 </Label>
                 <Input
@@ -104,7 +103,7 @@ export function LoginForm() {
 
               {isSignUp && (
                 <div className="space-y-3">
-                  <Label htmlFor="displayName" className="text-sm font-medium text-black">
+                  <Label htmlFor="displayName" className="text-sm font-medium text-black block text-left">
                     Display Name
                   </Label>
                   <Input
@@ -119,7 +118,7 @@ export function LoginForm() {
               )}
 
               <div className="space-y-3">
-                <Label htmlFor="password" className="text-sm font-medium text-black">
+                <Label htmlFor="password" className="text-sm font-medium text-black block text-left">
                   Password
                 </Label>
                 <Input
@@ -186,7 +185,6 @@ export function LoginForm() {
             </div>
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 }
