@@ -42,7 +42,7 @@ export async function verifyDatabaseSetup() {
   }
 }
 
-export async function testBasicFunctionality() {
+async function testBasicFunctionality() {
   console.log('🧪 Testing basic functionality...');
   
   try {

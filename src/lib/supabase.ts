@@ -20,7 +20,7 @@ export interface UserProfile {
 }
 
 // Activity Log types
-export interface ActivityLog {
+interface ActivityLog {
   id: string;
   user_id: string;
   action: string;
@@ -368,7 +368,7 @@ export const authService = {
 };
 
 // Activity logging helper
-export const logActivity = async (
+const logActivity = async (
   action: string,
   resourceType: string,
   resourceId?: string,
@@ -387,7 +387,7 @@ export const logActivity = async (
 };
 
 // Database functions
-export const createDatabaseFunctions = async () => {
+const createDatabaseFunctions = async () => {
   // Create increment page views function
   await supabase.rpc('create_increment_function', {
     sql: `
@@ -402,7 +402,7 @@ export const createDatabaseFunctions = async () => {
 };
 
 // Storage helpers
-export const storageService = {
+const storageService = {
   // Get public URL for file
   getPublicUrl(bucket: string, path: string) {
     return supabase.storage.from(bucket).getPublicUrl(path);
