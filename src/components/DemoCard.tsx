@@ -49,6 +49,16 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
   const getVideoEmbedInfo = (url: string) => {
     if (!url) return null;
     
+    // Check if it's a Tella.tv URL
+    const tellaRegex = /tella\.tv\/video\//;
+    if (tellaRegex.test(url)) {
+      return {
+        type: 'tella_webpage',
+        embedUrl: url,
+        originalUrl: url
+      };
+    }
+    
     // Check if it's a YouTube URL
     const youtubeRegex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/;
     const match = url.match(youtubeRegex);
@@ -95,6 +105,10 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
     
     if (demo.video_url && videoInfo?.type === 'youtube') {
       console.log('🎬 YouTube URL for demo:', demo.title, demo.video_url);
+    }
+    
+    if (demo.video_url && videoInfo?.type === 'tella_webpage') {
+      console.log('📹 Tella.tv URL for demo:', demo.title, demo.video_url);
     }
   }, [demo.video_url, demo.title]);
   const handleTryApp = async () => {
@@ -292,18 +306,47 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
         {/* Video Player */}
         {videoInfo && (
           <div className="mb-4">
-            <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden border-2 border-gray-200">
-              {videoInfo.type === 'youtube' ? (
-                // YouTube embed
-                <iframe
-                  src={videoInfo.embedUrl}
-                  title={demo.title}
-                  className="w-full h-full"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              ) : (
+            {videoInfo.type === 'tella_webpage' ? (
+              // Tella.tv webpage - show preview with open button
+              <div className="relative aspect-video bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg overflow-hidden border-2 border-gray-200 flex items-center justify-center">
+                <div className="text-center p-6">
+                  <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Play className="w-8 h-8 text-purple-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Video on Tella.tv</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    This video is hosted on Tella.tv and will open in a new tab
+                  </p>
+                  <Button
+                    onClick={() => window.open(demo.video_url, '_blank')}
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    View on Tella.tv
+                  </Button>
+                </div>
+                
+                {/* Tella.tv Badge */}
+                <div className="absolute top-2 left-2">
+                  <Badge className="bg-purple-600/90 text-white border-0">
+                    <Play className="w-3 h-3 mr-1" />
+                    Tella.tv
+                  </Badge>
+                </div>
+              </div>
+            ) : (
+              <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden border-2 border-gray-200">
+                {videoInfo.type === 'youtube' ? (
+                  // YouTube embed
+                  <iframe
+                    src={videoInfo.embedUrl}
+                    title={demo.title}
+                    className="w-full h-full"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
                 <>
                   {/* Video Loading State */}
                   {videoLoading && (
@@ -352,40 +395,31 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
                     </p>
                   </video>
                 </>
-              )}
-              
-              {/* Video Status Indicators */}
-              <div className="absolute top-2 left-2 flex gap-2">
-                <Badge className="bg-black/70 text-white border-0">
-                  <Play className="w-3 h-3 mr-1" />
-                  {videoInfo.type === 'youtube' ? 'YouTube' : 'Video'}
-                </Badge>
-                {videoInfo.type === 'video' && !videoError && (
-                  <>
-                    {!videoCanPlay && !videoLoading && (
-                      <Badge className="bg-yellow-500/70 text-white border-0">
-                        Loading...
-                      </Badge>
-                    )}
-                    {videoCanPlay && (
-                      <Badge className="bg-green-500/70 text-white border-0">
-                        Ready
-                      </Badge>
-                    )}
-                  </>
                 )}
-              </div>
-              
-              {/* Debug Info (remove in production) */}
-              {process.env.NODE_ENV === 'development' && videoInfo.type === 'video' && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-2"></div>
-                    <p className="text-sm text-gray-600">Loading video...</p>
-                  </div>
+                
+                {/* Video Status Indicators */}
+                <div className="absolute top-2 left-2 flex gap-2">
+                  <Badge className="bg-black/70 text-white border-0">
+                    <Play className="w-3 h-3 mr-1" />
+                    {videoInfo.type === 'youtube' ? 'YouTube' : 'Video'}
+                  </Badge>
+                  {videoInfo.type === 'video' && !videoError && (
+                    <>
+                      {!videoCanPlay && !videoLoading && (
+                        <Badge className="bg-yellow-500/70 text-white border-0">
+                          Loading...
+                        </Badge>
+                      )}
+                      {videoCanPlay && (
+                        <Badge className="bg-green-500/70 text-white border-0">
+                          Ready
+                        </Badge>
+                      )}
+                    </>
+                  )}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
             
             {/* Video URL Debug Info (development only) */}
             {process.env.NODE_ENV === 'development' && demo.video_url && (
