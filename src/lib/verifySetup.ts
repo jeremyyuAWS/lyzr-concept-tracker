@@ -33,30 +33,6 @@ export async function verifyDatabaseSetup() {
     }
     
     // Check storage bucket
-    const { data: buckets, error: bucketError } = await supabase.storage.listBuckets();
-    if (bucketError) {
-      console.error('❌ Storage not accessible:', bucketError);
-      return { success: false, error: 'Storage not accessible' };
-    }
-    
-    const screenshotBucket = buckets?.find(bucket => bucket.id === 'demo-screenshots');
-    if (!screenshotBucket) {
-      console.warn('⚠️ Screenshot bucket not found');
-      return { success: false, error: 'Screenshot bucket not found' };
-    }
-    
-    console.log('✅ All database components verified!');
-    return { 
-      success: true, 
-      stats: {
-        demos: demoCount,
-        profiles: profileCount,
-        bucket: screenshotBucket
-      }
-    };
-    
-  } catch (error) {
-    console.error('❌ Setup verification failed:', error);
     return { success: false, error: error.message };
   }
 }

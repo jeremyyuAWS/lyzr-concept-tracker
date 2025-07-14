@@ -154,44 +154,6 @@ export const demoService = {
     }
   },
 
-  // Upload screenshot to Supabase Storage
-  async uploadScreenshot(file: File, demoId: string): Promise<string> {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${demoId}-${Date.now()}.${fileExt}`;
-    
-    const { data, error } = await supabase.storage
-      .from('demo-screenshots')
-      .upload(fileName, file, {
-        cacheControl: '3600',
-        upsert: false
-      });
-    
-    if (error) {
-      console.error('Error uploading screenshot:', error);
-      throw error;
-    }
-    
-    const { data: publicUrl } = supabase.storage
-      .from('demo-screenshots')
-      .getPublicUrl(data.path);
-    
-    return publicUrl.publicUrl;
-  },
-
-  // Delete screenshot from storage
-  async deleteScreenshot(url: string): Promise<void> {
-    const path = url.split('/').pop();
-    if (!path) return;
-    
-    const { error } = await supabase.storage
-      .from('demo-screenshots')
-      .remove([path]);
-    
-    if (error) {
-      console.error('Error deleting screenshot:', error);
-      throw error;
-    }
-  }
 };
 
 // User Profile Service

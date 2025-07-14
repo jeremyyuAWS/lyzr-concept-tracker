@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ImageUpload } from './ImageUpload';
 import { TagInput } from './TagInput';
 import { DemoFormData } from '@/types/demo';
 import { Plus, Loader2 } from 'lucide-react';
@@ -317,12 +316,22 @@ export function AddDemoForm({ onSubmit, onSuccess }: AddDemoFormProps) {
             </div>
           </div>
 
-          <ImageUpload
-            currentImageUrl={formData.screenshot_url}
-            onImageChange={(url) => handleInputChange('screenshot_url', url)}
-            onImageRemove={() => handleInputChange('screenshot_url', '')}
-            disabled={isSubmitting}
-          />
+          <div className="space-y-2">
+            <Label htmlFor="screenshot_url" className="text-sm font-medium text-black">
+              Screenshot URL
+            </Label>
+            <Input
+              id="screenshot_url"
+              value={formData.screenshot_url}
+              onChange={(e) => handleInputChange('screenshot_url', e.target.value)}
+              placeholder="https://example.com/screenshot.png"
+              className={errors.screenshot_url ? 'border-red-500' : ''}
+            />
+            {errors.screenshot_url && <p className="text-red-500 text-xs">{errors.screenshot_url}</p>}
+            <p className="text-xs text-gray-500">
+              Optional: Add a direct link to a screenshot image (PNG, JPG, etc.)
+            </p>
+          </div>
 
           <div className="flex justify-end pt-4">
             <Button 

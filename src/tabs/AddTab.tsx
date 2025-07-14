@@ -53,7 +53,7 @@ export function AddTab({ onSuccess }: AddTabProps) {
             <Shield className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
             <div className="text-sm text-green-700">
               <p className="font-medium mb-2">Production Ready</p>
-              <p>This form is now protected by Supabase Auth with role-based access control. All new demos will be saved to the database with proper security and validation.</p>
+              <p>This form is now protected by Supabase Auth with role-based access control. All new demos will be saved to the database with proper security and validation. Use external image URLs for screenshots.</p>
             </div>
           </div>
         </CardContent>
