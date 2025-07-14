@@ -389,7 +389,73 @@ export function WelcomeModal({ isOpen, onClose }: WelcomeModalProps) {
 
                 <Card className="bg-blue-50 border-blue-200 w-full">
                   <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-blue-800">
+                      <Users className="w-5 h-5" />
+                      Managing Users
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3 text-sm text-blue-700">
+                      <div className="flex items-start gap-2">
+                        <ArrowRight className="w-4 h-4 mt-0.5 text-blue-600" />
+                        <span>View all system users</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <ArrowRight className="w-4 h-4 mt-0.5 text-blue-600" />
+                        <span>Monitor user activity</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <ArrowRight className="w-4 h-4 mt-0.5 text-blue-600" />
+                        <span>Manage roles and permissions</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <ArrowRight className="w-4 h-4 mt-0.5 text-blue-600" />
+                        <span>Access system logs</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
 
+              <Card className="bg-green-50 border-green-200">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-green-800">
+                    <CheckCircle className="w-5 h-5" />
+                    Admin Best Practices
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-green-800">When Adding Demos:</h4>
+                      <ul className="text-sm text-green-700 space-y-1">
+                        <li>• Use descriptive titles and clear descriptions</li>
+                        <li>• Add relevant technology tags</li>
+                        <li>• Include screenshots when possible</li>
+                        <li>• Test all links before publishing</li>
+                        <li>• Set appropriate owner information</li>
+                      </ul>
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-green-800">For System Management:</h4>
+                      <ul className="text-sm text-green-700 space-y-1">
+                        <li>• Monitor analytics regularly</li>
+                        <li>• Keep user permissions updated</li>
+                        <li>• Remove outdated demos</li>
+                        <li>• Backup important data</li>
+                        <li>• Report technical issues</li>
+                      </ul>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          ) : (
+            <>
+              <div className="text-center mb-6">
+                <h3 className="text-xl font-semibold text-black mb-2">Understanding Analytics</h3>
+                <p className="text-gray-600">Track demo performance and usage patterns</p>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
                 <Card className="bg-blue-50 border-blue-200">
                   <CardHeader>
@@ -450,72 +516,6 @@ export function WelcomeModal({ isOpen, onClose }: WelcomeModalProps) {
                 </Card>
               </div>
             </>
-          ) : (
-            <>
-              <div className="text-center mb-6">
-                <h3 className="text-xl font-semibold text-black mb-2">Understanding Analytics</h3>
-                <p className="text-gray-600">Track demo performance and usage patterns</p>
-              </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-                <Card className="bg-blue-50 border-blue-200">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-blue-800">
-                      <BarChart3 className="w-5 h-5" />
-                      Key Metrics
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3 text-sm text-blue-700">
-                      <div className="flex items-start gap-2">
-                        <Eye className="w-4 h-4 mt-0.5 text-blue-600" />
-                        <span>Total page views across all demos</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <BarChart3 className="w-4 h-4 mt-0.5 text-blue-600" />
-                        <span>Top-performing demos by views</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <Filter className="w-4 h-4 mt-0.5 text-blue-600" />
-                        <span>Popular technology tags</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <Users className="w-4 h-4 mt-0.5 text-blue-600" />
-                        <span>Demo owner performance</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-green-800">
-                      <Lightbulb className="w-5 h-5" />
-                      Using Analytics
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3 text-sm text-green-700">
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 mt-0.5 text-green-600" />
-                        <span>Identify most popular demos for client calls</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 mt-0.5 text-green-600" />
-                        <span>Track which technologies get most interest</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 mt-0.5 text-green-600" />
-                        <span>Monitor growth trends over time</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 mt-0.5 text-green-600" />
-                        <span>Report usage metrics to stakeholders</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
           )}
         </div>
       )
