@@ -278,7 +278,7 @@ export function WelcomeModal({ isOpen, onClose }: WelcomeModalProps) {
               </Card>
             </div>
 
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
               <Card className="bg-yellow-50 border-yellow-200">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-yellow-800">
@@ -353,7 +353,7 @@ export function WelcomeModal({ isOpen, onClose }: WelcomeModalProps) {
                 <p className="text-gray-600">You have full admin access to manage demos</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
                 <Card className="bg-red-50 border-red-200">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-red-800">
@@ -387,7 +387,7 @@ export function WelcomeModal({ isOpen, onClose }: WelcomeModalProps) {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-blue-50 border-blue-200">
+                <Card className="bg-blue-50 border-blue-200 w-full">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-blue-800">
                       <Users className="w-5 h-5" />
@@ -456,8 +456,8 @@ export function WelcomeModal({ isOpen, onClose }: WelcomeModalProps) {
                 <h3 className="text-xl font-semibold text-black mb-2">Understanding Analytics</h3>
                 <p className="text-gray-600">Track demo performance and usage patterns</p>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
                 <Card className="bg-blue-50 border-blue-200">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-blue-800">
@@ -487,7 +487,7 @@ export function WelcomeModal({ isOpen, onClose }: WelcomeModalProps) {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-green-50 border-green-200">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-green-800">
                       <Lightbulb className="w-5 h-5" />
@@ -539,7 +539,7 @@ export function WelcomeModal({ isOpen, onClose }: WelcomeModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto [&>button.absolute]:bg-white [&>button.absolute]:text-black [&>button.absolute:hover]:bg-gray-100 [&>button.absolute]:rounded-md">
+      <DialogContent className="w-[95vw] max-w-6xl max-h-[90vh] overflow-y-auto mx-auto [&>button.absolute]:bg-white [&>button.absolute]:text-black [&>button.absolute:hover]:bg-gray-100 [&>button.absolute]:rounded-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 text-black">
             <div className="text-gray-600">
@@ -572,12 +572,12 @@ export function WelcomeModal({ isOpen, onClose }: WelcomeModalProps) {
           </div>
 
           {/* Step content */}
-          <div className="min-h-[400px]">
+          <div className="min-h-[400px] w-full">
             {currentStepData.content}
           </div>
 
           {/* Navigation */}
-          <div className="flex items-center justify-between pt-6 border-t border-gray-200">
+          <div className="flex items-center justify-between pt-6 border-t border-gray-200 w-full">
             <Button
               variant="outline"
               onClick={prevStep}
