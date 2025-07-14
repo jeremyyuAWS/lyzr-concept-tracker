@@ -20,7 +20,10 @@ export function UserMenu() {
   if (!user || !userProfile) {
     return (
       <div className="flex items-center gap-3">
-        <div className="text-sm text-gray-500">Loading...</div>
+        <div className="text-sm text-gray-500">
+          {user ? 'Loading profile...' : 'Loading...'}
+        </div>
+        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
       </div>
     );
   }

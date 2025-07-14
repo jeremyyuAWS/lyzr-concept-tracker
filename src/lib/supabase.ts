@@ -209,20 +209,45 @@ export const userService = {
     return data;
   },
 
+  // Create user profile
+  async createUserProfile(profileData: Omit<UserProfile, 'id' | 'created_at' | 'updated_at' | 'last_login' | 'is_active' | 'avatar_url'>): Promise<UserProfile> {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .insert({
+        ...profileData,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error creating user profile:', error);
+      throw error;
+    }
+    
+    return data;
+  },
+
   // Update user role (admin only)
   async updateUserRole(userId: string, role: UserProfile['role']): Promise<void> {
     const { error } = await supabase
       .from('user_profiles')
       .update({ role, updated_at: new Date().toISOString() })
-      .eq('id', id);
+      .eq('user_id', userId);
     
     if (error) {
       console.error('Error updating user role:', error);
       throw error;
     }
 
-    // Log the activity
-    await logActivity('update_role', 'user', userId, { role });
+    try {
+      // Log the activity
+      await logActivity('update_role', 'user', userId, { role });
+    } catch (logError) {
+      console.warn('Failed to log activity:', logError);
+    }
   },
 
   // Get activity logs

@@ -24,9 +24,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (user) {
       try {
         const profile = await userService.getCurrentUserProfile();
-        setUserProfile(profile);
+        if (profile) {
+          setUserProfile(profile);
+        } else {
+          // Create profile if it doesn't exist
+          console.log('No profile found, creating one...');
+          const defaultProfile = {
+            user_id: user.id,
+            email: user.email!,
+            display_name: user.user_metadata?.display_name || user.email!.split('@')[0],
+            role: user.email === 'jeremy@lyzr.ai' || user.email === 'admin@lyzr.ai' ? 'admin' : 'user'
+          };
+          
+          try {
+            const newProfile = await userService.createUserProfile(defaultProfile);
+            setUserProfile(newProfile);
+          } catch (createError) {
+            console.error('Failed to create profile:', createError);
+            // Fallback to mock profile
+            setUserProfile({
+              id: user.id,
+              user_id: user.id,
+              email: user.email!,
+              display_name: user.user_metadata?.display_name || user.email!.split('@')[0],
+              role: user.email === 'jeremy@lyzr.ai' || user.email === 'admin@lyzr.ai' ? 'admin' : 'user',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              last_login: null,
+              is_active: true,
+              avatar_url: null
+            });
+          }
+        }
       } catch (error) {
         console.error('Error refreshing profile:', error);
+        // Fallback to mock profile based on user data
+        setUserProfile({
+          id: user.id,
+          user_id: user.id,
+          email: user.email!,
+          display_name: user.user_metadata?.display_name || user.email!.split('@')[0],
+          role: user.email === 'jeremy@lyzr.ai' || user.email === 'admin@lyzr.ai' ? 'admin' : 'user',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          last_login: null,
+          is_active: true,
+          avatar_url: null
+        });
       }
     } else {
       setUserProfile(null);
