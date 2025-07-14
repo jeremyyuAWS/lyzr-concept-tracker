@@ -387,68 +387,35 @@ export function WelcomeModal({ isOpen, onClose }: WelcomeModalProps) {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-blue-50 border-blue-200 w-full">
+                <Card className="bg-blue-50 border-blue-200">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-blue-800">
-                      <Users className="w-5 h-5" />
-                      Managing Users
+                      <Shield className="w-5 h-5" />
+                      Managing Content
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3 text-sm text-blue-700">
                       <div className="flex items-start gap-2">
                         <ArrowRight className="w-4 h-4 mt-0.5 text-blue-600" />
-                        <span>View all system users</span>
+                        <span>Edit or delete existing demos</span>
                       </div>
                       <div className="flex items-start gap-2">
                         <ArrowRight className="w-4 h-4 mt-0.5 text-blue-600" />
-                        <span>Monitor user activity</span>
+                        <span>Manage technology tags</span>
                       </div>
                       <div className="flex items-start gap-2">
                         <ArrowRight className="w-4 h-4 mt-0.5 text-blue-600" />
-                        <span>Manage roles and permissions</span>
+                        <span>Update demo metadata</span>
                       </div>
                       <div className="flex items-start gap-2">
                         <ArrowRight className="w-4 h-4 mt-0.5 text-blue-600" />
-                        <span>Access system logs</span>
+                        <span>Monitor system health</span>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               </div>
-
-              <Card className="bg-green-50 border-green-200">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-green-800">
-                    <CheckCircle className="w-5 h-5" />
-                    Admin Best Practices
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-green-800">When Adding Demos:</h4>
-                      <ul className="text-sm text-green-700 space-y-1">
-                        <li>• Use descriptive titles and clear descriptions</li>
-                        <li>• Add relevant technology tags</li>
-                        <li>• Include screenshots when possible</li>
-                        <li>• Test all links before publishing</li>
-                        <li>• Set appropriate owner information</li>
-                      </ul>
-                    </div>
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-green-800">For System Management:</h4>
-                      <ul className="text-sm text-green-700 space-y-1">
-                        <li>• Monitor analytics regularly</li>
-                        <li>• Keep user permissions updated</li>
-                        <li>• Remove outdated demos</li>
-                        <li>• Backup important data</li>
-                        <li>• Report technical issues</li>
-                      </ul>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </>
           ) : (
             <>
@@ -456,6 +423,7 @@ export function WelcomeModal({ isOpen, onClose }: WelcomeModalProps) {
                 <h3 className="text-xl font-semibold text-black mb-2">Understanding Analytics</h3>
                 <p className="text-gray-600">Track demo performance and usage patterns</p>
               </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
                 <Card className="bg-blue-50 border-blue-200">
                   <CardHeader>
