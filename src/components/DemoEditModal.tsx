@@ -265,10 +265,10 @@ export function DemoEditModal({ demo, isOpen, onClose, onSuccess }: DemoEditModa
                 id="video_url"
                 value={formData.video_url}
                 onChange={(e) => handleInputChange('video_url', e.target.value)}
-                placeholder="https://example.com/video.mp4"
+                placeholder="https://youtube.com/watch?v=... or https://example.com/video.mp4"
               />
               <p className="text-xs text-gray-500">
-                Optional: Add a video overview/demo of the app
+                Optional: Add a YouTube URL or direct video file URL
               </p>
             </div>
             

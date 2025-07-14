@@ -45,9 +45,36 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
   const [videoLoading, setVideoLoading] = useState(false);
   const [videoCanPlay, setVideoCanPlay] = useState(false);
 
+  // Helper function to detect and convert YouTube URLs
+  const getVideoEmbedInfo = (url: string) => {
+    if (!url) return null;
+    
+    // Check if it's a YouTube URL
+    const youtubeRegex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/;
+    const match = url.match(youtubeRegex);
+    
+    if (match) {
+      const videoId = match[1];
+      return {
+        type: 'youtube',
+        embedUrl: `https://www.youtube.com/embed/${videoId}`,
+        originalUrl: url
+      };
+    }
+    
+    // For direct video files
+    return {
+      type: 'video',
+      embedUrl: url,
+      originalUrl: url
+    };
+  };
+
+  const videoInfo = demo.video_url ? getVideoEmbedInfo(demo.video_url) : null;
+
   // Debug video URL and test accessibility
   useEffect(() => {
-    if (demo.video_url) {
+    if (demo.video_url && videoInfo?.type === 'video') {
       console.log('🎥 Video URL for demo:', demo.title, demo.video_url);
       
       // Test if the video URL is accessible
@@ -64,6 +91,10 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
           console.error('❌ Video URL not accessible:', demo.video_url, error);
           setVideoError('Video URL not accessible');
         });
+    }
+    
+    if (demo.video_url && videoInfo?.type === 'youtube') {
+      console.log('🎬 YouTube URL for demo:', demo.title, demo.video_url);
     }
   }, [demo.video_url, demo.title]);
   const handleTryApp = async () => {
@@ -259,80 +290,99 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
       
       <CardContent className="pt-0">
         {/* Video Player */}
-        {demo.video_url && (
+        {videoInfo && (
           <div className="mb-4">
             <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden border-2 border-gray-200">
-              {/* Video Loading State */}
-              {videoLoading && (
+              {videoInfo.type === 'youtube' ? (
+                // YouTube embed
+                <iframe
+                  src={videoInfo.embedUrl}
+                  title={demo.title}
+                  className="w-full h-full"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : (
+                <>
+                  {/* Video Loading State */}
+                  {videoLoading && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-2"></div>
+                        <p className="text-sm text-gray-600">Loading video...</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Video Error State */}
+                  {videoError && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-red-50 z-10">
+                      <div className="text-center p-4">
+                        <div className="text-red-500 mb-2">⚠️</div>
+                        <p className="text-sm text-red-600 font-medium mb-1">Video Error</p>
+                        <p className="text-xs text-red-500">{videoError}</p>
+                        <p className="text-xs text-gray-500 mt-2 break-all">{demo.video_url}</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <video
+                    ref={videoRef}
+                    controls
+                    className="w-full h-full object-cover"
+                    poster={demo.screenshot_url}
+                    onLoadStart={handleVideoLoadStart}
+                    onCanPlay={handleVideoCanPlay}
+                    onError={handleVideoError}
+                    onPlay={handleVideoPlay}
+                    onPause={handleVideoPause}
+                    onEnded={handleVideoEnded}
+                    preload="metadata"
+                    crossOrigin="anonymous"
+                    style={{ display: videoError ? 'none' : 'block' }}
+                  >
+                    <source src={demo.video_url} type="video/mp4" />
+                    <p className="p-4 text-center text-gray-600">
+                      Your browser does not support the video tag.
+                      <br />
+                      <a href={demo.video_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                        View video in new tab
+                      </a>
+                    </p>
+                  </video>
+                </>
+              )}
+              
+              {/* Video Status Indicators */}
+              <div className="absolute top-2 left-2 flex gap-2">
+                <Badge className="bg-black/70 text-white border-0">
+                  <Play className="w-3 h-3 mr-1" />
+                  {videoInfo.type === 'youtube' ? 'YouTube' : 'Video'}
+                </Badge>
+                {videoInfo.type === 'video' && !videoError && (
+                  <>
+                    {!videoCanPlay && !videoLoading && (
+                      <Badge className="bg-yellow-500/70 text-white border-0">
+                        Loading...
+                      </Badge>
+                    )}
+                    {videoCanPlay && (
+                      <Badge className="bg-green-500/70 text-white border-0">
+                        Ready
+                      </Badge>
+                    )}
+                  </>
+                )}
+              </div>
+              
+              {/* Debug Info (remove in production) */}
+              {process.env.NODE_ENV === 'development' && videoInfo.type === 'video' && (
                 <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
                   <div className="text-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-2"></div>
                     <p className="text-sm text-gray-600">Loading video...</p>
                   </div>
-                </div>
-              )}
-              
-              {/* Video Error State */}
-              {videoError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-red-50 z-10">
-                  <div className="text-center p-4">
-                    <div className="text-red-500 mb-2">⚠️</div>
-                    <p className="text-sm text-red-600 font-medium mb-1">Video Error</p>
-                    <p className="text-xs text-red-500">{videoError}</p>
-                    <p className="text-xs text-gray-500 mt-2 break-all">{demo.video_url}</p>
-                  </div>
-                </div>
-              )}
-              
-              <video
-                ref={videoRef}
-                controls
-                className="w-full h-full object-cover"
-                poster={demo.screenshot_url}
-                onLoadStart={handleVideoLoadStart}
-                onCanPlay={handleVideoCanPlay}
-                onError={handleVideoError}
-                onPlay={handleVideoPlay}
-                onPause={handleVideoPause}
-                onEnded={handleVideoEnded}
-                preload="metadata"
-                crossOrigin="anonymous"
-                style={{ display: videoError ? 'none' : 'block' }}
-              >
-                <source src={demo.video_url} type="video/mp4" />
-                <p className="p-4 text-center text-gray-600">
-                  Your browser does not support the video tag.
-                  <br />
-                  <a href={demo.video_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
-                    View video in new tab
-                  </a>
-                </p>
-              </video>
-              
-              {/* Video Status Indicators */}
-              {!videoError && (
-                <div className="absolute top-2 left-2 flex gap-2">
-                  <Badge className="bg-black/70 text-white border-0">
-                    <Play className="w-3 h-3 mr-1" />
-                    Video
-                  </Badge>
-                  {!videoCanPlay && !videoLoading && (
-                    <Badge className="bg-yellow-500/70 text-white border-0">
-                      Loading...
-                    </Badge>
-                  )}
-                  {videoCanPlay && (
-                    <Badge className="bg-green-500/70 text-white border-0">
-                      Ready
-                    </Badge>
-                  )}
-                </div>
-              )}
-              
-              {/* Debug Info (remove in production) */}
-              {process.env.NODE_ENV === 'development' && (
-                <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs p-1 rounded">
-                  {videoCanPlay ? '✅ Ready' : videoLoading ? '🔄 Loading' : '❌ Error'}
                 </div>
               )}
             </div>
@@ -341,6 +391,9 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
             {process.env.NODE_ENV === 'development' && demo.video_url && (
               <div className="mt-2 p-2 bg-gray-100 rounded text-xs text-gray-600">
                 <strong>Debug:</strong> {demo.video_url}
+                {videoInfo && (
+                  <div><strong>Type:</strong> {videoInfo.type}</div>
+                )}
               </div>
             )}
           </div>
