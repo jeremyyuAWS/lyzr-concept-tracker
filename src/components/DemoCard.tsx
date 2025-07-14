@@ -25,7 +25,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface DemoCardProps {
   demo: Demo;
@@ -40,9 +40,32 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUpdatingFeatured, setIsUpdatingFeatured] = useState(false);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoError, setVideoError] = useState<string | null>(null);
+  const [videoLoading, setVideoLoading] = useState(false);
+  const [videoCanPlay, setVideoCanPlay] = useState(false);
 
+  // Debug video URL and test accessibility
+  useEffect(() => {
+    if (demo.video_url) {
+      console.log('🎥 Video URL for demo:', demo.title, demo.video_url);
+      
+      // Test if the video URL is accessible
+      fetch(demo.video_url, { method: 'HEAD' })
+        .then(response => {
+          if (response.ok) {
+            console.log('✅ Video URL is accessible:', demo.video_url);
+          } else {
+            console.warn('⚠️ Video URL returned status:', response.status, demo.video_url);
+            setVideoError(`Video unavailable (${response.status})`);
+          }
+        })
+        .catch(error => {
+          console.error('❌ Video URL not accessible:', demo.video_url, error);
+          setVideoError('Video URL not accessible');
+        });
+    }
+  }, [demo.video_url, demo.title]);
   const handleTryApp = async () => {
     try {
       await demoService.incrementPageViews(demo.id);
@@ -113,12 +136,52 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
     }
   };
 
+  const handleVideoLoadStart = () => {
+    console.log('🔄 Video loading started for:', demo.title);
+    setVideoLoading(true);
+    setVideoError(null);
+  };
+
+  const handleVideoCanPlay = () => {
+    console.log('✅ Video can play:', demo.title);
+    setVideoLoading(false);
+    setVideoCanPlay(true);
+  };
+
+  const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const video = e.currentTarget;
+    const error = video.error;
+    console.error('❌ Video error for:', demo.title, {
+      code: error?.code,
+      message: error?.message,
+      networkState: video.networkState,
+      readyState: video.readyState,
+      url: demo.video_url
+    });
+    
+    setVideoLoading(false);
+    setVideoCanPlay(false);
+    
+    const errorMessages = {
+      1: 'Video loading aborted',
+      2: 'Network error loading video',
+      3: 'Video format not supported',
+      4: 'Video source not found'
+    };
+    
+    setVideoError(errorMessages[error?.code as keyof typeof errorMessages] || 'Unknown video error');
+  };
+
   const handleVideoPlay = () => {
-    setIsVideoPlaying(true);
+    console.log('▶️ Video started playing:', demo.title);
   };
 
   const handleVideoPause = () => {
-    setIsVideoPlaying(false);
+    console.log('⏸️ Video paused:', demo.title);
+  };
+
+  const handleVideoEnded = () => {
+    console.log('🏁 Video ended:', demo.title);
   };
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -198,31 +261,88 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
         {/* Video Player */}
         {demo.video_url && (
           <div className="mb-4">
-            <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden group/video">
+            <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden border-2 border-gray-200">
+              {/* Video Loading State */}
+              {videoLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-2"></div>
+                    <p className="text-sm text-gray-600">Loading video...</p>
+                  </div>
+                </div>
+              )}
+              
+              {/* Video Error State */}
+              {videoError && (
+                <div className="absolute inset-0 flex items-center justify-center bg-red-50 z-10">
+                  <div className="text-center p-4">
+                    <div className="text-red-500 mb-2">⚠️</div>
+                    <p className="text-sm text-red-600 font-medium mb-1">Video Error</p>
+                    <p className="text-xs text-red-500">{videoError}</p>
+                    <p className="text-xs text-gray-500 mt-2 break-all">{demo.video_url}</p>
+                  </div>
+                </div>
+              )}
+              
               <video
                 ref={videoRef}
-                controls={true}
+                controls
                 className="w-full h-full object-cover"
                 poster={demo.screenshot_url}
+                onLoadStart={handleVideoLoadStart}
+                onCanPlay={handleVideoCanPlay}
+                onError={handleVideoError}
                 onPlay={handleVideoPlay}
                 onPause={handleVideoPause}
-                onEnded={() => setIsVideoPlaying(false)}
+                onEnded={handleVideoEnded}
                 preload="metadata"
+                crossOrigin="anonymous"
+                style={{ display: videoError ? 'none' : 'block' }}
               >
                 <source src={demo.video_url} type="video/mp4" />
-                <source src={demo.video_url} type="video/webm" />
-                <source src={demo.video_url} type="video/ogg" />
-                Your browser does not support the video tag.
+                <p className="p-4 text-center text-gray-600">
+                  Your browser does not support the video tag.
+                  <br />
+                  <a href={demo.video_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                    View video in new tab
+                  </a>
+                </p>
               </video>
               
-              {/* Video indicator */}
-              <div className="absolute top-2 left-2">
-                <Badge className="bg-black/70 text-white border-0">
-                  <Play className="w-3 h-3 mr-1" />
-                  Video
-                </Badge>
-              </div>
+              {/* Video Status Indicators */}
+              {!videoError && (
+                <div className="absolute top-2 left-2 flex gap-2">
+                  <Badge className="bg-black/70 text-white border-0">
+                    <Play className="w-3 h-3 mr-1" />
+                    Video
+                  </Badge>
+                  {!videoCanPlay && !videoLoading && (
+                    <Badge className="bg-yellow-500/70 text-white border-0">
+                      Loading...
+                    </Badge>
+                  )}
+                  {videoCanPlay && (
+                    <Badge className="bg-green-500/70 text-white border-0">
+                      Ready
+                    </Badge>
+                  )}
+                </div>
+              )}
+              
+              {/* Debug Info (remove in production) */}
+              {process.env.NODE_ENV === 'development' && (
+                <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs p-1 rounded">
+                  {videoCanPlay ? '✅ Ready' : videoLoading ? '🔄 Loading' : '❌ Error'}
+                </div>
+              )}
             </div>
+            
+            {/* Video URL Debug Info (development only) */}
+            {process.env.NODE_ENV === 'development' && demo.video_url && (
+              <div className="mt-2 p-2 bg-gray-100 rounded text-xs text-gray-600">
+                <strong>Debug:</strong> {demo.video_url}
+              </div>
+            )}
           </div>
         )}
         <div className="space-y-4">
