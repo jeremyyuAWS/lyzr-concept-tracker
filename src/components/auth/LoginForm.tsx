@@ -55,136 +55,138 @@ export function LoginForm() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex items-center justify-center mb-4">
-            <img 
-              src="/lyzr-logo-cut.png" 
-              alt="Lyzr Logo" 
-              className="w-12 h-12 object-contain"
-            />
-          </div>
-          <CardTitle className="text-2xl font-bold text-black">
-            {isSignUp ? 'Create Account' : 'Sign In'}
-          </CardTitle>
-          <CardDescription className="text-gray-600">
-            {isSignUp 
-              ? 'Create your admin account to manage demos'
-              : 'Sign in to access the Lyzr Concept Tracker'
-            }
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <Alert className="border-red-200 bg-red-50">
-                <AlertDescription className="text-red-700">
-                  {error}
-                </AlertDescription>
-              </Alert>
-            )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium text-black">
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                placeholder="Enter your email"
-                required
-                disabled={isLoading}
-               className="text-center"
+      <div className="w-full max-w-md">
+        <Card className="w-full shadow-xl border-0">
+          <CardHeader className="text-center pb-6">
+            <div className="flex items-center justify-center mb-6">
+              <img 
+                src="/lyzr-logo-cut.png" 
+                alt="Lyzr Logo" 
+                className="w-16 h-16 object-contain"
               />
             </div>
-
-            {isSignUp && (
+            <CardTitle className="text-2xl font-bold text-black mb-2">
+              {isSignUp ? 'Create Account' : 'Sign In'}
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              {isSignUp 
+                ? 'Create your admin account to manage demos'
+                : 'Sign in to access the Lyzr Concept Tracker'
+              }
+            </CardDescription>
+          </CardHeader>
+        
+          <CardContent className="px-6 pb-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <Alert className="border-red-200 bg-red-50">
+                  <AlertDescription className="text-red-700">
+                    {error}
+                  </AlertDescription>
+                </Alert>
+              )}
+            
               <div className="space-y-2">
-                <Label htmlFor="displayName" className="text-sm font-medium text-black">
-                  Display Name
+                <Label htmlFor="email" className="text-sm font-medium text-black">
+                  Email
                 </Label>
                 <Input
-                  id="displayName"
-                  value={formData.displayName}
-                  onChange={(e) => handleInputChange('displayName', e.target.value)}
-                  placeholder="Enter your display name"
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  placeholder="Enter your email"
+                  required
                   disabled={isLoading}
-                 className="text-center"
+                  className="text-left"
                 />
               </div>
-            )}
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium text-black">
-                Password
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => handleInputChange('password', e.target.value)}
-                placeholder="Enter your password"
-                required
+              {isSignUp && (
+                <div className="space-y-2">
+                  <Label htmlFor="displayName" className="text-sm font-medium text-black">
+                    Display Name
+                  </Label>
+                  <Input
+                    id="displayName"
+                    value={formData.displayName}
+                    onChange={(e) => handleInputChange('displayName', e.target.value)}
+                    placeholder="Enter your display name"
+                    disabled={isLoading}
+                    className="text-left"
+                  />
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium text-black">
+                  Password
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => handleInputChange('password', e.target.value)}
+                  placeholder="Enter your password"
+                  required
+                  disabled={isLoading}
+                  minLength={6}
+                  className="text-left"
+                />
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full bg-black hover:bg-blue-600 text-white mt-6"
                 disabled={isLoading}
-                minLength={6}
-               className="text-center"
-              />
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {isSignUp ? 'Creating Account...' : 'Signing In...'}
+                  </>
+                ) : (
+                  <>
+                    {isSignUp ? (
+                      <>
+                        <UserPlus className="w-4 h-4 mr-2" />
+                        Create Account
+                      </>
+                    ) : (
+                      <>
+                        <LogIn className="w-4 h-4 mr-2" />
+                        Sign In
+                      </>
+                    )}
+                  </>
+                )}
+              </Button>
+            </form>
+
+            <div className="mt-6 text-center">
+              <button
+                type="button"
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-sm text-gray-600 hover:text-gray-800 underline"
+                disabled={isLoading}
+              >
+                {isSignUp 
+                  ? 'Already have an account? Sign in'
+                  : "Don't have an account? Create one"
+                }
+              </button>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full bg-black hover:bg-blue-600 text-white"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {isSignUp ? 'Creating Account...' : 'Signing In...'}
-                </>
-              ) : (
-                <>
-                  {isSignUp ? (
-                    <>
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Create Account
-                    </>
-                  ) : (
-                    <>
-                      <LogIn className="w-4 h-4 mr-2" />
-                      Sign In
-                    </>
-                  )}
-                </>
-              )}
-            </Button>
-          </form>
-
-          <div className="mt-4 text-center">
-            <button
-              type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-gray-600 hover:text-gray-800"
-              disabled={isLoading}
-            >
-              {isSignUp 
-                ? 'Already have an account? Sign in'
-                : "Don't have an account? Create one"
-              }
-            </button>
-          </div>
-
-          <div className="mt-6 text-xs text-gray-500 text-center">
-            <p>
-              <strong>Admin Users:</strong> jeremy@lyzr.ai and admin@lyzr.ai get automatic admin access.
-              <br />
-              <strong>Test Users:</strong> Any email can create an account with standard access.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <p className="text-xs text-gray-600 text-center">
+                <strong>Admin Users:</strong> jeremy@lyzr.ai and admin@lyzr.ai get automatic admin access.
+                <br />
+                <strong>Test Users:</strong> Any email can create an account with standard access.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
