@@ -54,8 +54,9 @@ export function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gray-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-xl border-0 mx-auto">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <Card className="shadow-xl border-0">
           <CardHeader className="text-center pb-6">
             <div className="flex items-center justify-center mb-6">
               <img 
@@ -185,6 +186,7 @@ export function LoginForm() {
             </div>
           </CardContent>
         </Card>
+      </div>
     </div>
   );
 }
