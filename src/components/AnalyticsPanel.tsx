@@ -15,7 +15,13 @@ export function AnalyticsPanel({ demos }: AnalyticsPanelProps) {
     .sort((a, b) => b.page_views - a.page_views)
     .slice(0, 8)
     .map(demo => ({
-      name: demo.title.length > 25 ? demo.title.substring(0, 25) + '...' : demo.title,
+      name: demo.title.length > 20 ? 
+        demo.title.substring(0, 20) + '\n' + 
+        (demo.title.substring(20).length > 15 ? 
+          demo.title.substring(20, 35) + '...' : 
+          demo.title.substring(20)
+        ) : 
+        demo.title,
       views: demo.page_views,
       owner: demo.owner
     }));
@@ -190,9 +196,11 @@ export function AnalyticsPanel({ demos }: AnalyticsPanelProps) {
                   dataKey="name" 
                   fontSize={12} 
                   stroke="#666"
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
+                  angle={0}
+                  textAnchor="middle"
+                  height={100}
+                  interval={0}
+                  tick={{ fontSize: 11 }}
                 />
                 <YAxis fontSize={12} stroke="#666" />
                 <Tooltip 
