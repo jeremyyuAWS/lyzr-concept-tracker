@@ -1,0 +1,34 @@
+{
+  "testDemos": [
+    {
+      "title": "AI-Powered Task Manager",
+      "description": "A smart task management application that uses AI to prioritize tasks, suggest optimal scheduling, and provide productivity insights. Features include natural language task creation, intelligent reminders, and automated time blocking.",
+      "tags": "AI, Productivity, Task Management, NLP, Scheduling",
+      "netlify_url": "https://ai-task-manager-demo.netlify.app",
+      "excalidraw_url": "https://excalidraw.com/#json=ai-task-manager-wireframe",
+      "supabase_url": "https://supabase.com/dashboard/project/ai-task-manager",
+      "admin_url": "https://ai-task-manager-demo.netlify.app/admin",
+      "owner": "Test User"
+    },
+    {
+      "title": "Real-time Analytics Dashboard",
+      "description": "A comprehensive analytics dashboard that provides real-time insights into business metrics, user behavior, and system performance. Features interactive charts, customizable widgets, and automated reporting capabilities.",
+      "tags": "Analytics, Dashboard, Real-time, Business Intelligence, Charts",
+      "netlify_url": "https://analytics-dashboard-demo.netlify.app",
+      "excalidraw_url": "https://excalidraw.com/#json=analytics-dashboard-design",
+      "supabase_url": "https://supabase.com/dashboard/project/analytics-dashboard",
+      "admin_url": "https://analytics-dashboard-demo.netlify.app/admin",
+      "owner": "Test User"
+    },
+    {
+      "title": "Smart E-commerce Platform",
+      "description": "An intelligent e-commerce platform with AI-powered product recommendations, dynamic pricing, inventory management, and personalized shopping experiences. Includes advanced search, reviews, and order tracking.",
+      "tags": "E-commerce, AI, Recommendations, Shopping, Inventory",
+      "netlify_url": "https://smart-ecommerce-demo.netlify.app",
+      "excalidraw_url": "https://excalidraw.com/#json=ecommerce-platform-flow",
+      "supabase_url": "https://supabase.com/dashboard/project/smart-ecommerce",
+      "admin_url": "https://smart-ecommerce-demo.netlify.app/admin",
+      "owner": "Test User"
+    }
+  ]
+}
