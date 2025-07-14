@@ -96,6 +96,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
+  // Add timeout to prevent infinite loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (loading && user) {
+        console.warn('Profile loading timeout, using fallback data');
+        setLoading(false);
+      }
+    }, 3000); // 3 second timeout
+
+    return () => clearTimeout(timeout);
+  }, [loading, user]);
+
   const signIn = async (email: string, password: string) => {
     const { user } = await authService.signIn(email, password);
     setUser(user);

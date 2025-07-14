@@ -17,16 +17,29 @@ export function UserMenu() {
     }
   };
 
-  if (!user || !userProfile) {
+  // If no user, show loading
+  if (!user) {
     return (
       <div className="flex items-center gap-3">
-        <div className="text-sm text-gray-500">
-          {user ? 'Loading profile...' : 'Loading...'}
-        </div>
+        <div className="text-sm text-gray-500">Loading...</div>
         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
       </div>
     );
   }
+
+  // Use fallback data if profile isn't loaded yet
+  const displayName = userProfile?.display_name || 
+                     user.user_metadata?.display_name || 
+                     user.email?.split('@')[0] || 
+                     'User';
+  
+  const userRole = userProfile?.role || 
+                  (user.email === 'jeremy@lyzr.ai' || user.email === 'admin@lyzr.ai' ? 'admin' : 'user');
+  
+  const isUserAdmin = userRole === 'admin' || userRole === 'super_admin';
+  
+  const roleText = userRole === 'admin' ? 'Admin' : 
+                   userRole === 'super_admin' ? 'Super Admin' : 'User';
 
   const getInitials = (name: string) => {
     return name
@@ -37,10 +50,6 @@ export function UserMenu() {
       .slice(0, 2);
   };
 
-  const displayName = userProfile.display_name || userProfile.email.split('@')[0];
-  const roleText = userProfile.role === 'admin' ? 'Admin' : 
-                   userProfile.role === 'super_admin' ? 'Super Admin' : 'User';
-
   return (
     <div className="flex items-center gap-3">
       {/* User Info Display */}
@@ -50,19 +59,19 @@ export function UserMenu() {
             <span className="text-sm font-medium text-black">
               {displayName}
             </span>
-            {isAdmin && (
+            {isUserAdmin && (
               <Crown className="w-4 h-4 text-yellow-600" />
             )}
           </div>
           <div className="flex justify-end">
             <Badge 
               className={`text-xs h-5 px-2 ${
-                userProfile.role === 'admin' ? 'bg-red-100 text-red-800' :
-                userProfile.role === 'super_admin' ? 'bg-purple-100 text-purple-800' :
+                userRole === 'admin' ? 'bg-red-100 text-red-800' :
+                userRole === 'super_admin' ? 'bg-purple-100 text-purple-800' :
                 'bg-gray-100 text-gray-800'
               }`}
             >
-              {isAdmin ? (
+              {isUserAdmin ? (
                 <>
                   <Crown className="w-3 h-3 mr-1" />
                   {roleText}
@@ -78,7 +87,7 @@ export function UserMenu() {
         </div>
         
         <Avatar className="h-8 w-8">
-          <AvatarImage src={userProfile.avatar_url} alt={displayName} />
+          <AvatarImage src={userProfile?.avatar_url} alt={displayName} />
           <AvatarFallback className="bg-gray-200 text-gray-700 text-sm">
             {getInitials(displayName)}
           </AvatarFallback>
