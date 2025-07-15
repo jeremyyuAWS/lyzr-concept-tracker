@@ -170,7 +170,7 @@ export function AmazingSearchBar({
                 onBlur={() => {
                   setIsFocused(false);
                   // Delay hiding suggestions to allow clicks
-                  setTimeout(() => setShowSuggestions(false), 150);
+                  setTimeout(() => setShowSuggestions(false), 300);
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -312,7 +312,12 @@ export function AmazingSearchBar({
                     {popularTags.map((tag) => (
                       <button
                         key={tag}
+                        onMouseDown={(e) => {
+                          // Prevent blur from hiding suggestions before click
+                          e.preventDefault();
+                        }}
                         onClick={() => {
+                          console.log('Popular tag clicked:', tag);
                           onTagSelect(selectedTag === tag ? null : tag);
                           setShowSuggestions(false);
                         }}
