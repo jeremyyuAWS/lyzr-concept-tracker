@@ -327,7 +327,6 @@ export function AddDemoForm({ onSubmit, onSuccess }: AddDemoFormProps) {
                   id="is_featured"
                   checked={formData.is_featured}
                   onCheckedChange={(checked) => handleInputChange('is_featured', checked as boolean)}
-                  className="bg-white border-2 border-gray-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 data-[state=checked]:text-white h-5 w-5"
                 />
                 <div className="flex-1 cursor-pointer" onClick={() => handleInputChange('is_featured', !formData.is_featured)}>
                   <Label htmlFor="is_featured" className="text-sm font-medium text-black cursor-pointer pointer-events-none">
