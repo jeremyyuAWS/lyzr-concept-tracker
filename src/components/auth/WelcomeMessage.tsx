@@ -10,7 +10,9 @@ import {
   Shield,
   Sparkles,
   Clock,
-  TrendingUp
+  TrendingUp,
+  Zap,
+  Activity
 } from 'lucide-react';
 
 export function WelcomeMessage() {
@@ -23,10 +25,10 @@ export function WelcomeMessage() {
             <Sparkles className="w-6 h-6 text-white" />
           </div>
         </div>
-        <h1 className="text-2xl font-bold text-black mb-2">
+        <h1 className="text-xl font-bold text-black mb-2">
           Welcome to Lyzr Concept Tracker
         </h1>
-        <p className="text-gray-600 mb-3">
+        <p className="text-gray-600 text-sm mb-3">
           Your competitive advantage in AI demo presentations
         </p>
         <div className="flex items-center justify-center gap-2 flex-wrap">
@@ -41,36 +43,7 @@ export function WelcomeMessage() {
         </div>
       </div>
 
-      {/* Business Value */}
-      <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-blue-900 text-lg">
-            <Users className="w-5 h-5" />
-            Built for Sales Success
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <p className="text-blue-800 text-sm mb-3">
-            <strong>Stop spending hours searching for the right demo.</strong> Get instant access to Lyzr's complete demo library with performance insights and technical details.
-          </p>
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <div className="bg-white/60 p-3 rounded-lg">
-              <div className="text-xl font-bold text-blue-700">150+</div>
-              <div className="text-xs text-blue-600">Demo Concepts</div>
-            </div>
-            <div className="bg-white/60 p-3 rounded-lg">
-              <div className="text-xl font-bold text-blue-700">25+</div>
-              <div className="text-xs text-blue-600">Technologies</div>
-            </div>
-            <div className="bg-white/60 p-3 rounded-lg">
-              <div className="text-xl font-bold text-blue-700">100%</div>
-              <div className="text-xs text-blue-600">Production Ready</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Key Benefits */}
+      {/* Key Benefits - 4 tiles */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <Card className="hover:shadow-md transition-shadow">
           <CardContent className="p-4">
@@ -95,6 +68,34 @@ export function WelcomeMessage() {
               <div className="flex-1">
                 <h3 className="font-semibold text-black text-sm mb-1">Data-Driven Selection</h3>
                 <p className="text-xs text-gray-600">View engagement metrics and popularity scores to choose proven successful demos.</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-gray-100 rounded-lg text-gray-700">
+                <Zap className="w-4 h-4" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-black text-sm mb-1">Instant Access</h3>
+                <p className="text-xs text-gray-600">Quick links to live demos, technical docs, and resources.</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-gray-100 rounded-lg text-gray-700">
+                <Activity className="w-4 h-4" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-black text-sm mb-1">Track Performance</h3>
+                <p className="text-xs text-gray-600">Monitor demo engagement and success rates.</p>
               </div>
             </div>
           </CardContent>
@@ -131,24 +132,6 @@ export function WelcomeMessage() {
         </CardContent>
       </Card>
 
-      {/* Success Message */}
-      <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
-        <CardContent className="p-4">
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-3 mb-3">
-              <Clock className="w-5 h-5 text-green-600" />
-              <TrendingUp className="w-5 h-5 text-green-600" />
-            </div>
-            <h3 className="font-semibold text-green-900 mb-2">
-              Join Your Successful Colleagues
-            </h3>
-            <p className="text-green-800 text-sm">
-              AEs using our demo tracker report <strong>40% faster</strong> demo preparation and <strong>25% higher</strong> engagement rates.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Call to Action */}
       <div className="text-center">
         <p className="text-gray-600 text-sm">
@@ -160,3 +143,4 @@ export function WelcomeMessage() {
     </div>
   );
 }
+</parameter>
