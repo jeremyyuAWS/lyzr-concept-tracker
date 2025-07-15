@@ -215,7 +215,7 @@ export function AmazingSearchBar({
                     "{searchTerm}"
                     <button
                       onClick={() => onSearchChange('')}
-                      className="ml-1 hover:text-blue-900"
+                      className="ml-1 hover:text-blue-900 bg-white rounded-full p-0.5 hover:bg-blue-50"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -228,7 +228,7 @@ export function AmazingSearchBar({
                     {selectedTag}
                     <button
                       onClick={() => onTagSelect(null)}
-                      className="ml-1 hover:text-green-900"
+                      className="ml-1 hover:text-green-900 bg-white rounded-full p-0.5 hover:bg-green-50"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -239,7 +239,7 @@ export function AmazingSearchBar({
                   variant="ghost"
                   size="sm"
                   onClick={onClearFilters}
-                  className="text-xs h-6 px-2 text-gray-500 hover:text-gray-700"
+                  className="text-xs h-6 px-2 text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-50"
                 >
                   Clear all
                 </Button>
@@ -267,7 +267,7 @@ export function AmazingSearchBar({
                       <button
                         key={index}
                         onClick={() => handleSearchSubmit(suggestion)}
-                        className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 group"
+                        className="w-full text-left px-3 py-2 rounded-lg bg-white hover:bg-gray-50 transition-colors flex items-center gap-2 group"
                       >
                         <Search className="w-4 h-4 text-gray-400 group-hover:text-blue-500" />
                         <span className="text-sm">{suggestion}</span>
@@ -290,7 +290,7 @@ export function AmazingSearchBar({
                       <button
                         key={index}
                         onClick={() => handleSearchSubmit(term)}
-                        className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 group"
+                        className="w-full text-left px-3 py-2 rounded-lg bg-white hover:bg-gray-50 transition-colors flex items-center gap-2 group"
                       >
                         <Clock className="w-4 h-4 text-gray-400" />
                         <span className="text-sm">{term}</span>
@@ -313,7 +313,7 @@ export function AmazingSearchBar({
                       <Badge
                         key={tag}
                         variant="outline"
-                        className="cursor-pointer hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors"
+                        className="cursor-pointer bg-white hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors"
                         onClick={() => {
                           onTagSelect(tag);
                           setShowSuggestions(false);
@@ -338,7 +338,7 @@ export function AmazingSearchBar({
                       <button
                         key={demo.id}
                         onClick={() => handleSearchSubmit(demo.title)}
-                        className="w-full text-left p-3 rounded-lg hover:bg-gray-50 transition-colors group"
+                        className="w-full text-left p-3 rounded-lg bg-white hover:bg-gray-50 transition-colors group"
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
