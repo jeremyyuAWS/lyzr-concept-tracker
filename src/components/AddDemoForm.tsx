@@ -292,13 +292,13 @@ export function AddDemoForm({ onSubmit, onSuccess }: AddDemoFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="admin_url" className="text-sm font-medium text-black">
-              Admin URL
+              Github URL
             </Label>
             <Input
               id="admin_url"
               value={formData.admin_url}
               onChange={(e) => handleInputChange('admin_url', e.target.value)}
-              placeholder="https://your-demo.netlify.app/admin"
+              placeholder="https://github.com/username/repo"
             />
           </div>
 
