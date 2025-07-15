@@ -50,6 +50,16 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
   const getVideoEmbedInfo = (url: string) => {
     if (!url) return null;
     
+    // Check if it's a Google Drive view URL
+    const googleDriveRegex = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)\/view/;
+    if (googleDriveRegex.test(url)) {
+      return {
+        type: 'google_drive_webpage',
+        embedUrl: url,
+        originalUrl: url
+      };
+    }
+    
     // Check if it's a Tella.tv URL
     const tellaRegex = /tella\.tv\/video\//;
     if (tellaRegex.test(url)) {
@@ -110,6 +120,10 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
     
     if (demo.video_url && videoInfo?.type === 'tella_webpage') {
       console.log('📹 Tella.tv URL for demo:', demo.title, demo.video_url);
+    }
+    
+    if (demo.video_url && videoInfo?.type === 'google_drive_webpage') {
+      console.log('📁 Google Drive URL for demo:', demo.title, demo.video_url);
     }
   }, [demo.video_url, demo.title]);
   const handleTryApp = async () => {
@@ -309,31 +323,36 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
         {/* Video Player */}
         {videoInfo && (
           <div className="mb-4">
-            {videoInfo.type === 'tella_webpage' ? (
-              // Tella.tv webpage - show preview with open button
+            {videoInfo.type === 'tella_webpage' || videoInfo.type === 'google_drive_webpage' ? (
+              // External webpage - show preview with open button
               <div className="relative aspect-video bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg overflow-hidden border-2 border-gray-200 flex items-center justify-center">
                 <div className="text-center p-6">
                   <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Play className="w-8 h-8 text-purple-600" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Video on Tella.tv</h3>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    {videoInfo.type === 'google_drive_webpage' ? 'Video on Google Drive' : 'Video on Tella.tv'}
+                  </h3>
                   <p className="text-sm text-gray-600 mb-4">
-                    This video is hosted on Tella.tv and will open in a new tab
+                    {videoInfo.type === 'google_drive_webpage' 
+                      ? 'This video is hosted on Google Drive and will open in a new tab'
+                      : 'This video is hosted on Tella.tv and will open in a new tab'
+                    }
                   </p>
                   <Button
                     onClick={() => window.open(demo.video_url, '_blank')}
                     className="bg-purple-600 hover:bg-purple-700 text-white"
                   >
                     <ExternalLink className="w-4 h-4 mr-2" />
-                    View on Tella.tv
+                    {videoInfo.type === 'google_drive_webpage' ? 'View on Google Drive' : 'View on Tella.tv'}
                   </Button>
                 </div>
                 
-                {/* Tella.tv Badge */}
+                {/* Platform Badge */}
                 <div className="absolute top-2 left-2">
                   <Badge className="bg-purple-600/90 text-white border-0">
                     <Play className="w-3 h-3 mr-1" />
-                    Tella.tv
+                    {videoInfo.type === 'google_drive_webpage' ? 'Google Drive' : 'Tella.tv'}
                   </Badge>
                 </div>
               </div>
