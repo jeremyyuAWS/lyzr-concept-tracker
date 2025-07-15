@@ -334,7 +334,7 @@ export function AnalyticsPanel({ demos }: AnalyticsPanelProps) {
                 variant={selectedTimeframe === timeframe ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setSelectedTimeframe(timeframe)}
-                className={`text-xs px-3 py-1 ${selectedTimeframe === timeframe ? 'bg-black text-white' : 'text-gray-600'}`}
+                className={`text-xs px-3 py-1 ${selectedTimeframe === timeframe ? 'bg-black text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
               >
                 {timeframe === 'all' ? 'All Time' : timeframe.toUpperCase()}
               </Button>
