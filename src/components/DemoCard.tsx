@@ -40,6 +40,7 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUpdatingFeatured, setIsUpdatingFeatured] = useState(false);
+  const [showScreenshotModal, setShowScreenshotModal] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoError, setVideoError] = useState<string | null>(null);
   const [videoLoading, setVideoLoading] = useState(false);
@@ -295,7 +296,9 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
               <img 
                 src={demo.screenshot_url} 
                 alt={demo.title}
-                className="w-16 h-16 object-cover rounded border border-gray-200"
+                className="w-16 h-16 object-cover rounded border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => setShowScreenshotModal(true)}
+                title="Click to view full size"
               />
             </div>
           )}
@@ -532,6 +535,43 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+
+    {/* Screenshot Zoom Modal */}
+    {showScreenshotModal && demo.screenshot_url && (
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200"
+        onClick={() => setShowScreenshotModal(false)}
+      >
+        <div className="relative max-w-4xl max-h-full">
+          {/* Close Button */}
+          <button
+            onClick={() => setShowScreenshotModal(false)}
+            className="absolute -top-10 right-0 text-white hover:text-gray-300 transition-colors z-10"
+            aria-label="Close screenshot"
+          >
+            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-black bg-opacity-50 hover:bg-opacity-70">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+          </button>
+          
+          {/* Screenshot Image */}
+          <img
+            src={demo.screenshot_url}
+            alt={demo.title}
+            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-300"
+            onClick={(e) => e.stopPropagation()}
+          />
+          
+          {/* Image Caption */}
+          <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white p-4 rounded-b-lg">
+            <h3 className="font-semibold text-lg">{demo.title}</h3>
+            <p className="text-gray-300 text-sm">{demo.owner} • {new Date(demo.created_at).toLocaleDateString()}</p>
+          </div>
+        </div>
+      </div>
+    )}
     </>
   );
 }
