@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +13,7 @@ import {
   TrendingUp, Users, Calendar, Eye, Target, Clock, Award, Activity, 
   Download, Filter, RefreshCw, Zap, Star, ArrowUp, ArrowDown,
   BarChart3, PieChart as PieChartIcon, LineChart as LineChartIcon,
-  Sparkles, Trophy, Flame, Crown, TrendingDown, DollarSign
+  Sparkles, Trophy, Flame, Crown, TrendingDown, DollarSign, LogIn, MousePointer
 } from 'lucide-react';
 
 interface AnalyticsPanelProps {
@@ -70,6 +71,7 @@ function ChartGradients() {
 }
 
 export function AnalyticsPanel({ demos }: AnalyticsPanelProps) {
+  const { isAdmin } = useAuth();
   const [selectedTimeframe, setSelectedTimeframe] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
   const [selectedChart, setSelectedChart] = useState<'views' | 'growth' | 'performance'>('views');
   const [showExportMenu, setShowExportMenu] = useState(false);
@@ -209,6 +211,70 @@ export function AnalyticsPanel({ demos }: AnalyticsPanelProps) {
   const leaderboard = Object.values(ownerStats)
     .sort((a: any, b: any) => b.totalViews - a.totalViews)
     .slice(0, 8);
+
+  // Mock engagement data for non-admin users
+  const engagementLeaderboard = [
+    {
+      user: 'Sarah Chen',
+      role: 'Account Executive',
+      logins: 24,
+      demosViewed: 45,
+      totalEngagement: 1250,
+      lastActive: '2 hours ago',
+      favoriteTag: 'AI',
+      streak: 7
+    },
+    {
+      user: 'Mike Rodriguez',
+      role: 'Sales Director',
+      logins: 18,
+      demosViewed: 32,
+      totalEngagement: 980,
+      lastActive: '1 day ago',
+      favoriteTag: 'Analytics',
+      streak: 5
+    },
+    {
+      user: 'Jennifer Park',
+      role: 'Solutions Engineer',
+      logins: 22,
+      demosViewed: 38,
+      totalEngagement: 1150,
+      lastActive: '4 hours ago',
+      favoriteTag: 'E-commerce',
+      streak: 12
+    },
+    {
+      user: 'Alex Thompson',
+      role: 'Account Executive',
+      logins: 15,
+      demosViewed: 28,
+      totalEngagement: 720,
+      lastActive: '6 hours ago',
+      favoriteTag: 'Dashboard',
+      streak: 3
+    },
+    {
+      user: 'Emma Wilson',
+      role: 'Customer Success',
+      logins: 19,
+      demosViewed: 41,
+      totalEngagement: 1050,
+      lastActive: '3 hours ago',
+      favoriteTag: 'Productivity',
+      streak: 8
+    },
+    {
+      user: 'David Kim',
+      role: 'Sales Engineer',
+      logins: 16,
+      demosViewed: 29,
+      totalEngagement: 850,
+      lastActive: '1 hour ago',
+      favoriteTag: 'Real-time',
+      streak: 4
+    }
+  ].sort((a, b) => b.totalEngagement - a.totalEngagement);
 
   const CHART_COLORS = {
     primary: '#000000',
@@ -673,62 +739,129 @@ export function AnalyticsPanel({ demos }: AnalyticsPanelProps) {
           </CardContent>
         </Card>
 
-        {/* Owner Leaderboard */}
+        {/* Owner Leaderboard (Admin) / Engagement Leaderboard (Non-Admin) */}
         <Card className="border-0 shadow-xl">
           <CardHeader>
             <CardTitle className="text-xl font-semibold text-black flex items-center gap-2">
-              <Crown className="w-6 h-6 text-yellow-600" />
-              Creator Leaderboard
+              {isAdmin ? (
+                <>
+                  <Crown className="w-6 h-6 text-yellow-600" />
+                  Creator Leaderboard
+                </>
+              ) : (
+                <>
+                  <Activity className="w-6 h-6 text-blue-600" />
+                  Logins & Engagement Leaderboard
+                </>
+              )}
             </CardTitle>
-            <CardDescription>Top performers by total engagement</CardDescription>
+            <CardDescription>
+              {isAdmin ? 'Top performers by total engagement' : 'Most active team members using the platform'}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {leaderboard.map((owner: any, index) => (
-                <div 
-                  key={owner.owner} 
-                  className="flex items-center gap-4 p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-100 hover:shadow-md transition-all duration-200"
-                >
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-black to-gray-600 text-white font-bold">
-                    {index + 1}
-                  </div>
-                  
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <h4 className="font-semibold text-black">{owner.owner}</h4>
-                      <div className="flex items-center gap-2">
-                        {owner.featured > 0 && (
-                          <Badge className="bg-yellow-100 text-yellow-800 text-xs">
-                            <Star className="w-3 h-3 mr-1" />
-                            {owner.featured}
+              {isAdmin ? (
+                // Admin view - Creator Leaderboard
+                leaderboard.map((owner: any, index) => (
+                  <div 
+                    key={owner.owner} 
+                    className="flex items-center gap-4 p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-100 hover:shadow-md transition-all duration-200"
+                  >
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-black to-gray-600 text-white font-bold">
+                      {index + 1}
+                    </div>
+                    
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <h4 className="font-semibold text-black">{owner.owner}</h4>
+                        <div className="flex items-center gap-2">
+                          {owner.featured > 0 && (
+                            <Badge className="bg-yellow-100 text-yellow-800 text-xs">
+                              <Star className="w-3 h-3 mr-1" />
+                              {owner.featured}
+                            </Badge>
+                          )}
+                          <Badge className="bg-black text-white text-xs">
+                            {owner.totalViews.toLocaleString()} views
                           </Badge>
-                        )}
-                        <Badge className="bg-black text-white text-xs">
-                          {owner.totalViews.toLocaleString()} views
-                        </Badge>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between text-sm text-gray-600">
+                        <span>{owner.demos} demos • {owner.avgViews.toLocaleString()} avg views</span>
+                      </div>
+                      
+                      <div className="text-xs text-gray-500 mt-1">
+                        Best: {owner.bestDemo.title.substring(0, 30)}
+                        {owner.bestDemo.title.length > 30 ? '...' : ''}
+                      </div>
+                      
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div 
+                          className="bg-gradient-to-r from-black to-gray-600 h-2 rounded-full transition-all duration-1000"
+                          style={{ 
+                            width: `${Math.min((owner.totalViews / Math.max(...leaderboard.map((o: any) => o.totalViews))) * 100, 100)}%` 
+                          }}
+                        />
                       </div>
                     </div>
-                    
-                    <div className="flex items-center justify-between text-sm text-gray-600">
-                      <span>{owner.demos} demos • {owner.avgViews.toLocaleString()} avg views</span>
+                  </div>
+                ))
+              ) : (
+                // Non-admin view - Engagement Leaderboard
+                engagementLeaderboard.map((user, index) => (
+                  <div 
+                    key={user.user} 
+                    className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-white rounded-xl border border-blue-100 hover:shadow-md transition-all duration-200"
+                  >
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-blue-800 text-white font-bold">
+                      {index + 1}
                     </div>
                     
-                    <div className="text-xs text-gray-500 mt-1">
-                      Best: {owner.bestDemo.title.substring(0, 30)}
-                      {owner.bestDemo.title.length > 30 ? '...' : ''}
-                    </div>
-                    
-                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                      <div 
-                        className="bg-gradient-to-r from-black to-gray-600 h-2 rounded-full transition-all duration-1000"
-                        style={{ 
-                          width: `${Math.min((owner.totalViews / Math.max(...leaderboard.map((o: any) => o.totalViews))) * 100, 100)}%` 
-                        }}
-                      />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <div>
+                          <h4 className="font-semibold text-black">{user.user}</h4>
+                          <p className="text-xs text-gray-500">{user.role}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-blue-100 text-blue-800 text-xs">
+                            <LogIn className="w-3 h-3 mr-1" />
+                            {user.logins} logins
+                          </Badge>
+                          <Badge className="bg-green-100 text-green-800 text-xs">
+                            <MousePointer className="w-3 h-3 mr-1" />
+                            {user.demosViewed} views
+                          </Badge>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+                        <span>Engagement: {user.totalEngagement.toLocaleString()} pts</span>
+                        <span className="text-xs">Last active: {user.lastActive}</span>
+                      </div>
+                      
+                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                        <span>Favorite: {user.favoriteTag}</span>
+                        <div className="flex items-center gap-1">
+                          <Flame className="w-3 h-3 text-orange-500" />
+                          <span>{user.streak} day streak</span>
+                        </div>
+                      </div>
+                      
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div 
+                          className="bg-gradient-to-r from-blue-600 to-blue-800 h-2 rounded-full transition-all duration-1000"
+                          style={{ 
+                            width: `${Math.min((user.totalEngagement / Math.max(...engagementLeaderboard.map(u => u.totalEngagement))) * 100, 100)}%` 
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
