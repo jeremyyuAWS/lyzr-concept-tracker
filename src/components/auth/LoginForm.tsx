@@ -87,7 +87,7 @@ export function LoginForm() {
               )}
             
               <div className="space-y-3">
-                <Label htmlFor="email" className="text-sm font-medium text-black block text-left">
+                <Label htmlFor="email" className="text-sm font-medium text-black block text-center">
                   Email
                 </Label>
                 <Input
@@ -98,13 +98,13 @@ export function LoginForm() {
                   placeholder="Enter your email"
                   required
                   disabled={isLoading}
-                  className="text-left h-12 text-base"
+                  className="text-center h-12 text-base"
                 />
               </div>
 
               {isSignUp && (
                 <div className="space-y-3">
-                  <Label htmlFor="displayName" className="text-sm font-medium text-black block text-left">
+                  <Label htmlFor="displayName" className="text-sm font-medium text-black block text-center">
                     Display Name
                   </Label>
                   <Input
@@ -113,13 +113,13 @@ export function LoginForm() {
                     onChange={(e) => handleInputChange('displayName', e.target.value)}
                     placeholder="Enter your display name"
                     disabled={isLoading}
-                    className="text-left h-12 text-base"
+                    className="text-center h-12 text-base"
                   />
                 </div>
               )}
 
               <div className="space-y-3">
-                <Label htmlFor="password" className="text-sm font-medium text-black block text-left">
+                <Label htmlFor="password" className="text-sm font-medium text-black block text-center">
                   Password
                 </Label>
                 <Input
@@ -131,7 +131,7 @@ export function LoginForm() {
                   required
                   disabled={isLoading}
                   minLength={6}
-                  className="text-left h-12 text-base"
+                  className="text-center h-12 text-base"
                 />
               </div>
 
