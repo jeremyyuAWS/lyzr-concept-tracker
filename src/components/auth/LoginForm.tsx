@@ -54,9 +54,9 @@ export function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md mx-auto">
-        <Card className="w-full shadow-xl border-0">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="w-full">
+        <Card className="w-full shadow-xl border-0 max-w-none">
           <CardHeader className="text-center pb-6">
             <div className="flex items-center justify-center mb-6">
               <img 
@@ -76,7 +76,7 @@ export function LoginForm() {
             </CardDescription>
           </CardHeader>
         
-          <CardContent className="px-8 pb-8">
+          <CardContent className="px-4 sm:px-8 lg:px-16 xl:px-32 pb-8">
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
                 <Alert className="border-red-200 bg-red-50">
@@ -87,7 +87,7 @@ export function LoginForm() {
               )}
             
               <div className="space-y-3">
-                <Label htmlFor="email" className="text-sm font-medium text-black block text-center">
+                <Label htmlFor="email" className="text-lg font-medium text-black block text-center">
                   Email
                 </Label>
                 <Input
@@ -98,13 +98,13 @@ export function LoginForm() {
                   placeholder="Enter your email"
                   required
                   disabled={isLoading}
-                  className="text-center h-12 text-base"
+                  className="text-center h-14 text-lg max-w-md mx-auto"
                 />
               </div>
 
               {isSignUp && (
                 <div className="space-y-3">
-                  <Label htmlFor="displayName" className="text-sm font-medium text-black block text-center">
+                  <Label htmlFor="displayName" className="text-lg font-medium text-black block text-center">
                     Display Name
                   </Label>
                   <Input
@@ -113,13 +113,13 @@ export function LoginForm() {
                     onChange={(e) => handleInputChange('displayName', e.target.value)}
                     placeholder="Enter your display name"
                     disabled={isLoading}
-                    className="text-center h-12 text-base"
+                    className="text-center h-14 text-lg max-w-md mx-auto"
                   />
                 </div>
               )}
 
               <div className="space-y-3">
-                <Label htmlFor="password" className="text-sm font-medium text-black block text-center">
+                <Label htmlFor="password" className="text-lg font-medium text-black block text-center">
                   Password
                 </Label>
                 <Input
@@ -131,13 +131,13 @@ export function LoginForm() {
                   required
                   disabled={isLoading}
                   minLength={6}
-                  className="text-center h-12 text-base"
+                  className="text-center h-14 text-lg max-w-md mx-auto"
                 />
               </div>
 
               <Button
                 type="submit"
-                className="w-full bg-black hover:bg-blue-600 text-white mt-8 h-12 text-base"
+                className="w-full max-w-md mx-auto bg-black hover:bg-blue-600 text-white mt-8 h-14 text-lg block"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -167,7 +167,7 @@ export function LoginForm() {
               <button
                 type="button"
                 onClick={() => setIsSignUp(!isSignUp)}
-                className="text-sm text-gray-600 hover:text-gray-800 underline"
+                className="text-base text-gray-600 hover:text-gray-800 underline"
                 disabled={isLoading}
               >
                 {isSignUp 
@@ -178,7 +178,7 @@ export function LoginForm() {
             </div>
 
             <div className="mt-8 p-6 bg-gray-50 rounded-lg">
-              <p className="text-xs text-gray-600 text-center">
+              <p className="text-sm text-gray-600 text-center max-w-2xl mx-auto">
                 <strong>Admin Users:</strong> jeremy@lyzr.ai and admin@lyzr.ai get automatic admin access.
                 <br />
                 <strong>Test Users:</strong> Any email can create an account with standard access.
