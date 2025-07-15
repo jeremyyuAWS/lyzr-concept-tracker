@@ -686,7 +686,7 @@ export function AnalyticsPanel({ demos }: AnalyticsPanelProps) {
       </div>
 
       {/* Technology Trends and Owner Leaderboard */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+      <div className={`grid gap-8 ${isAdmin ? 'grid-cols-1 xl:grid-cols-3' : 'grid-cols-1 xl:grid-cols-2'}`}>
         {/* Technology Trends */}
         <Card className="border-0 shadow-xl">
           <CardHeader>
@@ -739,31 +739,19 @@ export function AnalyticsPanel({ demos }: AnalyticsPanelProps) {
           </CardContent>
         </Card>
 
-        {/* Owner Leaderboard (Admin) / Engagement Leaderboard (Non-Admin) */}
-        <Card className="border-0 shadow-xl">
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold text-black flex items-center gap-2">
-              {isAdmin ? (
-                <>
-                  <Crown className="w-6 h-6 text-yellow-600" />
-                  Creator Leaderboard
-                </>
-              ) : (
-                <>
-                  <Activity className="w-6 h-6 text-blue-600" />
-                  Logins & Engagement Leaderboard
-                </>
-              )}
-            </CardTitle>
-            <CardDescription>
-              {isAdmin ? 'Top performers by total engagement' : 'Most active team members using the platform'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {isAdmin ? (
-                // Admin view - Creator Leaderboard
-                leaderboard.map((owner: any, index) => (
+        {/* Creator Leaderboard (Admin Only) */}
+        {isAdmin && (
+          <Card className="border-0 shadow-xl">
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold text-black flex items-center gap-2">
+                <Crown className="w-6 h-6 text-yellow-600" />
+                Creator Leaderboard
+              </CardTitle>
+              <CardDescription>Top performers by total engagement</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {leaderboard.map((owner: any, index) => (
                   <div 
                     key={owner.owner} 
                     className="flex items-center gap-4 p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-100 hover:shadow-md transition-all duration-200"
@@ -807,61 +795,76 @@ export function AnalyticsPanel({ demos }: AnalyticsPanelProps) {
                       </div>
                     </div>
                   </div>
-                ))
-              ) : (
-                // Non-admin view - Engagement Leaderboard
-                engagementLeaderboard.map((user, index) => (
-                  <div 
-                    key={user.user} 
-                    className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-white rounded-xl border border-blue-100 hover:shadow-md transition-all duration-200"
-                  >
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-blue-800 text-white font-bold">
-                      {index + 1}
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* User Engagement Leaderboard (Always Shown) */}
+        <Card className="border-0 shadow-xl">
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold text-black flex items-center gap-2">
+              <Activity className="w-6 h-6 text-blue-600" />
+              Team Engagement Leaderboard
+            </CardTitle>
+            <CardDescription>
+              Most active team members using the platform
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {engagementLeaderboard.map((user, index) => (
+                <div 
+                  key={user.user} 
+                  className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-white rounded-xl border border-blue-100 hover:shadow-md transition-all duration-200"
+                >
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-blue-800 text-white font-bold">
+                    {index + 1}
+                  </div>
+                  
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <div>
+                        <h4 className="font-semibold text-black">{user.user}</h4>
+                        <p className="text-xs text-gray-500">{user.role}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-blue-100 text-blue-800 text-xs">
+                          <LogIn className="w-3 h-3 mr-1" />
+                          {user.logins} logins
+                        </Badge>
+                        <Badge className="bg-green-100 text-green-800 text-xs">
+                          <MousePointer className="w-3 h-3 mr-1" />
+                          {user.demosViewed} views
+                        </Badge>
+                      </div>
                     </div>
                     
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <div>
-                          <h4 className="font-semibold text-black">{user.user}</h4>
-                          <p className="text-xs text-gray-500">{user.role}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge className="bg-blue-100 text-blue-800 text-xs">
-                            <LogIn className="w-3 h-3 mr-1" />
-                            {user.logins} logins
-                          </Badge>
-                          <Badge className="bg-green-100 text-green-800 text-xs">
-                            <MousePointer className="w-3 h-3 mr-1" />
-                            {user.demosViewed} views
-                          </Badge>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-                        <span>Engagement: {user.totalEngagement.toLocaleString()} pts</span>
-                        <span className="text-xs">Last active: {user.lastActive}</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-4 text-xs text-gray-500">
-                        <span>Favorite: {user.favoriteTag}</span>
-                        <div className="flex items-center gap-1">
-                          <Flame className="w-3 h-3 text-orange-500" />
-                          <span>{user.streak} day streak</span>
-                        </div>
-                      </div>
-                      
-                      <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                        <div 
-                          className="bg-gradient-to-r from-blue-600 to-blue-800 h-2 rounded-full transition-all duration-1000"
-                          style={{ 
-                            width: `${Math.min((user.totalEngagement / Math.max(...engagementLeaderboard.map(u => u.totalEngagement))) * 100, 100)}%` 
-                          }}
-                        />
+                    <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+                      <span>Engagement: {user.totalEngagement.toLocaleString()} pts</span>
+                      <span className="text-xs">Last active: {user.lastActive}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                      <span>Favorite: {user.favoriteTag}</span>
+                      <div className="flex items-center gap-1">
+                        <Flame className="w-3 h-3 text-orange-500" />
+                        <span>{user.streak} day streak</span>
                       </div>
                     </div>
+                    
+                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                      <div 
+                        className="bg-gradient-to-r from-blue-600 to-blue-800 h-2 rounded-full transition-all duration-1000"
+                        style={{ 
+                          width: `${Math.min((user.totalEngagement / Math.max(...engagementLeaderboard.map(u => u.totalEngagement))) * 100, 100)}%` 
+                        }}
+                      />
+                    </div>
                   </div>
-                ))
-              )}
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
