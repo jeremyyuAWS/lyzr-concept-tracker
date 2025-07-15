@@ -492,6 +492,7 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
                   size="sm"
                   onClick={() => window.open(demo.excalidraw_url, '_blank')}
                   className="p-2 border-gray-300 hover:border-gray-400 bg-gray-50 hover:bg-gray-100"
+                  title="Link to Excalidraw"
                 >
                   <FileText className="w-4 h-4" />
                 </Button>
@@ -503,6 +504,7 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
                   size="sm"
                   onClick={() => window.open(demo.supabase_url, '_blank')}
                   className="p-2 border-gray-300 hover:border-gray-400 bg-gray-50 hover:bg-gray-100"
+                  title="Link to Supabase"
                 >
                   <Database className="w-4 h-4" />
                 </Button>
@@ -514,6 +516,7 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
                   size="sm"
                   onClick={() => window.open(demo.admin_url, '_blank')}
                   className="p-2 border-gray-300 hover:border-gray-400 bg-gray-50 hover:bg-gray-100"
+                  title="Link to Admin Panel"
                 >
                   <Shield className="w-4 h-4" />
                 </Button>
