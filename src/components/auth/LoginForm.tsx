@@ -68,7 +68,7 @@ export function LoginForm() {
                   className="w-20 h-20 object-contain"
                 />
               </div>
-              <CardTitle className="text-2xl font-bold text-black mb-2">
+              <CardTitle className="text-xl font-bold text-black mb-2">
                 {isSignUp ? 'Create Account' : 'Sign In'}
               </CardTitle>
               <CardDescription className="text-gray-600">
@@ -90,7 +90,7 @@ export function LoginForm() {
                 )}
               
                 <div className="space-y-3">
-                  <Label htmlFor="email" className="text-lg font-medium text-black block text-center">
+                  <Label htmlFor="email" className="text-sm font-medium text-black block text-center">
                     Email
                   </Label>
                   <Input
@@ -101,13 +101,13 @@ export function LoginForm() {
                     placeholder="Enter your email"
                     required
                     disabled={isLoading}
-                    className="text-center h-14 text-lg"
+                    className="text-center h-12 text-sm"
                   />
                 </div>
 
                 {isSignUp && (
                   <div className="space-y-3">
-                    <Label htmlFor="displayName" className="text-lg font-medium text-black block text-center">
+                    <Label htmlFor="displayName" className="text-sm font-medium text-black block text-center">
                       Display Name
                     </Label>
                     <Input
@@ -116,13 +116,13 @@ export function LoginForm() {
                       onChange={(e) => handleInputChange('displayName', e.target.value)}
                       placeholder="Enter your display name"
                       disabled={isLoading}
-                      className="text-center h-14 text-lg"
+                      className="text-center h-12 text-sm"
                     />
                   </div>
                 )}
 
                 <div className="space-y-3">
-                  <Label htmlFor="password" className="text-lg font-medium text-black block text-center">
+                  <Label htmlFor="password" className="text-sm font-medium text-black block text-center">
                     Password
                   </Label>
                   <Input
@@ -134,13 +134,13 @@ export function LoginForm() {
                     required
                     disabled={isLoading}
                     minLength={6}
-                    className="text-center h-14 text-lg"
+                    className="text-center h-12 text-sm"
                   />
                 </div>
 
                 <Button
                   type="submit"
-                  className="w-full bg-black hover:bg-blue-600 text-white mt-8 h-14 text-lg"
+                  className="w-full bg-black hover:bg-blue-600 text-white mt-8 h-12 text-sm"
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -170,7 +170,7 @@ export function LoginForm() {
                 <button
                   type="button"
                   onClick={() => setIsSignUp(!isSignUp)}
-                  className="text-base text-gray-600 hover:text-gray-800 underline"
+                  className="text-sm text-gray-600 hover:text-gray-800 underline"
                   disabled={isLoading}
                 >
                   {isSignUp 
