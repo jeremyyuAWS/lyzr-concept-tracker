@@ -306,7 +306,7 @@ export function DemoEditModal({ demo, isOpen, onClose, onSuccess }: DemoEditModa
                   id="is_featured"
                   checked={formData.is_featured}
                   onCheckedChange={(checked) => handleInputChange('is_featured', checked as boolean)}
-                  className="featured-checkbox data-[state=checked]:bg-white data-[state=checked]:border-gray-800 data-[state=checked]:text-gray-800 border-2 border-gray-400 rounded-none h-5 w-5 relative"
+                  className="featured-checkbox bg-white data-[state=checked]:bg-white data-[state=checked]:border-gray-800 data-[state=checked]:text-gray-800 border-2 border-gray-400 rounded-none h-5 w-5 relative"
                 />
                 <div className="flex-1 cursor-pointer" onClick={() => handleInputChange('is_featured', !formData.is_featured)}>
                   <Label htmlFor="is_featured" className="text-sm font-medium text-black cursor-pointer pointer-events-none">
