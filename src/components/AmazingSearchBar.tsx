@@ -319,7 +319,7 @@ export function AmazingSearchBar({
                             : 'bg-white hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 hover:shadow-sm'
                         }`}
                         onClick={() => {
-                          onTagSelect(tag);
+                          onTagSelect(selectedTag === tag ? null : tag);
                           setShowSuggestions(false);
                         }}
                       >
