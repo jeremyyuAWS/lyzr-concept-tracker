@@ -6,7 +6,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Grid, List, Filter } from 'lucide-react';
+import { Grid, List, Filter, Search } from 'lucide-react';
 
 interface CatalogTabProps {
   demos: Demo[];
