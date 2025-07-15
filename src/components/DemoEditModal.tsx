@@ -11,6 +11,20 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Edit3, Loader2, Save } from 'lucide-react';
 import { toast } from 'sonner';
 
+// Helper function to convert GitHub blob URLs to raw format
+const convertGitHubUrl = (url: string): { convertedUrl: string; wasConverted: boolean } => {
+  const githubBlobRegex = /^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/(.+)$/;
+  const match = url.match(githubBlobRegex);
+  
+  if (match) {
+    const [, username, repo, pathWithBranch] = match;
+    const convertedUrl = `https://raw.githubusercontent.com/${username}/${repo}/${pathWithBranch}`;
+    return { convertedUrl, wasConverted: true };
+  }
+  
+  return { convertedUrl: url, wasConverted: false };
+};
+
 interface DemoEditModalProps {
   demo: Demo;
   isOpen: boolean;
@@ -113,6 +127,17 @@ export function DemoEditModal({ demo, isOpen, onClose, onSuccess }: DemoEditModa
 
   const handleInputChange = (field: keyof typeof formData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Auto-convert GitHub URLs for screenshot_url
+    if (field === 'screenshot_url' && typeof value === 'string' && value.includes('github.com')) {
+      const { convertedUrl, wasConverted } = convertGitHubUrl(value);
+      if (wasConverted) {
+        setFormData(prev => ({ ...prev, [field]: convertedUrl }));
+        toast.success('GitHub URL automatically converted to raw format!', {
+          description: 'The GitHub blob URL has been converted for direct image access.',
+        });
+      }
+    }
     
     // Clear error when user starts typing
     if (errors[field]) {

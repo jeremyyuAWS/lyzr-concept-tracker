@@ -12,6 +12,20 @@ import { DemoFormData } from '@/types/demo';
 import { Plus, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+// Helper function to convert GitHub blob URLs to raw format
+const convertGitHubUrl = (url: string): { convertedUrl: string; wasConverted: boolean } => {
+  const githubBlobRegex = /^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/(.+)$/;
+  const match = url.match(githubBlobRegex);
+  
+  if (match) {
+    const [, username, repo, pathWithBranch] = match;
+    const convertedUrl = `https://raw.githubusercontent.com/${username}/${repo}/${pathWithBranch}`;
+    return { convertedUrl, wasConverted: true };
+  }
+  
+  return { convertedUrl: url, wasConverted: false };
+};
+
 interface AddDemoFormProps {
   onSubmit: (data: DemoFormData) => Promise<void>;
   onSuccess?: () => void;
@@ -142,6 +156,17 @@ export function AddDemoForm({ onSubmit, onSuccess }: AddDemoFormProps) {
 
   const handleInputChange = (field: keyof DemoFormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Auto-convert GitHub URLs for screenshot_url
+    if (field === 'screenshot_url' && typeof value === 'string' && value.includes('github.com')) {
+      const { convertedUrl, wasConverted } = convertGitHubUrl(value);
+      if (wasConverted) {
+        setFormData(prev => ({ ...prev, [field]: convertedUrl }));
+        toast.success('GitHub URL automatically converted to raw format!', {
+          description: 'The GitHub blob URL has been converted for direct image access.',
+        });
+      }
+    }
     
     // Clear error when user starts typing
     if (errors[field]) {
