@@ -135,3 +135,20 @@ button:focus-visible {
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom checkbox styling for featured demo */
+.featured-checkbox[data-state="checked"] svg {
+  display: none;
+}
+
+.featured-checkbox[data-state="checked"]::after {
+  content: "✕";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  font-weight: bold;
+  color: #1f2937;
+  line-height: 1;
+}
