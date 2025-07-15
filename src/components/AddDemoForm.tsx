@@ -252,13 +252,13 @@ export function AddDemoForm({ onSubmit, onSuccess }: AddDemoFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="netlify_url" className="text-sm font-medium text-black">
-              Netlify URL *
+              Demo App URL *
             </Label>
             <Input
               id="netlify_url"
               value={formData.netlify_url}
               onChange={(e) => handleInputChange('netlify_url', e.target.value)}
-              placeholder="https://your-demo.netlify.app"
+              placeholder="https://your-demo-app.netlify.app"
               className={errors.netlify_url ? 'border-red-500' : ''}
             />
             {errors.netlify_url && <p className="text-red-500 text-xs">{errors.netlify_url}</p>}
