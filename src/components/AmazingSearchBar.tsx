@@ -313,7 +313,11 @@ export function AmazingSearchBar({
                       <Badge
                         key={tag}
                         variant="outline"
-                        className="cursor-pointer bg-white hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors"
+                        className={`cursor-pointer transition-all duration-200 ${
+                          selectedTag === tag
+                            ? 'bg-black text-white border-black shadow-md'
+                            : 'bg-white hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 hover:shadow-sm'
+                        }`}
                         onClick={() => {
                           onTagSelect(tag);
                           setShowSuggestions(false);
