@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Demo } from '@/types/demo';
 import { DemoCard } from '@/components/DemoCard';
+import { AmazingSearchBar } from '@/components/AmazingSearchBar';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorMessage } from '@/components/ErrorMessage';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Search, Grid, List, Filter } from 'lucide-react';
+import { Grid, List, Filter } from 'lucide-react';
 
 interface CatalogTabProps {
   demos: Demo[];
@@ -77,16 +77,18 @@ export function CatalogTab({ demos, loading, error, onViewIncrement, onDemoUpdat
 
   return (
     <div className="w-full space-y-6">
+      {/* Amazing Search Bar */}
+      <AmazingSearchBar
+        demos={demos}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        selectedTag={selectedTag}
+        onTagSelect={setSelectedTag}
+        onClearFilters={clearFilters}
+      />
+      
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            placeholder="Search demos..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
+        <div className="flex-1" />
         
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1 border border-gray-300 rounded-lg p-1">
