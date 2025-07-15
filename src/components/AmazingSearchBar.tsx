@@ -310,21 +310,20 @@ export function AmazingSearchBar({
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {popularTags.map((tag) => (
-                      <Badge
+                      <button
                         key={tag}
-                        variant="outline"
-                        className={`cursor-pointer transition-all duration-200 ${
-                          selectedTag === tag
-                            ? 'bg-black text-white border-black shadow-md'
-                            : 'bg-white hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 hover:shadow-sm'
-                        }`}
                         onClick={() => {
                           onTagSelect(selectedTag === tag ? null : tag);
                           setShowSuggestions(false);
                         }}
+                        className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-all duration-200 border ${
+                          selectedTag === tag
+                            ? 'bg-black text-white border-black shadow-md'
+                            : 'bg-white hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 hover:shadow-sm border-gray-200'
+                        }`}
                       >
                         {tag}
-                      </Badge>
+                      </button>
                     ))}
                   </div>
                 </div>
