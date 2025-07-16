@@ -16,20 +16,108 @@ import { AdminTab } from '@/tabs/AdminTab';
 import { Demo } from '@/types/demo';
 import { Cat as Catalog, Plus, BarChart3, Shield, HelpCircle, Sparkles } from 'lucide-react';
 
+// Production error boundary component
+class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: any}> {
+  constructor(props: {children: React.ReactNode}) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error('Production Error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-white flex items-center justify-center p-4">
+          <div className="text-center max-w-md">
+            <div className="text-red-600 mb-4">
+              <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.314 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Application Error</h2>
+            <p className="text-gray-600 mb-4">Something went wrong. Please try refreshing the page.</p>
+            <div className="bg-gray-100 p-3 rounded text-left text-sm font-mono mb-4">
+              <p className="text-red-600">Error: {this.state.error?.message || 'Unknown error'}</p>
+            </div>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
+            >
+              Refresh Page
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+// Environment variables validation
+const validateEnvironment = () => {
+  const requiredVars = {
+    VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
+    VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY
+  };
+
+  const missing = Object.entries(requiredVars)
+    .filter(([key, value]) => !value)
+    .map(([key]) => key);
+
+  if (missing.length > 0) {
+    console.error('Missing environment variables:', missing);
+    return false;
+  }
+
+  return true;
+};
+
 function AppContent() {
   const { user, loading: authLoading } = useAuth();
   const { demos, loading, error, incrementPageViews, updateDemo, deleteDemo, refetch } = useDemos();
   const [activeTab, setActiveTab] = useState('featured');
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [dbSetup, setDbSetup] = useState<boolean | null>(null);
+  const [envValid, setEnvValid] = useState<boolean | null>(null);
+
+  // Validate environment on mount
+  useEffect(() => {
+    console.log('🔍 Validating environment variables...');
+    const isValid = validateEnvironment();
+    setEnvValid(isValid);
+    
+    if (!isValid) {
+      console.error('❌ Environment validation failed');
+      return;
+    }
+    
+    console.log('✅ Environment variables validated');
+  }, []);
 
   // Setup database on app load
   useEffect(() => {
-    verifyDatabaseSetup().then(result => {
-      console.log('Database verification result:', result);
-      setDbSetup(result.success);
-    });
+    if (envValid) {
+      console.log('🔍 Verifying database setup...');
+      verifyDatabaseSetup()
+        .then(result => {
+          console.log('Database verification result:', result);
+          setDbSetup(result.success);
+        })
+        .catch(error => {
+          console.error('Database verification failed:', error);
+          setDbSetup(false);
+        });
+    }
   }, []);
+
   // Show welcome modal on first load
   useEffect(() => {
     const hasSeenWelcome = localStorage.getItem('lyzr-welcome-seen');
@@ -48,14 +136,46 @@ function AppContent() {
   };
 
   // Show loading state first
-  if (authLoading || dbSetup === null) {
+  if (authLoading || dbSetup === null || envValid === null) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
           <p className="text-gray-600">
-            {dbSetup === null ? 'Setting up database...' : 'Loading...'}
+            {envValid === null ? 'Checking environment...' : 
+             dbSetup === null ? 'Setting up database...' : 
+             'Loading...'}
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show environment error
+  if (envValid === false) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-6">
+          <div className="text-red-600 mb-4">
+            <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.314 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Environment Configuration Error</h2>
+          <p className="text-gray-600 mb-4">
+            Required environment variables are missing. Please check:
+          </p>
+          <div className="bg-gray-100 p-3 rounded text-left text-sm font-mono">
+            <p>1. VITE_SUPABASE_URL is set</p>
+            <p>2. VITE_SUPABASE_ANON_KEY is set</p>
+            <p>3. Variables are deployed to Netlify</p>
+          </div>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
@@ -91,6 +211,7 @@ function AppContent() {
       </div>
     );
   }
+
   // Show login form if not authenticated
   if (!user) {
     return <LoginForm />;
@@ -223,9 +344,11 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 
