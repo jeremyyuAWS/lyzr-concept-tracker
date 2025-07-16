@@ -107,12 +107,21 @@ function AppContent() {
   useEffect(() => {
     if (envValid) {
       console.log('🔍 Verifying database setup...');
+      
+      // Add a timeout for the entire setup process
+      const setupTimeout = setTimeout(() => {
+        console.error('❌ Database setup timeout - taking too long');
+        setDbSetup(false);
+      }, 15000); // 15 second timeout
+      
       verifyDatabaseSetup()
         .then(result => {
+          clearTimeout(setupTimeout);
           console.log('Database verification result:', result);
           setDbSetup(result.success);
         })
         .catch(error => {
+          clearTimeout(setupTimeout);
           console.error('Database verification failed:', error);
           setDbSetup(false);
         });
@@ -146,6 +155,11 @@ function AppContent() {
             {envValid === null ? 'Checking environment...' : 
              dbSetup === null ? 'Setting up database...' : 
              'Loading...'}
+          </p>
+          <p className="text-xs text-gray-500 mt-2">
+            {envValid === null ? 'Validating configuration' : 
+             dbSetup === null ? 'Connecting to database and verifying setup' : 
+             'Please wait'}
           </p>
         </div>
       </div>
