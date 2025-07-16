@@ -894,13 +894,13 @@ export function AnalyticsPanel({ demos }: AnalyticsPanelProps) {
                       <div 
                         className="bg-gradient-to-r from-blue-600 to-blue-800 h-2 rounded-full transition-all duration-1000"
                         style={{ 
-                          width: `${Math.min((user.totalEngagement / Math.max(...engagementLeaderboard.map(u => u.totalEngagement))) * 100, 100)}%` 
+                          width: `${Math.min((user.totalEngagement / Math.max(...engagementUsers.map(u => u.totalEngagement))) * 100, 100)}%` 
                         }}
                       />
                     </div>
                   </div>
                 </div>
-              ))}
+              ))
               )}
             </div>
           </CardContent>
