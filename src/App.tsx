@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
-import { verifyDatabaseSetup } from '@/lib/verifySetup';
+import { verifyDatabaseSetup, skipDatabaseVerification } from '@/lib/verifySetup';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { UserMenu } from '@/components/auth/UserMenu';
 import { WelcomeModal } from '@/components/WelcomeModal';
@@ -88,6 +88,7 @@ function AppContent() {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [dbSetup, setDbSetup] = useState<boolean | null>(null);
   const [envValid, setEnvValid] = useState<boolean | null>(null);
+  const [skipVerification, setSkipVerification] = useState(false);
 
   // Validate environment on mount
   useEffect(() => {
@@ -108,11 +109,12 @@ function AppContent() {
     if (envValid) {
       console.log('🔍 Verifying database setup...');
       
-      // Add a timeout for the entire setup process
+      // Add a timeout for the entire setup process - much shorter now
       const setupTimeout = setTimeout(() => {
-        console.error('❌ Database setup timeout - taking too long');
-        setDbSetup(false);
-      }, 15000); // 15 second timeout
+        console.error('❌ Database setup timeout - falling back to skip mode');
+        setSkipVerification(true);
+        setDbSetup(true); // Allow app to continue
+      }, 5000); // 5 second timeout
       
       verifyDatabaseSetup()
         .then(result => {
@@ -127,6 +129,18 @@ function AppContent() {
         });
     }
   }, []);
+
+  // Emergency fallback if verification keeps hanging
+  const handleSkipVerification = () => {
+    console.log('🚨 User requested to skip verification');
+    setSkipVerification(true);
+    
+    skipDatabaseVerification()
+      .then(result => {
+        setDbSetup(result.success);
+      })
+      .catch(() => setDbSetup(false));
+  };
 
   // Show welcome modal on first load
   useEffect(() => {
@@ -161,6 +175,14 @@ function AppContent() {
              dbSetup === null ? 'Connecting to database and verifying setup' : 
              'Please wait'}
           </p>
+          {dbSetup === null && (
+            <button
+              onClick={handleSkipVerification}
+              className="mt-4 px-4 py-2 bg-gray-600 text-white rounded text-sm hover:bg-gray-700"
+            >
+              Skip Database Check
+            </button>
+          )}
         </div>
       </div>
     );
@@ -216,12 +238,20 @@ function AppContent() {
             <p>3. Supabase project is active</p>
             <p>4. Storage bucket exists</p>
           </div>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="mt-4 px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
-          >
-            Retry Connection
-          </button>
+          <div className="flex gap-2 justify-center mt-4">
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
+            >
+              Retry Connection
+            </button>
+            <button 
+              onClick={handleSkipVerification}
+              className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+            >
+              Skip & Continue
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -250,7 +280,12 @@ function AppContent() {
               />
               <div>
                 <h1 className="text-2xl font-bold text-black">Lyzr Concept Tracker</h1>
-                <p className="text-gray-600">Internal tool for demo app catalog and management</p>
+                <p className="text-gray-600">
+                  Internal tool for demo app catalog and management
+                  {skipVerification && (
+                    <span className="text-yellow-600 ml-2">(Offline Mode)</span>
+                  )}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
