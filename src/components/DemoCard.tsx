@@ -4,8 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DemoEditModal } from './DemoEditModal';
 import { useAuth } from '@/contexts/AuthContext';
-import { demoService } from '@/lib/supabase';
-import { favoritesService } from '@/lib/supabase';
+import { demoService, favoritesService, supabase } from '@/lib/supabase';
 import { Demo } from '@/types/demo';
 import { ExternalLink, FileText, Database, Shield, Eye, Edit3, Trash2, MoreHorizontal, Star, Play, Pause, Heart } from 'lucide-react';
 import {
@@ -202,22 +201,26 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
   const handleToggleFavorite = async () => {
     if (isFavoriting) return;
     
+    setIsFavoriting(true);
+    
     const { user } = await supabase.auth.getUser();
     if (!user) {
       toast.error('Please log in to favorite demos');
+      setIsFavoriting(false);
       return;
     }
     
-    setIsFavoriting(true);
     try {
+      const result = await favoritesService.toggleFavorite(demo.id);
+      toast.success(result ? 'Added to favorites' : 'Removed from favorites');
+      
+      // Update parent component state
       if (onToggleFavorite) {
         onToggleFavorite(demo.id);
       }
-      
-      const result = await favoritesService.toggleFavorite(demo.id);
-      toast.success(result ? 'Added to favorites' : 'Removed from favorites');
     } catch (error) {
       console.error('Error toggling favorite:', error);
+      toast.error('Failed to update favorites');
     } finally {
       setIsFavoriting(false);
     }
