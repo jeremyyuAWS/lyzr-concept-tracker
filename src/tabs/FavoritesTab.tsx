@@ -17,6 +17,7 @@ interface FavoritesTabProps {
   onDemoDelete?: (demoId: string) => void;
   onRetry?: () => void;
   onToggleFavorite?: (demoId: string) => void;
+  isFavorited?: (demoId: string) => boolean;
 }
 
 export function FavoritesTab({ 
@@ -27,7 +28,8 @@ export function FavoritesTab({
   onDemoUpdate, 
   onDemoDelete, 
   onRetry,
-  onToggleFavorite 
+  onToggleFavorite,
+  isFavorited
 }: FavoritesTabProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'recent' | 'popular' | 'alphabetical'>('recent');

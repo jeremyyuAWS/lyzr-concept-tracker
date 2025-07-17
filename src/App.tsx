@@ -312,6 +312,7 @@ function MainApp() {
                 onRetry={refetchFavorites}
                 onToggleFavorite={handleToggleFavorite}
                 isFavorited={isFavorited}
+                isFavorited={isFavorited}
               />
             </TabsContent>
 
