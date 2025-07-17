@@ -160,10 +160,13 @@ export const demoService = {
 export const favoritesService = {
   // Get user's favorited demos
   async getUserFavorites(): Promise<string[]> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+    
     const { data, error } = await supabase
       .from('user_favorites')
       .select('demo_id')
-      .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
+      .eq('user_id', user.id);
     
     if (error) {
       console.error('Error fetching user favorites:', error);
@@ -188,28 +191,36 @@ export const favoritesService = {
 
   // Get favorite count for a demo
   async getDemoFavoriteCount(demoId: string): Promise<number> {
-    const { data, error } = await supabase
-      .rpc('get_demo_favorite_count', { p_demo_id: demoId });
+    const { count, error } = await supabase
+      .from('user_favorites')
+      .select('*', { count: 'exact' })
+      .eq('demo_id', demoId);
     
     if (error) {
       console.error('Error getting favorite count:', error);
-      throw error;
+      return 0;
     }
     
-    return data || 0;
+    return count || 0;
   },
 
   // Get demos favorited by current user
   async getFavoritesDemos(): Promise<DatabaseDemo[]> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+    
     const { data, error } = await supabase
       .from('demos')
       .select(`
         *,
-        user_favorites!inner(user_id)
+        user_favorites!inner(
+          user_id,
+          created_at
+        )
       `)
-      .eq('user_favorites.user_id', (await supabase.auth.getUser()).data.user?.id)
+      .eq('user_favorites.user_id', user.id)
       .eq('status', 'published')
-      .order('user_favorites.created_at', { ascending: false });
+      .order('created_at', { ascending: false, foreignTable: 'user_favorites' });
     
     if (error) {
       console.error('Error fetching favorite demos:', error);
