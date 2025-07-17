@@ -89,6 +89,44 @@ CREATE TABLE IF NOT EXISTS activity_logs (
   created_at timestamptz DEFAULT now()
 );
 
+-- Create user_favorites table
+CREATE TABLE IF NOT EXISTS user_favorites (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  demo_id uuid NOT NULL REFERENCES demos(id) ON DELETE CASCADE,
+  created_at timestamptz DEFAULT now(),
+  UNIQUE(user_id, demo_id)
+);
+
+-- Create user_sessions table
+CREATE TABLE IF NOT EXISTS user_sessions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+  session_start timestamptz DEFAULT now(),
+  session_end timestamptz,
+  user_agent text,
+  ip_address inet,
+  referrer text,
+  duration_ms bigint,
+  created_at timestamptz DEFAULT now()
+);
+
+-- Create demo_health_scores table
+CREATE TABLE IF NOT EXISTS demo_health_scores (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  demo_id uuid NOT NULL REFERENCES demos(id) ON DELETE CASCADE,
+  health_score numeric DEFAULT 0,
+  view_score numeric DEFAULT 0,
+  engagement_score numeric DEFAULT 0,
+  recency_score numeric DEFAULT 0,
+  favorite_score numeric DEFAULT 0,
+  conversion_score numeric DEFAULT 0,
+  last_calculated timestamptz DEFAULT now(),
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now(),
+  UNIQUE(demo_id)
+);
+
 -- ==========================================
 -- CREATE INDEXES
 -- ==========================================
@@ -106,6 +144,20 @@ CREATE INDEX IF NOT EXISTS idx_user_profiles_role ON user_profiles(role);
 -- Activity logs indexes
 CREATE INDEX IF NOT EXISTS idx_activity_logs_user_id ON activity_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_activity_logs_created_at ON activity_logs(created_at DESC);
+
+-- User favorites indexes
+CREATE INDEX IF NOT EXISTS idx_user_favorites_user_id ON user_favorites(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_favorites_demo_id ON user_favorites(demo_id);
+CREATE INDEX IF NOT EXISTS idx_user_favorites_created_at ON user_favorites(created_at DESC);
+
+-- User sessions indexes
+CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_session_start ON user_sessions(session_start DESC);
+
+-- Demo health scores indexes
+CREATE INDEX IF NOT EXISTS idx_demo_health_scores_demo_id ON demo_health_scores(demo_id);
+CREATE INDEX IF NOT EXISTS idx_demo_health_scores_health_score ON demo_health_scores(health_score DESC);
+CREATE INDEX IF NOT EXISTS idx_demo_health_scores_last_calculated ON demo_health_scores(last_calculated DESC);
 
 -- ==========================================
 -- CREATE FUNCTIONS
@@ -130,6 +182,12 @@ CREATE TRIGGER handle_demos_updated_at
 DROP TRIGGER IF EXISTS handle_user_profiles_updated_at ON user_profiles;
 CREATE TRIGGER handle_user_profiles_updated_at
   BEFORE UPDATE ON user_profiles
+  FOR EACH ROW
+  EXECUTE FUNCTION handle_updated_at();
+
+DROP TRIGGER IF EXISTS handle_demo_health_scores_updated_at ON demo_health_scores;
+CREATE TRIGGER handle_demo_health_scores_updated_at
+  BEFORE UPDATE ON demo_health_scores
   FOR EACH ROW
   EXECUTE FUNCTION handle_updated_at();
 
@@ -181,6 +239,195 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Toggle favorite function
+CREATE OR REPLACE FUNCTION toggle_favorite(p_demo_id uuid)
+RETURNS boolean AS $$
+DECLARE
+  v_user_id uuid;
+  v_exists boolean;
+BEGIN
+  -- Get current user ID
+  SELECT auth.uid() INTO v_user_id;
+  
+  -- Check if favorite exists
+  SELECT EXISTS(
+    SELECT 1 FROM user_favorites 
+    WHERE user_id = v_user_id AND demo_id = p_demo_id
+  ) INTO v_exists;
+  
+  IF v_exists THEN
+    -- Remove favorite
+    DELETE FROM user_favorites 
+    WHERE user_id = v_user_id AND demo_id = p_demo_id;
+    RETURN false;
+  ELSE
+    -- Add favorite
+    INSERT INTO user_favorites (user_id, demo_id)
+    VALUES (v_user_id, p_demo_id);
+    RETURN true;
+  END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Get real-time activities function
+CREATE OR REPLACE FUNCTION get_real_time_activities(p_limit integer DEFAULT 50)
+RETURNS TABLE (
+  id uuid,
+  user_email text,
+  user_display_name text,
+  activity_type text,
+  resource_type text,
+  resource_title text,
+  activity_data jsonb,
+  timestamp timestamptz,
+  time_ago text
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    al.id,
+    up.email as user_email,
+    COALESCE(up.display_name, up.email) as user_display_name,
+    al.action as activity_type,
+    al.resource_type,
+    COALESCE(d.title, al.resource_type) as resource_title,
+    al.details as activity_data,
+    al.created_at as timestamp,
+    CASE 
+      WHEN al.created_at > NOW() - INTERVAL '1 minute' THEN 'just now'
+      WHEN al.created_at > NOW() - INTERVAL '1 hour' THEN 
+        EXTRACT(EPOCH FROM (NOW() - al.created_at))::integer / 60 || ' minutes ago'
+      WHEN al.created_at > NOW() - INTERVAL '1 day' THEN 
+        EXTRACT(EPOCH FROM (NOW() - al.created_at))::integer / 3600 || ' hours ago'
+      ELSE 
+        EXTRACT(EPOCH FROM (NOW() - al.created_at))::integer / 86400 || ' days ago'
+    END as time_ago
+  FROM activity_logs al
+  JOIN user_profiles up ON al.user_id = up.user_id
+  LEFT JOIN demos d ON al.resource_id = d.id
+  ORDER BY al.created_at DESC
+  LIMIT p_limit;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Calculate demo health score function
+CREATE OR REPLACE FUNCTION calculate_demo_health_score(p_demo_id uuid)
+RETURNS numeric AS $$
+DECLARE
+  v_view_score numeric := 0;
+  v_engagement_score numeric := 0;
+  v_recency_score numeric := 0;
+  v_favorite_score numeric := 0;
+  v_conversion_score numeric := 0;
+  v_health_score numeric := 0;
+  v_demo_age interval;
+  v_page_views integer := 0;
+  v_favorite_count integer := 0;
+BEGIN
+  -- Get demo data
+  SELECT 
+    page_views,
+    NOW() - created_at
+  INTO v_page_views, v_demo_age
+  FROM demos 
+  WHERE id = p_demo_id;
+  
+  -- Calculate view score (0-25 points)
+  v_view_score := LEAST(25, v_page_views * 0.1);
+  
+  -- Calculate engagement score (0-25 points)
+  SELECT COUNT(*) INTO v_favorite_count
+  FROM user_favorites
+  WHERE demo_id = p_demo_id;
+  
+  v_engagement_score := LEAST(25, v_favorite_count * 5);
+  
+  -- Calculate recency score (0-25 points)
+  v_recency_score := CASE 
+    WHEN v_demo_age < INTERVAL '7 days' THEN 25
+    WHEN v_demo_age < INTERVAL '30 days' THEN 20
+    WHEN v_demo_age < INTERVAL '90 days' THEN 15
+    WHEN v_demo_age < INTERVAL '180 days' THEN 10
+    WHEN v_demo_age < INTERVAL '365 days' THEN 5
+    ELSE 0
+  END;
+  
+  -- Calculate favorite score (0-15 points)
+  v_favorite_score := LEAST(15, v_favorite_count * 3);
+  
+  -- Calculate conversion score (0-10 points)
+  v_conversion_score := LEAST(10, v_page_views * 0.05);
+  
+  -- Total health score
+  v_health_score := v_view_score + v_engagement_score + v_recency_score + v_favorite_score + v_conversion_score;
+  
+  -- Upsert into demo_health_scores
+  INSERT INTO demo_health_scores (
+    demo_id, health_score, view_score, engagement_score, 
+    recency_score, favorite_score, conversion_score, last_calculated
+  )
+  VALUES (
+    p_demo_id, v_health_score, v_view_score, v_engagement_score,
+    v_recency_score, v_favorite_score, v_conversion_score, NOW()
+  )
+  ON CONFLICT (demo_id) DO UPDATE SET
+    health_score = EXCLUDED.health_score,
+    view_score = EXCLUDED.view_score,
+    engagement_score = EXCLUDED.engagement_score,
+    recency_score = EXCLUDED.recency_score,
+    favorite_score = EXCLUDED.favorite_score,
+    conversion_score = EXCLUDED.conversion_score,
+    last_calculated = NOW(),
+    updated_at = NOW();
+  
+  RETURN v_health_score;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Update all demo health scores function
+CREATE OR REPLACE FUNCTION update_all_demo_health_scores()
+RETURNS void AS $$
+DECLARE
+  demo_record RECORD;
+BEGIN
+  FOR demo_record IN 
+    SELECT id FROM demos WHERE status = 'published'
+  LOOP
+    PERFORM calculate_demo_health_score(demo_record.id);
+  END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Start user session function
+CREATE OR REPLACE FUNCTION start_user_session(
+  p_user_agent text DEFAULT NULL,
+  p_ip_address text DEFAULT NULL,
+  p_referrer text DEFAULT NULL
+)
+RETURNS uuid AS $$
+DECLARE
+  v_session_id uuid;
+BEGIN
+  INSERT INTO user_sessions (user_id, user_agent, ip_address, referrer)
+  VALUES (auth.uid(), p_user_agent, p_ip_address::inet, p_referrer)
+  RETURNING id INTO v_session_id;
+  
+  RETURN v_session_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- End user session function
+CREATE OR REPLACE FUNCTION end_user_session(p_session_id uuid)
+RETURNS void AS $$
+BEGIN
+  UPDATE user_sessions 
+  SET 
+    session_end = NOW(),
+    duration_ms = EXTRACT(EPOCH FROM (NOW() - session_start)) * 1000
+  WHERE id = p_session_id;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Helper functions for RLS
 CREATE OR REPLACE FUNCTION uid() 
 RETURNS uuid AS $$
@@ -204,6 +451,9 @@ $$ LANGUAGE plpgsql;
 ALTER TABLE demos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE activity_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_favorites ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE demo_health_scores ENABLE ROW LEVEL SECURITY;
 
 -- ==========================================
 -- CREATE RLS POLICIES
@@ -253,6 +503,45 @@ CREATE POLICY "Users can view their own activity logs" ON activity_logs
 DROP POLICY IF EXISTS "System can create activity logs" ON activity_logs;
 CREATE POLICY "System can create activity logs" ON activity_logs
   FOR INSERT WITH CHECK (true);
+
+-- User favorites policies
+DROP POLICY IF EXISTS "Users can view their own favorites" ON user_favorites;
+CREATE POLICY "Users can view their own favorites" ON user_favorites
+  FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can create their own favorites" ON user_favorites;
+CREATE POLICY "Users can create their own favorites" ON user_favorites
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can delete their own favorites" ON user_favorites;
+CREATE POLICY "Users can delete their own favorites" ON user_favorites
+  FOR DELETE USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Anyone can view favorite counts" ON user_favorites;
+CREATE POLICY "Anyone can view favorite counts" ON user_favorites
+  FOR SELECT USING (true);
+
+-- User sessions policies
+DROP POLICY IF EXISTS "Users can view their own sessions" ON user_sessions;
+CREATE POLICY "Users can view their own sessions" ON user_sessions
+  FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can create sessions" ON user_sessions;
+CREATE POLICY "Users can create sessions" ON user_sessions
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can update their own sessions" ON user_sessions;
+CREATE POLICY "Users can update their own sessions" ON user_sessions
+  FOR UPDATE USING (auth.uid() = user_id);
+
+-- Demo health scores policies
+DROP POLICY IF EXISTS "Anyone can view demo health scores" ON demo_health_scores;
+CREATE POLICY "Anyone can view demo health scores" ON demo_health_scores
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "System can manage demo health scores" ON demo_health_scores;
+CREATE POLICY "System can manage demo health scores" ON demo_health_scores
+  FOR ALL USING (true);
 
 -- ==========================================
 -- SETUP STORAGE
