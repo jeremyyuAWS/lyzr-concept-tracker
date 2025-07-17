@@ -612,16 +612,38 @@ export function AnalyticsPanel({ demos }: AnalyticsPanelProps) {
           <CardContent>
             <div className="h-96">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={topDemos} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
+                <BarChart data={topDemos} margin={{ top: 20, right: 30, left: 20, bottom: 100 }}>
                   <ChartGradients />
+                  <defs>
+                    <linearGradient id="bar1" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.9}/>
+                      <stop offset="95%" stopColor="#1E40AF" stopOpacity={0.7}/>
+                    </linearGradient>
+                    <linearGradient id="bar2" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.9}/>
+                      <stop offset="95%" stopColor="#059669" stopOpacity={0.7}/>
+                    </linearGradient>
+                    <linearGradient id="bar3" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.9}/>
+                      <stop offset="95%" stopColor="#D97706" stopOpacity={0.7}/>
+                    </linearGradient>
+                    <linearGradient id="bar4" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#EF4444" stopOpacity={0.9}/>
+                      <stop offset="95%" stopColor="#DC2626" stopOpacity={0.7}/>
+                    </linearGradient>
+                    <linearGradient id="bar5" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.9}/>
+                      <stop offset="95%" stopColor="#7C3AED" stopOpacity={0.7}/>
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                   <XAxis 
                     dataKey="name" 
                     fontSize={11} 
                     stroke="#666"
-                    angle={0}
+                    angle={-45}
                     textAnchor="middle"
-                    height={80}
+                    height={100}
                     interval={0}
                     tick={{ fontSize: 11 }}
                   />
@@ -648,13 +670,30 @@ export function AnalyticsPanel({ demos }: AnalyticsPanelProps) {
                       </div>
                     ]}
                   />
-                  <Bar 
-                    dataKey="views" 
-                    fill="url(#primaryGradient)" 
-                    radius={[8, 8, 0, 0]}
-                    stroke="#000000"
-                    strokeWidth={1}
-                  />
+                  <Bar dataKey="views" radius={[8, 8, 0, 0]} strokeWidth={2}>
+                    {topDemos.map((entry, index) => {
+                      const colors = [
+                        { fill: 'url(#bar1)', stroke: '#1E40AF' },
+                        { fill: 'url(#bar2)', stroke: '#059669' },
+                        { fill: 'url(#bar3)', stroke: '#D97706' },
+                        { fill: 'url(#bar4)', stroke: '#DC2626' },
+                        { fill: 'url(#bar5)', stroke: '#7C3AED' },
+                        { fill: '#6366F1', stroke: '#4F46E5' },
+                        { fill: '#06B6D4', stroke: '#0891B2' },
+                        { fill: '#84CC16', stroke: '#65A30D' },
+                        { fill: '#F97316', stroke: '#EA580C' },
+                        { fill: '#EC4899', stroke: '#DB2777' }
+                      ];
+                      const colorIndex = index % colors.length;
+                      return (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={colors[colorIndex].fill}
+                          stroke={colors[colorIndex].stroke}
+                        />
+                      );
+                    })}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
