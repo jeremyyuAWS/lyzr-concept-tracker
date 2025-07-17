@@ -23,12 +23,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshProfile = async () => {
     if (user) {
       try {
+        console.log('🔍 Loading user profile for:', user.email);
         const profile = await userService.getCurrentUserProfile();
         if (profile) {
+          console.log('✅ Profile loaded successfully:', profile.display_name);
           setUserProfile(profile);
         } else {
           // Create profile if it doesn't exist
-          console.log('No profile found, creating one...');
+          console.log('⚠️ No profile found, using fallback...');
           // Use fallback profile immediately to avoid RLS policy violations
           setUserProfile({
             id: user.id,
@@ -44,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
         }
       } catch (error) {
-        console.error('Error refreshing profile:', error);
+        console.warn('⚠️ Profile loading failed, using fallback:', error);
         // If any error occurs, use fallback profile to keep app functional
         if (user) {
           setUserProfile({
@@ -77,24 +79,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    console.log('🔍 Auth state changed, user:', !!user);
     if (user) {
-      refreshProfile().finally(() => setLoading(false));
+      refreshProfile().finally(() => {
+        console.log('✅ Profile refresh complete, setting loading to false');
+        setLoading(false);
+      });
     } else {
       setUserProfile(null);
       setLoading(false);
     }
   }, [user]);
 
-  // Add timeout to prevent infinite loading
+  // Aggressive timeout to prevent infinite loading
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (loading && user) {
-        console.warn('Profile loading timeout, using fallback data');
+    const timeout1 = setTimeout(() => {
+      if (loading) {
+        console.warn('⚠️ Auth loading timeout at 2s, forcing completion');
         setLoading(false);
       }
-    }, 3000); // 3 second timeout
+    }, 2000); // 2 second timeout
+    
+    // Emergency timeout
+    const timeout2 = setTimeout(() => {
+      if (loading) {
+        console.error('🚨 Emergency timeout at 5s, forcing app to load');
+        setLoading(false);
+        if (user && !userProfile) {
+          // Create emergency fallback profile
+          setUserProfile({
+            id: user.id,
+            user_id: user.id,
+            email: user.email!,
+            display_name: user.email!.split('@')[0],
+            role: user.email === 'jeremy@lyzr.ai' || user.email === 'admin@lyzr.ai' ? 'admin' : 'user',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            last_login: null,
+            is_active: true,
+            avatar_url: null
+          });
+        }
+      }
+    }, 5000); // 5 second emergency timeout
 
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout1);
+      clearTimeout(timeout2);
+    };
   }, [loading, user]);
 
   const signIn = async (email: string, password: string) => {

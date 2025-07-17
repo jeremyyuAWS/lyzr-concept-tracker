@@ -173,11 +173,13 @@ function MainApp() {
 
   // Show loading state for auth
   if (authLoading) {
+    console.log('🔄 App showing auth loading state');
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">Loading your account...</p>
+          <p className="text-gray-500 text-sm mt-2">This should only take a moment</p>
         </div>
       </div>
     );
@@ -185,9 +187,11 @@ function MainApp() {
 
   // Show login form if not authenticated
   if (!user) {
+    console.log('🔑 No user found, showing login form');
     return <LoginForm />;
   }
 
+  console.log('✅ User authenticated, showing main app');
   const handleDemoAdded = () => {
     refetch();
     refetchFavorites();
