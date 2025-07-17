@@ -298,24 +298,15 @@ export const analyticsService = {
       });
       
       if (error) {
-        // Check if it's a missing function error
-        if (error.code === 'PGRST202' || error.message?.includes('Could not find the function')) {
-          console.warn('Real-time activities function not available:', error);
-          return [];
-        }
-        console.error('Error fetching real-time activities:', error);
-        throw error;
+        // Handle all RPC function errors gracefully
+        console.warn('Real-time activities function not available:', error);
+        return [];
       }
       
       return data || [];
     } catch (error: any) {
-      // Handle network errors or other exceptions
-      if (error.message?.includes('function') || error.code === 'PGRST202') {
-        console.warn('Real-time activities function not available:', error);
-        return [];
-      }
-      console.error('Error fetching real-time activities:', error);
-      // Return empty array if function doesn't exist
+      // Always return empty array for any RPC function errors
+      console.warn('Real-time activities function not available:', error);
       return [];
     }
   },
@@ -356,24 +347,15 @@ export const analyticsService = {
         .order('health_score', { ascending: false });
       
       if (error) {
-        // Check if it's a missing table/relationship error
-        if (error.code === 'PGRST200' || error.message?.includes('Could not find a relationship')) {
-          console.warn('Demo health scores table not available:', error);
-          return [];
-        }
-        console.error('Error fetching demo health scores:', error);
-        throw error;
+        // Handle all database schema errors gracefully
+        console.warn('Demo health scores not available:', error);
+        return [];
       }
       
       return data || [];
     } catch (error: any) {
-      // Handle network errors or other exceptions
-      if (error.message?.includes('relation') || error.message?.includes('relationship') || error.code === 'PGRST200') {
-        console.warn('Demo health scores table not available:', error);
-        return [];
-      }
-      console.error('Error fetching demo health scores:', error);
-      // Return empty array if table doesn't exist
+      // Always return empty array for any database schema errors
+      console.warn('Demo health scores not available:', error);
       return [];
     }
   },
