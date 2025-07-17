@@ -221,11 +221,10 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
     
     setIsFavoriting(true);
     try {
+      let result = false;
       if (onToggleFavorite) {
-        onToggleFavorite(demo.id);
+        result = await onToggleFavorite(demo.id);
       }
-      
-      const result = await favoritesService.toggleFavorite(demo.id);
       
       // Track the favorite action
       trackDemoFavorite(demo.id, demo.title, result);
@@ -233,6 +232,7 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
       toast.success(result ? 'Added to favorites' : 'Removed from favorites');
     } catch (error) {
       console.error('Error toggling favorite:', error);
+      toast.error('Failed to update favorite');
     } finally {
       setIsFavoriting(false);
     }
