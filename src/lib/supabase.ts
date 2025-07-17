@@ -156,6 +156,70 @@ export const demoService = {
 
 };
 
+// Favorites Service
+export const favoritesService = {
+  // Get user's favorited demos
+  async getUserFavorites(): Promise<string[]> {
+    const { data, error } = await supabase
+      .from('user_favorites')
+      .select('demo_id')
+      .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
+    
+    if (error) {
+      console.error('Error fetching user favorites:', error);
+      throw error;
+    }
+    
+    return data?.map(f => f.demo_id) || [];
+  },
+
+  // Toggle favorite status for a demo
+  async toggleFavorite(demoId: string): Promise<boolean> {
+    const { data, error } = await supabase
+      .rpc('toggle_favorite', { p_demo_id: demoId });
+    
+    if (error) {
+      console.error('Error toggling favorite:', error);
+      throw error;
+    }
+    
+    return data;
+  },
+
+  // Get favorite count for a demo
+  async getDemoFavoriteCount(demoId: string): Promise<number> {
+    const { data, error } = await supabase
+      .rpc('get_demo_favorite_count', { p_demo_id: demoId });
+    
+    if (error) {
+      console.error('Error getting favorite count:', error);
+      throw error;
+    }
+    
+    return data || 0;
+  },
+
+  // Get demos favorited by current user
+  async getFavoritesDemos(): Promise<DatabaseDemo[]> {
+    const { data, error } = await supabase
+      .from('demos')
+      .select(`
+        *,
+        user_favorites!inner(user_id)
+      `)
+      .eq('user_favorites.user_id', (await supabase.auth.getUser()).data.user?.id)
+      .eq('status', 'published')
+      .order('user_favorites.created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching favorite demos:', error);
+      throw error;
+    }
+    
+    return data || [];
+  }
+};
+
 // User Profile Service
 export const userService = {
   // Get current user profile
