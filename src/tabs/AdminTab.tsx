@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { userService, UserProfile } from '@/lib/supabase';
+import { Demo } from '@/types/demo';
 import { UserManagement } from '@/components/UserManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -40,8 +42,83 @@ function CollapsibleSection({ title, description, icon, children, defaultOpen = 
   );
 }
 
-export function AdminTab() {
+interface AdminTabProps {
+  demos?: Demo[];
+}
+
+export function AdminTab({ demos = [] }: AdminTabProps) {
   const { isAdmin, userProfile } = useAuth();
+  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [activityLogs, setActivityLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    adminUsers: 0,
+    activeUsers: 0,
+    recentLogins: 0,
+    totalDemos: 0,
+    totalViews: 0,
+    avgViewsPerDemo: 0,
+    featuredDemos: 0,
+    recentActivity: 0
+  });
+
+  useEffect(() => {
+    if (isAdmin) {
+      loadAdminData();
+    }
+  }, [isAdmin, demos]);
+
+  const loadAdminData = async () => {
+    try {
+      setLoading(true);
+      
+      // Load users
+      const userList = await userService.getAllUserProfiles();
+      setUsers(userList);
+      
+      // Load activity logs
+      const logs = await userService.getActivityLogs(100);
+      setActivityLogs(logs);
+      
+      // Calculate statistics
+      const now = new Date();
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      
+      const totalUsers = userList.length;
+      const adminUsers = userList.filter(u => u.role === 'admin' || u.role === 'super_admin').length;
+      const activeUsers = userList.filter(u => u.is_active).length;
+      const recentLogins = userList.filter(u => 
+        u.last_login && new Date(u.last_login).getTime() > sevenDaysAgo.getTime()
+      ).length;
+      
+      const totalDemos = demos.length;
+      const totalViews = demos.reduce((sum, demo) => sum + demo.page_views, 0);
+      const avgViewsPerDemo = totalDemos > 0 ? Math.round(totalViews / totalDemos) : 0;
+      const featuredDemos = demos.filter(d => d.is_featured).length;
+      
+      const recentActivity = logs.filter(log => 
+        new Date(log.created_at).getTime() > sevenDaysAgo.getTime()
+      ).length;
+      
+      setStats({
+        totalUsers,
+        adminUsers,
+        activeUsers,
+        recentLogins,
+        totalDemos,
+        totalViews,
+        avgViewsPerDemo,
+        featuredDemos,
+        recentActivity
+      });
+      
+    } catch (error) {
+      console.error('Error loading admin data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!isAdmin) {
     return (
@@ -114,7 +191,7 @@ export function AdminTab() {
       icon: <Activity className="w-5 h-5" />,
       title: 'Audit Trail',
       description: 'Complete activity logging system',
-      status: 'Coming Soon'
+      status: 'Active'
     },
   ];
 
@@ -280,31 +357,91 @@ export function AdminTab() {
         </CollapsibleSection>
       </div>
 
-      {/* Usage Statistics */}
+      {/* Real Usage Statistics */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-black">Usage Statistics</CardTitle>
-          <CardDescription className="text-gray-600">System usage and performance metrics</CardDescription>
+          <CardTitle className="text-lg font-semibold text-black">System Statistics</CardTitle>
+          <CardDescription className="text-gray-600">Real-time system usage and performance metrics</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-gray-50 rounded-lg">
-              <div className="text-2xl font-bold text-black">--</div>
-              <div className="text-sm text-gray-600">Total Users</div>
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="text-center p-4 bg-gray-50 rounded-lg animate-pulse">
+                  <div className="h-8 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                </div>
+              ))}
             </div>
-            <div className="text-center p-4 bg-gray-50 rounded-lg">
-              <div className="text-2xl font-bold text-black">
-                --
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="text-2xl font-bold text-blue-800">{stats.totalUsers}</div>
+                <div className="text-sm text-blue-600">Total Users</div>
               </div>
-              <div className="text-sm text-gray-600">Admins</div>
-            </div>
-            <div className="text-center p-4 bg-gray-50 rounded-lg">
-              <div className="text-2xl font-bold text-black">
-                --
+              <div className="text-center p-4 bg-red-50 rounded-lg border border-red-200">
+                <div className="text-2xl font-bold text-red-800">{stats.adminUsers}</div>
+                <div className="text-sm text-red-600">Admins</div>
               </div>
-              <div className="text-sm text-gray-600">Active Users</div>
+              <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
+                <div className="text-2xl font-bold text-green-800">{stats.activeUsers}</div>
+                <div className="text-sm text-green-600">Active Users</div>
+              </div>
+              <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-200">
+                <div className="text-2xl font-bold text-purple-800">{stats.recentLogins}</div>
+                <div className="text-sm text-purple-600">Recent Logins</div>
+              </div>
+              <div className="text-center p-4 bg-orange-50 rounded-lg border border-orange-200">
+                <div className="text-2xl font-bold text-orange-800">{stats.totalDemos}</div>
+                <div className="text-sm text-orange-600">Total Demos</div>
+              </div>
+              <div className="text-center p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                <div className="text-2xl font-bold text-yellow-800">{stats.totalViews.toLocaleString()}</div>
+                <div className="text-sm text-yellow-600">Total Views</div>
+              </div>
             </div>
-          </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Additional Statistics */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold text-black">Performance Metrics</CardTitle>
+          <CardDescription className="text-gray-600">Demo performance and engagement statistics</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="text-center p-4 bg-gray-50 rounded-lg animate-pulse">
+                  <div className="h-8 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <div className="text-2xl font-bold text-black">{stats.avgViewsPerDemo}</div>
+                <div className="text-sm text-gray-600">Avg Views/Demo</div>
+              </div>
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <div className="text-2xl font-bold text-black">{stats.featuredDemos}</div>
+                <div className="text-sm text-gray-600">Featured Demos</div>
+              </div>
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <div className="text-2xl font-bold text-black">{stats.recentActivity}</div>
+                <div className="text-sm text-gray-600">Recent Activity</div>
+              </div>
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <div className="text-2xl font-bold text-black">
+                  {stats.totalUsers > 0 ? Math.round((stats.activeUsers / stats.totalUsers) * 100) : 0}%
+                </div>
+                <div className="text-sm text-gray-600">Active Rate</div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
