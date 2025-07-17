@@ -484,22 +484,28 @@ export const authService = {
       const { data: { user }, error } = await supabase.auth.getUser();
       
       if (error) {
-        // Handle auth session missing as a normal unauthenticated state
-        if (error.message === 'Auth session missing!') {
+        // Handle various auth errors as normal unauthenticated states
+        if (error.message === 'Auth session missing!' || 
+            error.message?.includes('session_not_found') ||
+            error.message?.includes('Session from session_id claim in JWT does not exist')) {
           return null;
         }
         console.error('Error getting user:', error);
-        throw error;
+        // Return null instead of throwing for auth errors to prevent app crashes
+        return null;
       }
       
       return user;
     } catch (error: any) {
-      // Handle auth session missing as a normal unauthenticated state
-      if (error.message === 'Auth session missing!') {
+      // Handle various auth errors as normal unauthenticated states
+      if (error.message === 'Auth session missing!' || 
+          error.message?.includes('session_not_found') ||
+          error.message?.includes('Session from session_id claim in JWT does not exist')) {
         return null;
       }
       console.error('Error getting user:', error);
-      throw error;
+      // Return null instead of throwing for auth errors to prevent app crashes
+      return null;
     }
   },
 
