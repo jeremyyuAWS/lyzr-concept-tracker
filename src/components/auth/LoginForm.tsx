@@ -221,31 +221,33 @@ export function LoginForm() {
               <div className="mt-8 text-center">
                 <div className="space-y-3">
                   {!isResetPassword && (
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
                       onClick={() => toggleMode(isSignUp ? 'signin' : 'signup')}
-                      className="text-sm text-gray-600 hover:text-gray-800 underline block w-full"
+                      className="text-sm text-gray-600 hover:text-gray-800 bg-white border-gray-300 hover:bg-gray-50 w-full"
                       disabled={isLoading}
                     >
                       {isSignUp 
                         ? 'Already have an account? Sign in'
                         : "Don't have an account? Create one"
                       }
-                    </button>
+                    </Button>
                   )}
                   
                   {!isSignUp && (
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
                       onClick={() => toggleMode(isResetPassword ? 'signin' : 'reset')}
-                      className="text-sm text-gray-600 hover:text-gray-800 underline block w-full"
+                      className="text-sm text-gray-600 hover:text-gray-800 bg-white border-gray-300 hover:bg-gray-50 w-full"
                       disabled={isLoading}
                     >
                       {isResetPassword
                         ? 'Back to sign in'
                         : 'Forgot your password?'
                       }
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>
