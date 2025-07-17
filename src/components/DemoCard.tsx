@@ -190,15 +190,25 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
   const handleToggleFavorite = async () => {
     if (isFavoriting) return;
     
+    // Check if favorites are available
+    if (!user) {
+      toast.error('Please log in to favorite demos');
+      return;
+    }
+    
     setIsFavoriting(true);
     try {
       await favoritesService.toggleFavorite(demo.id);
       if (onToggleFavorite) {
         onToggleFavorite(demo.id);
+      const result = await toggleFavorite(demo.id);
+      if (result !== undefined) {
+        toast.success(result ? 'Added to favorites' : 'Removed from favorites');
+      } else {
+        toast.info('Favorites feature not available yet');
       }
-      toast.success(isFavorited ? 'Removed from favorites' : 'Added to favorites');
     } catch (error) {
-      console.error('Error toggling favorite:', error);
+      toast.info('Favorites feature not available yet');
       toast.error('Failed to update favorite');
     } finally {
       setIsFavoriting(false);

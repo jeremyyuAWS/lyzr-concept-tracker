@@ -163,45 +163,75 @@ export const favoritesService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return [];
     
-    const { data, error } = await supabase
-      .from('user_favorites')
-      .select('demo_id')
-      .eq('user_id', user.id);
-    
-    if (error) {
-      console.error('Error fetching user favorites:', error);
-      throw error;
+    try {
+      const { data, error } = await supabase
+        .from('user_favorites')
+        .select('demo_id')
+        .eq('user_id', user.id);
+      
+      if (error) {
+        // Handle case where table doesn't exist yet
+        if (error.code === '42P01') {
+          console.warn('user_favorites table does not exist. Please run the migration.');
+          return [];
+        }
+        console.error('Error fetching user favorites:', error);
+        throw error;
+      }
+      
+      return data?.map(f => f.demo_id) || [];
+    } catch (error) {
+      console.warn('Favorites not available:', error);
+      return [];
     }
-    
-    return data?.map(f => f.demo_id) || [];
   },
 
   // Toggle favorite status for a demo
   async toggleFavorite(demoId: string): Promise<boolean> {
-    const { data, error } = await supabase
-      .rpc('toggle_favorite', { p_demo_id: demoId });
-    
-    if (error) {
-      console.error('Error toggling favorite:', error);
-      throw error;
+    try {
+      const { data, error } = await supabase
+        .rpc('toggle_favorite', { p_demo_id: demoId });
+      
+      if (error) {
+        // Handle case where function doesn't exist yet
+        if (error.code === '42883' || error.code === '42P01') {
+          console.warn('Favorites functionality not available. Please run the migration.');
+          return false;
+        }
+        console.error('Error toggling favorite:', error);
+        throw error;
+      }
+      
+      return data;
+    } catch (error) {
+      console.warn('Cannot toggle favorite:', error);
+      return false;
     }
-    
-    return data;
   },
 
   // Get favorite count for a demo
   async getDemoFavoriteCount(demoId: string): Promise<number> {
-    const { count, error } = await supabase
-      .from('user_favorites')
-      .select('*', { count: 'exact' })
-      .eq('demo_id', demoId);
-    
-    if (error) {
-      console.error('Error getting favorite count:', error);
+    try {
+      const { count, error } = await supabase
+        .from('user_favorites')
+        .select('*', { count: 'exact' })
+        .eq('demo_id', demoId);
+      
+      if (error) {
+        // Handle case where table doesn't exist yet
+        if (error.code === '42P01') {
+          console.warn('user_favorites table does not exist. Please run the migration.');
+          return 0;
+        }
+        console.error('Error getting favorite count:', error);
+        return 0;
+      }
+      
+      return count || 0;
+    } catch (error) {
+      console.warn('Cannot get favorite count:', error);
       return 0;
     }
-    
-    return count || 0;
   },
 
   // Get demos favorited by current user
@@ -209,25 +239,32 @@ export const favoritesService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return [];
     
-    const { data, error } = await supabase
-      .from('demos')
-      .select(`
-        *,
-        user_favorites!inner(
-          user_id,
-          created_at
-        )
-      `)
-      .eq('user_favorites.user_id', user.id)
-      .eq('status', 'published')
-      .order('created_at', { ascending: false, foreignTable: 'user_favorites' });
-    
-    if (error) {
-      console.error('Error fetching favorite demos:', error);
-      throw error;
+    try {
+      // First get user's favorite demo IDs
+      const favoriteIds = await this.getUserFavorites();
+      
+      if (favoriteIds.length === 0) {
+        return [];
+      }
+      
+      // Then get the actual demos
+      const { data, error } = await supabase
+        .from('demos')
+        .select('*')
+        .in('id', favoriteIds)
+        .eq('status', 'published')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching favorite demos:', error);
+        throw error;
+      }
+      
+      return data || [];
+    } catch (error) {
+      console.warn('Cannot fetch favorite demos:', error);
+      return [];
     }
-    
-    return data || [];
   }
 };
 
