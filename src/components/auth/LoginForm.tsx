@@ -13,20 +13,30 @@ export function LoginForm() {
   const { signIn, signUp } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isResetPassword, setIsResetPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     displayName: ''
   });
   const [error, setError] = useState('');
+  const [resetSuccess, setResetSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setResetSuccess(false);
     setIsLoading(true);
 
     try {
-      if (isSignUp) {
+      if (isResetPassword) {
+        const { authService } = await import('@/lib/supabase');
+        await authService.resetPassword(formData.email);
+        setResetSuccess(true);
+        toast.success('Password reset email sent!', {
+          description: 'Check your email for reset instructions.',
+        });
+      } else if (isSignUp) {
         await signUp(formData.email, formData.password, formData.displayName);
         toast.success('Account created successfully!');
       } else {
@@ -54,6 +64,14 @@ export function LoginForm() {
     if (error) setError('');
   };
 
+  const toggleMode = (mode: 'signin' | 'signup' | 'reset') => {
+    setIsSignUp(mode === 'signup');
+    setIsResetPassword(mode === 'reset');
+    setError('');
+    setResetSuccess(false);
+    setFormData({ email: '', password: '', displayName: '' });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="w-full max-w-7xl mx-auto px-4">
@@ -69,17 +87,40 @@ export function LoginForm() {
                 />
               </div>
               <CardTitle className="text-xl font-bold text-black mb-2">
-                {isSignUp ? 'Create Account' : 'Sign In'}
+                {isResetPassword ? 'Reset Password' : isSignUp ? 'Create Account' : 'Sign In'}
               </CardTitle>
               <CardDescription className="text-gray-600">
-                {isSignUp 
-                  ? 'Create your admin account to manage demos'
-                  : 'Sign in to access the Lyzr Concept Tracker'
+                {isResetPassword
+                  ? 'Enter your email to receive password reset instructions'
+                  : isSignUp 
+                    ? 'Create your admin account to manage demos'
+                    : 'Sign in to access the Lyzr Concept Tracker'
                 }
               </CardDescription>
             </CardHeader>
           
             <CardContent className="px-8 pb-8">
+              {resetSuccess ? (
+                <div className="text-center space-y-4">
+                  <div className="text-green-600 mb-4">
+                    <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-black mb-2">Check Your Email</h3>
+                  <p className="text-gray-600 mb-6">
+                    We've sent password reset instructions to <strong>{formData.email}</strong>
+                  </p>
+                  <Button
+                    type="button"
+                    onClick={() => toggleMode('signin')}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    Back to Sign In
+                  </Button>
+                </div>
+              ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 {error && (
                   <Alert className="border-red-200 bg-red-50">
@@ -105,7 +146,7 @@ export function LoginForm() {
                   />
                 </div>
 
-                {isSignUp && (
+                {isSignUp && !isResetPassword && (
                   <div className="space-y-3">
                     <Label htmlFor="displayName" className="text-sm font-medium text-black block text-center">
                       Display Name
@@ -121,22 +162,24 @@ export function LoginForm() {
                   </div>
                 )}
 
-                <div className="space-y-3">
-                  <Label htmlFor="password" className="text-sm font-medium text-black block text-center">
-                    Password
-                  </Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) => handleInputChange('password', e.target.value)}
-                    placeholder="Enter your password"
-                    required
-                    disabled={isLoading}
-                    minLength={6}
-                    className="text-center h-12 text-sm"
-                  />
-                </div>
+                {!isResetPassword && (
+                  <div className="space-y-3">
+                    <Label htmlFor="password" className="text-sm font-medium text-black block text-center">
+                      Password
+                    </Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => handleInputChange('password', e.target.value)}
+                      placeholder="Enter your password"
+                      required
+                      disabled={isLoading}
+                      minLength={6}
+                      className="text-center h-12 text-sm"
+                    />
+                  </div>
+                )}
 
                 <Button
                   type="submit"
@@ -146,11 +189,18 @@ export function LoginForm() {
                   {isLoading ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      {isSignUp ? 'Creating Account...' : 'Signing In...'}
+                      {isResetPassword ? 'Sending Reset Email...' : isSignUp ? 'Creating Account...' : 'Signing In...'}
                     </>
                   ) : (
                     <>
-                      {isSignUp ? (
+                      {isResetPassword ? (
+                        <>
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          Send Reset Email
+                        </>
+                      ) : isSignUp ? (
                         <>
                           <UserPlus className="w-4 h-4 mr-2" />
                           Create Account
@@ -165,20 +215,41 @@ export function LoginForm() {
                   )}
                 </Button>
               </form>
+              )}
 
+              {!resetSuccess && (
               <div className="mt-8 text-center">
-                <button
-                  type="button"
-                  onClick={() => setIsSignUp(!isSignUp)}
-                  className="text-sm text-gray-600 hover:text-gray-800 underline"
-                  disabled={isLoading}
-                >
-                  {isSignUp 
-                    ? 'Already have an account? Sign in'
-                    : "Don't have an account? Create one"
-                  }
-                </button>
+                <div className="space-y-3">
+                  {!isResetPassword && (
+                    <button
+                      type="button"
+                      onClick={() => toggleMode(isSignUp ? 'signin' : 'signup')}
+                      className="text-sm text-gray-600 hover:text-gray-800 underline block w-full"
+                      disabled={isLoading}
+                    >
+                      {isSignUp 
+                        ? 'Already have an account? Sign in'
+                        : "Don't have an account? Create one"
+                      }
+                    </button>
+                  )}
+                  
+                  {!isSignUp && (
+                    <button
+                      type="button"
+                      onClick={() => toggleMode(isResetPassword ? 'signin' : 'reset')}
+                      className="text-sm text-gray-600 hover:text-gray-800 underline block w-full"
+                      disabled={isLoading}
+                    >
+                      {isResetPassword
+                        ? 'Back to sign in'
+                        : 'Forgot your password?'
+                      }
+                    </button>
+                  )}
+                </div>
               </div>
+              )}
 
             </CardContent>
           </Card>
