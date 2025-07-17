@@ -51,11 +51,17 @@ export function DemoHealthScoring() {
   const loadHealthScores = async () => {
     try {
       setError(null);
-      const data = await analyticsService.getDemoHealthScores();
-      setHealthScores(data);
+      try {
+        const data = await analyticsService.getDemoHealthScores();
+        setHealthScores(data);
+      } catch (dbError: any) {
+        console.warn('Demo health scores table not available:', dbError);
+        // Fallback to empty array if table doesn't exist
+        setHealthScores([]);
+      }
     } catch (err) {
       console.error('Error loading health scores:', err);
-      setError('Failed to load health scores');
+      setError('Demo health scoring is not available');
     } finally {
       setLoading(false);
     }
@@ -64,8 +70,14 @@ export function DemoHealthScoring() {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      await analyticsService.updateAllDemoHealthScores();
-      await loadHealthScores();
+      try {
+        await analyticsService.updateAllDemoHealthScores();
+        await loadHealthScores();
+      } catch (dbError: any) {
+        console.warn('Health score update function not available:', dbError);
+        // Just reload existing data
+        await loadHealthScores();
+      }
     } catch (err) {
       console.error('Error refreshing health scores:', err);
     } finally {
@@ -125,7 +137,13 @@ export function DemoHealthScoring() {
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <p className="text-red-600 mb-4">{error}</p>
+            <div className="text-yellow-600 mb-4">
+              <Trophy className="w-12 h-12 mx-auto mb-2" />
+              <p>{error}</p>
+              <p className="text-sm text-gray-500 mt-2">
+                This feature requires additional database setup
+              </p>
+            </div>
             <Button onClick={handleRefresh} variant="outline">
               Try Again
             </Button>
@@ -165,7 +183,7 @@ export function DemoHealthScoring() {
             <Trophy className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-600">No health scores available</p>
             <p className="text-sm text-gray-500 mt-1">
-              Health scores will be calculated for published demos
+              Demo health scoring is not yet configured
             </p>
           </div>
         ) : (

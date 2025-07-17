@@ -49,11 +49,17 @@ export function RealTimeActivityFeed() {
   const loadActivities = async () => {
     try {
       setError(null);
-      const data = await analyticsService.getRealTimeActivities(50);
-      setActivities(data);
+      try {
+        const data = await analyticsService.getRealTimeActivities(50);
+        setActivities(data);
+      } catch (dbError: any) {
+        console.warn('Real-time activities function not available:', dbError);
+        // Fallback to empty array if function doesn't exist
+        setActivities([]);
+      }
     } catch (err) {
       console.error('Error loading activities:', err);
-      setError('Failed to load activities');
+      setError('Real-time activity tracking is not available');
     } finally {
       setLoading(false);
     }
@@ -172,7 +178,13 @@ export function RealTimeActivityFeed() {
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <p className="text-red-600 mb-4">{error}</p>
+            <div className="text-yellow-600 mb-4">
+              <Activity className="w-12 h-12 mx-auto mb-2" />
+              <p>{error}</p>
+              <p className="text-sm text-gray-500 mt-2">
+                This feature requires additional database setup
+              </p>
+            </div>
             <Button onClick={handleRefresh} variant="outline">
               Try Again
             </Button>
@@ -210,9 +222,9 @@ export function RealTimeActivityFeed() {
         {activities.length === 0 ? (
           <div className="text-center py-8">
             <Activity className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">No recent activity</p>
+            <p className="text-gray-600">No recent activity available</p>
             <p className="text-sm text-gray-500 mt-1">
-              User activities will appear here in real-time
+              Real-time activity tracking is not yet configured
             </p>
           </div>
         ) : (

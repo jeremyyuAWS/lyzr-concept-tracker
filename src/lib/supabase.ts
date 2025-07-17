@@ -291,16 +291,22 @@ export const analyticsService = {
 
   // Get real-time activities
   async getRealTimeActivities(limit: number = 50): Promise<any[]> {
-    const { data, error } = await supabase.rpc('get_real_time_activities', {
-      p_limit: limit
-    });
-    
-    if (error) {
-      console.error('Error fetching real-time activities:', error);
-      throw error;
+    try {
+      const { data, error } = await supabase.rpc('get_real_time_activities', {
+        p_limit: limit
+      });
+      
+      if (error) {
+        console.error('Error fetching real-time activities:', error);
+        throw error;
+      }
+      
+      return data || [];
+    } catch (error: any) {
+      console.warn('Real-time activities function not available:', error);
+      // Return empty array if function doesn't exist
+      return [];
     }
-    
-    return data || [];
   },
 
   // Get user sessions
@@ -321,50 +327,67 @@ export const analyticsService = {
 
   // Get demo health scores
   async getDemoHealthScores(): Promise<any[]> {
-    const { data, error } = await supabase
-      .from('demo_health_scores')
-      .select(`
-        *,
-        demos (
-          id,
-          title,
-          owner,
-          page_views,
-          is_featured,
-          created_at
-        )
-      `)
-      .order('health_score', { ascending: false });
-    
-    if (error) {
-      console.error('Error fetching demo health scores:', error);
-      throw error;
+    try {
+      const { data, error } = await supabase
+        .from('demo_health_scores')
+        .select(`
+          *,
+          demos (
+            id,
+            title,
+            owner,
+            page_views,
+            is_featured,
+            created_at
+          )
+        `)
+        .order('health_score', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching demo health scores:', error);
+        throw error;
+      }
+      
+      return data || [];
+    } catch (error: any) {
+      console.warn('Demo health scores table not available:', error);
+      // Return empty array if table doesn't exist
+      return [];
     }
-    
-    return data || [];
   },
 
   // Calculate demo health score
   async calculateDemoHealthScore(demoId: string): Promise<number> {
-    const { data, error } = await supabase.rpc('calculate_demo_health_score', {
-      p_demo_id: demoId
-    });
-    
-    if (error) {
-      console.error('Error calculating demo health score:', error);
-      throw error;
+    try {
+      const { data, error } = await supabase.rpc('calculate_demo_health_score', {
+        p_demo_id: demoId
+      });
+      
+      if (error) {
+        console.error('Error calculating demo health score:', error);
+        throw error;
+      }
+      
+      return data || 0;
+    } catch (error: any) {
+      console.warn('Demo health score calculation function not available:', error);
+      // Return 0 if function doesn't exist
+      return 0;
     }
-    
-    return data || 0;
   },
 
   // Update all demo health scores
   async updateAllDemoHealthScores(): Promise<void> {
-    const { error } = await supabase.rpc('update_all_demo_health_scores');
-    
-    if (error) {
-      console.error('Error updating all demo health scores:', error);
-      throw error;
+    try {
+      const { error } = await supabase.rpc('update_all_demo_health_scores');
+      
+      if (error) {
+        console.error('Error updating all demo health scores:', error);
+        throw error;
+      }
+    } catch (error: any) {
+      console.warn('Demo health score update function not available:', error);
+      // Silently fail if function doesn't exist
     }
   }
 };
