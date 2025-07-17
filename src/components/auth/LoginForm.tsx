@@ -180,13 +180,6 @@ export function LoginForm() {
                 </button>
               </div>
 
-              <div className="mt-8 p-6 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600 text-center">
-                  <strong>Admin Users:</strong> jeremy@lyzr.ai and admin@lyzr.ai get automatic admin access.
-                  <br />
-                  <strong>Test Users:</strong> Any email can create an account with standard access.
-                </p>
-              </div>
             </CardContent>
           </Card>
 
