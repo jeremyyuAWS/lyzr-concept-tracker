@@ -273,12 +273,14 @@ export const analyticsService = {
     durationMs?: number
   ): Promise<void> {
     const { error } = await supabase.rpc('log_user_activity', {
-      p_session_id: sessionId,
-      p_activity_type: activityType,
+      p_action: activityType,
       p_resource_type: resourceType,
       p_resource_id: resourceId,
-      p_activity_data: activityData,
-      p_duration_ms: durationMs
+      p_details: {
+        session_id: sessionId,
+        activity_data: activityData,
+        duration_ms: durationMs
+      }
     });
     
     if (error) {
