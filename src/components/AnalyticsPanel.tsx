@@ -225,8 +225,22 @@ export function AnalyticsPanel({ demos }: AnalyticsPanelProps) {
   const loadEngagementData = async () => {
     setLoadingUsers(true);
     try {
-      const users = await userService.getAllUserProfiles();
-      const activityLogs = await userService.getActivityLogs(1000); // Get more logs for better metrics
+      let users = [];
+      let activityLogs = [];
+      
+      try {
+        users = await userService.getAllUserProfiles();
+      } catch (userError) {
+        console.warn('Failed to load user profiles:', userError);
+        users = []; // Fallback to empty array
+      }
+      
+      try {
+        activityLogs = await userService.getActivityLogs(1000);
+      } catch (activityError) {
+        console.warn('Failed to load activity logs:', activityError);
+        activityLogs = []; // Fallback to empty array
+      }
       
       // Calculate engagement metrics for each user
       const engagementData = users.map(user => {
@@ -287,17 +301,8 @@ export function AnalyticsPanel({ demos }: AnalyticsPanelProps) {
       setEngagementUsers(sortedUsers);
     } catch (error) {
       console.error('Error loading engagement data:', error);
-      // Fallback to a single user if loading fails
-      setEngagementUsers([{
-        user: 'System User',
-        role: 'Administrator',
-        logins: 1,
-        demosViewed: 1,
-        totalEngagement: 100,
-        lastActive: 'Recently',
-        favoriteTag: 'System',
-        streak: 1
-      }]);
+      // Fallback to empty array if complete failure
+      setEngagementUsers([]);
     } finally {
       setLoadingUsers(false);
     }
