@@ -67,11 +67,9 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
 function AppContent() {
   const [initialized, setInitialized] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
-  const [debugInfo, setDebugInfo] = useState<string[]>([]);
 
   const addDebugInfo = (message: string) => {
     console.log('🔍 DEBUG:', message);
-    setDebugInfo(prev => [...prev.slice(-4), `${new Date().toLocaleTimeString()}: ${message}`]);
   };
 
   // Initialize app with minimal checks
@@ -106,13 +104,6 @@ function AppContent() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading Lyzr Concept Tracker...</p>
-          {debugInfo.length > 0 && (
-            <div className="mt-4 text-xs text-gray-500 max-w-md">
-              {debugInfo.map((info, i) => (
-                <div key={i}>{info}</div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
     );
@@ -136,14 +127,6 @@ function AppContent() {
             <p>1. VITE_SUPABASE_URL is set</p>
             <p>2. VITE_SUPABASE_ANON_KEY is set</p>
             <p>3. Variables are deployed to Netlify</p>
-            {debugInfo.length > 0 && (
-              <div className="mt-2 text-xs">
-                <strong>Debug Info:</strong>
-                {debugInfo.map((info, i) => (
-                  <div key={i}>{info}</div>
-                ))}
-              </div>
-            )}
           </div>
           <button 
             onClick={() => window.location.reload()} 
@@ -161,12 +144,10 @@ function AppContent() {
 
 function MainApp() {
   const { user, loading: authLoading } = useAuth();
-  const [debugInfo, setDebugInfo] = useState<string[]>([]);
   const [forceShowApp, setForceShowApp] = useState(false);
 
   const addDebugInfo = (message: string) => {
     console.log('🔍 MAIN APP DEBUG:', message);
-    setDebugInfo(prev => [...prev.slice(-4), `${new Date().toLocaleTimeString()}: ${message}`]);
   };
 
   // Emergency timeout to force show app after 10 seconds
@@ -238,14 +219,6 @@ function MainApp() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your account...</p>
           <p className="text-gray-500 text-sm mt-2">This should only take a moment</p>
-          {debugInfo.length > 0 && (
-            <div className="mt-4 text-xs text-left text-gray-500 max-w-md mx-auto bg-gray-100 p-3 rounded">
-              <strong>Debug Info:</strong>
-              {debugInfo.map((info, i) => (
-                <div key={i}>{info}</div>
-              ))}
-            </div>
-          )}
           <button 
             onClick={() => {
               addDebugInfo('User clicked force continue');

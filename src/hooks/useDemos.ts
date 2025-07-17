@@ -6,11 +6,9 @@ export function useDemos() {
   const [demos, setDemos] = useState<Demo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [debugInfo, setDebugInfo] = useState<string[]>([]);
 
   const addDebugInfo = (message: string) => {
     console.log('🔍 DEMOS DEBUG:', message);
-    setDebugInfo(prev => [...prev.slice(-4), `${new Date().toLocaleTimeString()}: ${message}`]);
   };
 
   const fetchDemos = async () => {
