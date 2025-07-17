@@ -598,7 +598,7 @@ export function AnalyticsPanel({ demos }: AnalyticsPanelProps) {
               <div>
                 <CardTitle className="text-xl font-semibold text-black flex items-center gap-2">
                   <Trophy className="w-6 h-6 text-yellow-600" />
-                  Top Performing Demos
+                  Most Popular Demos
                 </CardTitle>
                 <CardDescription>Ranked by total page views and engagement</CardDescription>
               </div>
