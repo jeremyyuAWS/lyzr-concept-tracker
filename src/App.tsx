@@ -8,12 +8,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Toaster } from '@/components/ui/sonner';
 import { useDemos } from '@/hooks/useDemos';
+import { useFavorites } from '@/hooks/useFavorites';
 import { FeaturedTab } from '@/tabs/FeaturedTab';
+import { FavoritesTab } from '@/tabs/FavoritesTab';
 import { CatalogTab } from '@/tabs/CatalogTab';
 import { AddTab } from '@/tabs/AddTab';
 import { AnalyticsTab } from '@/tabs/AnalyticsTab';
 import { AdminTab } from '@/tabs/AdminTab';
-import { Cat as Catalog, Plus, BarChart3, Shield, HelpCircle, Sparkles } from 'lucide-react';
+import { Cat as Catalog, Plus, BarChart3, Shield, HelpCircle, Sparkles, Heart } from 'lucide-react';
 
 // Simplified error boundary component
 class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: any}> {
@@ -138,6 +140,15 @@ function AppContent() {
 function MainApp() {
   const { user, loading: authLoading } = useAuth();
   const { demos, loading, error, incrementPageViews, updateDemo, deleteDemo, refetch } = useDemos();
+  const { 
+    userFavorites, 
+    favoritesDemos, 
+    loading: favoritesLoading, 
+    error: favoritesError, 
+    toggleFavorite, 
+    isFavorited, 
+    refetch: refetchFavorites 
+  } = useFavorites();
   const [activeTab, setActiveTab] = useState('featured');
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
@@ -177,7 +188,12 @@ function MainApp() {
 
   const handleDemoAdded = () => {
     refetch();
+    refetchFavorites();
     setActiveTab('featured');
+  };
+
+  const handleToggleFavorite = async (demoId: string) => {
+    await toggleFavorite(demoId);
   };
 
   return (
@@ -219,13 +235,20 @@ function MainApp() {
         />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 bg-white p-1 rounded-lg border border-gray-200">
+          <TabsList className="grid w-full grid-cols-6 bg-white p-1 rounded-lg border border-gray-200">
             <TabsTrigger 
               value="featured" 
               className="flex items-center gap-2 text-gray-600 bg-transparent hover:bg-blue-50 hover:text-blue-600 data-[state=active]:bg-gray-100 data-[state=active]:text-black data-[state=active]:shadow-sm"
             >
               <Sparkles className="w-4 h-4" />
               <span className="hidden sm:inline">Featured</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="favorites" 
+              className="flex items-center gap-2 text-gray-600 bg-transparent hover:bg-pink-50 hover:text-pink-600 data-[state=active]:bg-gray-100 data-[state=active]:text-black data-[state=active]:shadow-sm"
+            >
+              <Heart className="w-4 h-4" />
+              <span className="hidden sm:inline">Favorites</span>
             </TabsTrigger>
             <TabsTrigger 
               value="catalog" 
@@ -267,6 +290,21 @@ function MainApp() {
                 onDemoUpdate={updateDemo}
                 onDemoDelete={deleteDemo}
                 onRetry={refetch}
+                onToggleFavorite={handleToggleFavorite}
+                isFavorited={isFavorited}
+              />
+            </TabsContent>
+
+            <TabsContent value="favorites" className="mt-0">
+              <FavoritesTab 
+                favoritesDemos={favoritesDemos}
+                loading={favoritesLoading}
+                error={favoritesError}
+                onViewIncrement={incrementPageViews}
+                onDemoUpdate={updateDemo}
+                onDemoDelete={deleteDemo}
+                onRetry={refetchFavorites}
+                onToggleFavorite={handleToggleFavorite}
               />
             </TabsContent>
 
@@ -279,6 +317,8 @@ function MainApp() {
                 onDemoUpdate={updateDemo}
                 onDemoDelete={deleteDemo}
                 onRetry={refetch}
+                onToggleFavorite={handleToggleFavorite}
+                isFavorited={isFavorited}
               />
             </TabsContent>
 

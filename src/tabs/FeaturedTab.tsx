@@ -15,9 +15,11 @@ interface FeaturedTabProps {
   onDemoUpdate?: (updatedDemo: Demo) => void;
   onDemoDelete?: (demoId: string) => void;
   onRetry?: () => void;
+  onToggleFavorite?: (demoId: string) => void;
+  isFavorited?: (demoId: string) => boolean;
 }
 
-export function FeaturedTab({ demos, loading, error, onViewIncrement, onDemoUpdate, onDemoDelete, onRetry }: FeaturedTabProps) {
+export function FeaturedTab({ demos, loading, error, onViewIncrement, onDemoUpdate, onDemoDelete, onRetry, onToggleFavorite, isFavorited }: FeaturedTabProps) {
   const [activeFilter, setActiveFilter] = useState<'featured' | 'recent' | 'trending'>('featured');
 
   if (loading) {
@@ -218,6 +220,8 @@ export function FeaturedTab({ demos, loading, error, onViewIncrement, onDemoUpda
                 onViewIncrement={onViewIncrement}
                 onUpdate={onDemoUpdate}
                 onDelete={onDemoDelete}
+                onToggleFavorite={onToggleFavorite}
+                isFavorited={isFavorited ? isFavorited(demo.id) : false}
               />
             </div>
           ))}

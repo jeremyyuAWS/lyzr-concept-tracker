@@ -5,8 +5,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { DemoEditModal } from './DemoEditModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { demoService } from '@/lib/supabase';
+import { favoritesService } from '@/lib/supabase';
 import { Demo } from '@/types/demo';
-import { ExternalLink, FileText, Database, Shield, Eye, Edit3, Trash2, MoreHorizontal, Star, Play, Pause } from 'lucide-react';
+import { ExternalLink, FileText, Database, Shield, Eye, Edit3, Trash2, MoreHorizontal, Star, Play, Pause, Heart } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,14 +33,17 @@ interface DemoCardProps {
   onViewIncrement?: (id: string) => void;
   onUpdate?: (updatedDemo: Demo) => void;
   onDelete?: (demoId: string) => void;
+  onToggleFavorite?: (demoId: string) => void;
+  isFavorited?: boolean;
 }
 
-export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCardProps) {
+export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFavorite, isFavorited = false }: DemoCardProps) {
   const { isAdmin } = useAuth();
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUpdatingFeatured, setIsUpdatingFeatured] = useState(false);
+  const [isFavoriting, setIsFavoriting] = useState(false);
   const [showScreenshotModal, setShowScreenshotModal] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoError, setVideoError] = useState<string | null>(null);
@@ -183,6 +187,24 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
     }
   };
 
+  const handleToggleFavorite = async () => {
+    if (isFavoriting) return;
+    
+    setIsFavoriting(true);
+    try {
+      await favoritesService.toggleFavorite(demo.id);
+      if (onToggleFavorite) {
+        onToggleFavorite(demo.id);
+      }
+      toast.success(isFavorited ? 'Removed from favorites' : 'Added to favorites');
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      toast.error('Failed to update favorite');
+    } finally {
+      setIsFavoriting(false);
+    }
+  };
+
   const handleVideoToggle = () => {
     if (videoRef.current) {
       if (isVideoPlaying) {
@@ -269,7 +291,25 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
                   </Badge>
                 )}
               </div>
-              {isAdmin && (
+              <div className="flex items-center gap-1">
+                {/* Favorite Button */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleToggleFavorite}
+                  disabled={isFavoriting}
+                  className={`h-8 w-8 p-0 transition-all duration-200 ${
+                    isFavorited 
+                      ? 'text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100' 
+                      : 'text-gray-400 hover:text-red-500 bg-gray-50 hover:bg-red-50'
+                  }`}
+                  title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+                >
+                  <Heart className={`h-4 w-4 ${isFavorited ? 'fill-current' : ''}`} />
+                </Button>
+                
+                {/* Admin Menu */}
+                {isAdmin && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="h-8 w-8 p-0 text-gray-700 hover:text-gray-900 bg-gray-50 hover:bg-gray-100">
@@ -299,7 +339,8 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete }: DemoCard
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              )}
+                )}
+              </div>
             </div>
             <CardDescription className="text-gray-600 text-sm leading-relaxed">
               {demo.description}

@@ -16,9 +16,11 @@ interface CatalogTabProps {
   onDemoUpdate?: (updatedDemo: Demo) => void;
   onDemoDelete?: (demoId: string) => void;
   onRetry?: () => void;
+  onToggleFavorite?: (demoId: string) => void;
+  isFavorited?: (demoId: string) => boolean;
 }
 
-export function CatalogTab({ demos, loading, error, onViewIncrement, onDemoUpdate, onDemoDelete, onRetry }: CatalogTabProps) {
+export function CatalogTab({ demos, loading, error, onViewIncrement, onDemoUpdate, onDemoDelete, onRetry, onToggleFavorite, isFavorited }: CatalogTabProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -174,6 +176,8 @@ export function CatalogTab({ demos, loading, error, onViewIncrement, onDemoUpdat
               onViewIncrement={onViewIncrement}
               onUpdate={onDemoUpdate}
               onDelete={onDemoDelete}
+              onToggleFavorite={onToggleFavorite}
+              isFavorited={isFavorited ? isFavorited(demo.id) : false}
             />
           ))}
         </div>
