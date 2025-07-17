@@ -56,6 +56,8 @@ export interface DatabaseDemo {
 export const demoService = {
   // Get all demos
   async getDemos(): Promise<DatabaseDemo[]> {
+    console.log('🔍 Fetching demos from Supabase...');
+    
     const { data, error } = await supabase
       .from('demos')
       .select('*')
@@ -63,10 +65,17 @@ export const demoService = {
       .order('created_at', { ascending: false });
     
     if (error) {
-      console.error('Error fetching demos:', error);
+      console.error('❌ Error fetching demos:', error);
+      console.error('Error details:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
       throw error;
     }
     
+    console.log('✅ Demos fetched successfully:', data?.length || 0, 'demos');
     return data || [];
   },
 
