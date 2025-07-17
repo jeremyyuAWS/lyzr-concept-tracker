@@ -195,7 +195,8 @@ function MainApp() {
   };
 
   const handleToggleFavorite = async (demoId: string) => {
-    await toggleFavorite(demoId);
+    const result = await toggleFavorite(demoId);
+    return result;
   };
 
   const handleTabChange = (tab: string) => {
