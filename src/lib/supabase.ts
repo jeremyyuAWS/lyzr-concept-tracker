@@ -292,18 +292,29 @@ export const analyticsService = {
   // Get real-time activities
   async getRealTimeActivities(limit: number = 50): Promise<any[]> {
     try {
+      // Try to call the RPC function
       const { data, error } = await supabase.rpc('get_real_time_activities', {
         p_limit: limit
       });
       
       if (error) {
+        // Check if it's a missing function error
+        if (error.code === 'PGRST202' || error.message?.includes('Could not find the function')) {
+          console.warn('Real-time activities function not available:', error);
+          return [];
+        }
         console.error('Error fetching real-time activities:', error);
         throw error;
       }
       
       return data || [];
     } catch (error: any) {
-      console.warn('Real-time activities function not available:', error);
+      // Handle network errors or other exceptions
+      if (error.message?.includes('function') || error.code === 'PGRST202') {
+        console.warn('Real-time activities function not available:', error);
+        return [];
+      }
+      console.error('Error fetching real-time activities:', error);
       // Return empty array if function doesn't exist
       return [];
     }
@@ -328,6 +339,7 @@ export const analyticsService = {
   // Get demo health scores
   async getDemoHealthScores(): Promise<any[]> {
     try {
+      // Try to query the demo_health_scores table
       const { data, error } = await supabase
         .from('demo_health_scores')
         .select(`
@@ -344,13 +356,23 @@ export const analyticsService = {
         .order('health_score', { ascending: false });
       
       if (error) {
+        // Check if it's a missing table/relationship error
+        if (error.code === 'PGRST200' || error.message?.includes('Could not find a relationship')) {
+          console.warn('Demo health scores table not available:', error);
+          return [];
+        }
         console.error('Error fetching demo health scores:', error);
         throw error;
       }
       
       return data || [];
     } catch (error: any) {
-      console.warn('Demo health scores table not available:', error);
+      // Handle network errors or other exceptions
+      if (error.message?.includes('relation') || error.message?.includes('relationship') || error.code === 'PGRST200') {
+        console.warn('Demo health scores table not available:', error);
+        return [];
+      }
+      console.error('Error fetching demo health scores:', error);
       // Return empty array if table doesn't exist
       return [];
     }
