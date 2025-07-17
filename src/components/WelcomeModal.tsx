@@ -21,7 +21,11 @@ import {
   Info,
   CheckCircle,
   ArrowRight,
-  Lightbulb
+  Lightbulb,
+  Star,
+  Heart,
+  Target,
+  Sparkles
 } from 'lucide-react';
 
 interface WelcomeModalProps {
@@ -35,7 +39,7 @@ export function WelcomeModal({ isOpen, onClose }: WelcomeModalProps) {
 
   const steps = [
     {
-      title: "Welcome to Lyzr Concept Tracker",
+      title: "Lyzr Concept Tracker - Feature Overview",
       icon: <BookOpen className="w-8 h-8" />,
       content: (
         <div className="space-y-6">
@@ -49,7 +53,7 @@ export function WelcomeModal({ isOpen, onClose }: WelcomeModalProps) {
             </div>
             <h2 className="text-2xl font-bold text-black mb-2">Lyzr Concept Tracker</h2>
             <p className="text-gray-600 mb-4">
-              Your central hub for managing and showcasing AI demo concepts
+              The complete platform for discovering, managing, and tracking AI demo concepts
             </p>
             <div className="flex items-center justify-center gap-2 mb-6">
               <Badge className={`${isAdmin ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}`}>
@@ -71,47 +75,84 @@ export function WelcomeModal({ isOpen, onClose }: WelcomeModalProps) {
             </div>
           </div>
 
-          <Card className="bg-blue-50 border-blue-200">
+          <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-blue-800">
                 <Info className="w-5 h-5" />
-                What is this app?
+                Core Purpose & Benefits
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-blue-700 text-sm">
-                This is Lyzr's internal tool for cataloging, managing, and tracking all AI demo concepts 
-                created across Bolt.new and Lovable. It helps AEs showcase our capabilities and enables 
-                internal teams to track demo performance and usage.
-              </p>
+              <div className="space-y-3 text-blue-700 text-sm">
+                <p className="font-medium">🎯 For Account Executives & Sales Teams:</p>
+                <ul className="list-disc list-inside space-y-1 ml-2">
+                  <li>Instantly find the perfect demo for any prospect or use case</li>
+                  <li>Access performance data to choose proven successful concepts</li>
+                  <li>One-click access to live demos, technical docs, and resources</li>
+                  <li>Track which demos resonate most with clients</li>
+                </ul>
+                <p className="font-medium mt-4">⚡ For Internal Teams:</p>
+                <ul className="list-disc list-inside space-y-1 ml-2">
+                  <li>Centralized catalog of all AI demo concepts across platforms</li>
+                  <li>Real-time analytics on demo performance and engagement</li>
+                  <li>Streamlined demo management and content organization</li>
+                  <li>Data-driven insights for future demo development</li>
+                </ul>
+              </div>
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="bg-green-50 border-green-200">
-              <CardHeader>
-                <CardTitle className="text-green-800 text-sm">For Account Executives</CardTitle>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-green-800 text-sm flex items-center gap-2">
+                  <Search className="w-4 h-4" />
+                  Smart Discovery
+                </CardTitle>
               </CardHeader>
-              <CardContent>
-                <ul className="text-green-700 text-xs space-y-1">
-                  <li>• Browse and search demo concepts</li>
-                  <li>• View demo analytics and popularity</li>
-                  <li>• Access live demos and resources</li>
-                  <li>• Filter by technology and use case</li>
+              <CardContent className="pt-0">
+                <ul className="text-green-700 text-xs space-y-2">
+                  <li>• Advanced search with auto-suggestions</li>
+                  <li>• Filter by technology, industry, complexity</li>
+                  <li>• Featured demos curated by experts</li>
+                  <li>• Trending demos based on engagement</li>
+                  <li>• Favorite demos for quick access</li>
                 </ul>
               </CardContent>
             </Card>
 
-            <Card className="bg-purple-50 border-purple-200">
-              <CardHeader>
-                <CardTitle className="text-purple-800 text-sm">For Internal Teams</CardTitle>
+            <Card className="bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-purple-800 text-sm flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4" />
+                  Performance Intelligence
+                </CardTitle>
               </CardHeader>
-              <CardContent>
-                <ul className="text-purple-700 text-xs space-y-1">
-                  <li>• Add and manage demo entries</li>
-                  <li>• Track performance analytics</li>
-                  <li>• Organize by tags and categories</li>
-                  <li>• Monitor usage and engagement</li>
+              <CardContent className="pt-0">
+                <ul className="text-purple-700 text-xs space-y-2">
+                  <li>• Real-time view counts and engagement</li>
+                  <li>• Demo performance comparisons</li>
+                  <li>• Technology trend analysis</li>
+                  <li>• Creator leaderboards and insights</li>
+                  <li>• Usage patterns and optimization tips</li>
+                </ul>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-orange-800 text-sm flex items-center gap-2">
+                  <Shield className="w-4 h-4" />
+                  Admin Control
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <ul className="text-orange-700 text-xs space-y-2">
+                  <li>• Add, edit, and manage demo entries</li>
+                  <li>• User management and role control</li>
+                  <li>• Feature/unfeature demo curation</li>
+                  <li>• System monitoring and health checks</li>
+                  <li>• Export and reporting capabilities</li>
                 </ul>
               </CardContent>
             </Card>
@@ -120,371 +161,434 @@ export function WelcomeModal({ isOpen, onClose }: WelcomeModalProps) {
       )
     },
     {
-      title: "Navigating the App",
+      title: "Featured & Favorites Tabs - Your Starting Point",
+      icon: <Star className="w-8 h-8" />,
+      content: (
+        <div className="space-y-6">
+          <div className="text-center mb-6">
+            <h3 className="text-xl font-semibold text-black mb-2">Start Here - Discover Premium Content</h3>
+            <p className="text-gray-600">The Featured and Favorites tabs help you quickly find the best demos</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="bg-gradient-to-br from-yellow-50 to-amber-50 border-yellow-200 hover:shadow-lg transition-all">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-yellow-800">
+                  <Star className="w-6 h-6" />
+                  Featured Tab
+                </CardTitle>
+                <CardDescription className="text-yellow-700">Premium curated demos showcasing our best work</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="bg-white/70 p-3 rounded-lg">
+                    <h4 className="font-semibold text-yellow-800 mb-2">Three Smart Filters:</h4>
+                    <ul className="text-sm text-yellow-700 space-y-1">
+                      <li><strong>Featured:</strong> Hand-picked demos by admins</li>
+                      <li><strong>Recent:</strong> New demos from the last 7 days</li>
+                      <li><strong>Trending:</strong> High-engagement demos gaining traction</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="bg-white/70 p-3 rounded-lg">
+                    <h4 className="font-semibold text-yellow-800 mb-2">Perfect For:</h4>
+                    <ul className="text-sm text-yellow-700 space-y-1">
+                      <li>• Client presentations and demos</li>
+                      <li>• Finding proven successful concepts</li>
+                      <li>• Discovering what's new and trending</li>
+                      <li>• Quick access to top-performing demos</li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-pink-50 to-rose-50 border-pink-200 hover:shadow-lg transition-all">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-pink-800">
+                  <Heart className="w-6 h-6" />
+                  Favorites Tab
+                </CardTitle>
+                <CardDescription className="text-pink-700">Your personal collection of bookmarked demos</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="bg-white/70 p-3 rounded-lg">
+                    <h4 className="font-semibold text-pink-800 mb-2">Smart Organization:</h4>
+                    <ul className="text-sm text-pink-700 space-y-1">
+                      <li><strong>Recent:</strong> Latest favorited demos</li>
+                      <li><strong>Popular:</strong> Sorted by view count</li>
+                      <li><strong>Alphabetical:</strong> Easy name-based browsing</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="bg-white/70 p-3 rounded-lg">
+                    <h4 className="font-semibold text-pink-800 mb-2">Use Cases:</h4>
+                    <ul className="text-sm text-pink-700 space-y-1">
+                      <li>• Build custom demo playlists for clients</li>
+                      <li>• Quick access to your go-to demos</li>
+                      <li>• Save demos for specific verticals</li>
+                      <li>• Personal curation for presentations</li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-blue-800">
+                <Lightbulb className="w-5 h-5" />
+                Pro Tips for Maximum Impact
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-blue-800">For Client Meetings:</h4>
+                  <ul className="text-sm text-blue-700 space-y-1">
+                    <li>• Start with Featured demos for proven impact</li>
+                    <li>• Use Trending to show cutting-edge capabilities</li>
+                    <li>• Favorite relevant demos before the meeting</li>
+                    <li>• Check view counts to gauge popularity</li>
+                  </ul>
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-blue-800">For Research & Prep:</h4>
+                  <ul className="text-sm text-blue-700 space-y-1">
+                    <li>• Browse Recent for latest innovations</li>
+                    <li>• Build industry-specific favorite collections</li>
+                    <li>• Track demo performance over time</li>
+                    <li>• Use filters to find niche technologies</li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )
+    },
+    {
+      title: "Catalog Tab - Complete Demo Discovery",
       icon: <Search className="w-8 h-8" />,
       content: (
         <div className="space-y-6">
           <div className="text-center mb-6">
-            <h3 className="text-xl font-semibold text-black mb-2">Four Main Sections</h3>
-            <p className="text-gray-600">Each tab serves a specific purpose in the workflow</p>
+            <h3 className="text-xl font-semibold text-black mb-2">Your Complete Demo Library</h3>
+            <p className="text-gray-600">Advanced search, filtering, and browsing capabilities</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="hover:shadow-md transition-shadow">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 hover:shadow-lg transition-all">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-black">
-                  <Search className="w-5 h-5" />
-                  Catalog
+                <CardTitle className="flex items-center gap-2 text-blue-800">
+                  <Search className="w-6 h-6" />
+                  Smart Search Engine
                 </CardTitle>
-                <CardDescription>Browse and search all demos</CardDescription>
+                <CardDescription className="text-blue-700">Intelligent search with auto-suggestions</CardDescription>
               </CardHeader>
               <CardContent>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• Search by title, description, or owner</li>
-                  <li>• Filter by technology tags</li>
-                  <li>• View demo details and screenshots</li>
-                  <li>• Access live demos and resources</li>
-                  <li>• Toggle between grid and list view</li>
-                </ul>
+                <div className="space-y-3">
+                  <div className="bg-white/70 p-3 rounded-lg">
+                    <h4 className="font-semibold text-blue-800 mb-2">Search Capabilities:</h4>
+                    <ul className="text-sm text-blue-700 space-y-1">
+                      <li>• Search titles, descriptions, owners</li>
+                      <li>• Auto-complete suggestions</li>
+                      <li>• Search history tracking</li>
+                      <li>• Keyboard shortcuts (⌘+K)</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="bg-white/70 p-3 rounded-lg">
+                    <h4 className="font-semibold text-blue-800 mb-2">Quick Examples:</h4>
+                    <ul className="text-sm text-blue-700 space-y-1">
+                      <li>"AI task" → Task management demos</li>
+                      <li>"React" → React-based applications</li>
+                      <li>"Jeremy" → Demos by Jeremy</li>
+                    </ul>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-md transition-shadow">
+            <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 hover:shadow-lg transition-all">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-black">
-                  <Plus className="w-5 h-5" />
-                  Add Demo
-                  <Badge variant="outline" className="text-xs">Admin Only</Badge>
+                <CardTitle className="flex items-center gap-2 text-green-800">
+                  <Filter className="w-6 h-6" />
+                  Advanced Filtering
                 </CardTitle>
-                <CardDescription>Create new demo entries</CardDescription>
+                <CardDescription className="text-green-700">Powerful filtering and organization tools</CardDescription>
               </CardHeader>
               <CardContent>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• Add title, description, and tags</li>
-                  <li>• Include Netlify, Excalidraw, Supabase links</li>
-                  <li>• Upload screenshot images</li>
-                  <li>• Set owner and metadata</li>
-                  <li>• Publish directly to catalog</li>
-                </ul>
+                <div className="space-y-3">
+                  <div className="bg-white/70 p-3 rounded-lg">
+                    <h4 className="font-semibold text-green-800 mb-2">Filter Options:</h4>
+                    <ul className="text-sm text-green-700 space-y-1">
+                      <li>• Technology tags (AI, React, etc.)</li>
+                      <li>• View count ranges</li>
+                      <li>• Creation date ranges</li>
+                      <li>• Featured status</li>
+                      <li>• Owner/creator</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="bg-white/70 p-3 rounded-lg">
+                    <h4 className="font-semibold text-green-800 mb-2">View Modes:</h4>
+                    <ul className="text-sm text-green-700 space-y-1">
+                      <li>• Grid view for visual browsing</li>
+                      <li>• List view for detailed information</li>
+                      <li>• Sort by popularity, date, name</li>
+                    </ul>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-md transition-shadow">
+            <Card className="bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200 hover:shadow-lg transition-all">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-black">
-                  <BarChart3 className="w-5 h-5" />
-                  Analytics
+                <CardTitle className="flex items-center gap-2 text-purple-800">
+                  <Eye className="w-6 h-6" />
+                  Demo Actions
                 </CardTitle>
-                <CardDescription>Track performance and usage</CardDescription>
+                <CardDescription className="text-purple-700">Quick access to demos and resources</CardDescription>
               </CardHeader>
               <CardContent>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• View total demos and page views</li>
-                  <li>• See top-performing demos</li>
-                  <li>• Analyze tag distribution</li>
-                  <li>• Track monthly growth trends</li>
-                  <li>• Monitor owner performance</li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-md transition-shadow">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-black">
-                  <Shield className="w-5 h-5" />
-                  Admin
-                  <Badge variant="outline" className="text-xs">Admin Only</Badge>
-                </CardTitle>
-                <CardDescription>System management and settings</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• View system information</li>
-                  <li>• Manage user roles and permissions</li>
-                  <li>• Monitor security features</li>
-                  <li>• Access system logs</li>
-                  <li>• Configure app settings</li>
-                </ul>
+                <div className="space-y-3">
+                  <div className="bg-white/70 p-3 rounded-lg">
+                    <h4 className="font-semibold text-purple-800 mb-2">Quick Actions:</h4>
+                    <ul className="text-sm text-purple-700 space-y-1">
+                      <li>• <strong>Try App:</strong> Launch live demo</li>
+                      <li>• <strong>Heart:</strong> Add/remove from favorites</li>
+                      <li>• <strong>Menu:</strong> Edit, feature, or delete (admin)</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="bg-white/70 p-3 rounded-lg">
+                    <h4 className="font-semibold text-purple-800 mb-2">Resource Links:</h4>
+                    <ul className="text-sm text-purple-700 space-y-1">
+                      <li>• Excalidraw diagrams and wireframes</li>
+                      <li>• Supabase backend and database</li>
+                      <li>• GitHub repositories and code</li>
+                      <li>• Screenshots and video overviews</li>
+                    </ul>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
+          
+          <Card className="bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-yellow-800">
+                <Target className="w-5 h-5" />
+                Catalog Power User Tips
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-yellow-800">Discovery Strategies:</h4>
+                  <ul className="text-sm text-yellow-700 space-y-1">
+                    <li>• Use popular tags to explore trends</li>
+                    <li>• Sort by views to find proven demos</li>
+                    <li>• Check recent additions for innovation</li>
+                    <li>• Follow prolific creators</li>
+                  </ul>
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-yellow-800">Efficiency Tips:</h4>
+                  <ul className="text-sm text-yellow-700 space-y-1">
+                    <li>• Use ⌘+K keyboard shortcut</li>
+                    <li>• Save frequent searches in history</li>
+                    <li>• Combine search terms with filters</li>
+                    <li>• Switch between grid/list as needed</li>
+                  </ul>
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-yellow-800">Client Prep:</h4>
+                  <ul className="text-sm text-yellow-700 space-y-1">
+                    <li>• Filter by client's tech stack</li>
+                    <li>• Check demo health scores</li>
+                    <li>• Review resource links beforehand</li>
+                    <li>• Favorite relevant demos for easy access</li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )
     },
     {
-      title: "Using the Catalog",
-      icon: <Eye className="w-8 h-8" />,
+      title: "Analytics & Admin Tabs - Insights & Management",
+      icon: <BarChart3 className="w-8 h-8" />,
       content: (
         <div className="space-y-6">
           <div className="text-center mb-6">
-            <h3 className="text-xl font-semibold text-black mb-2">Finding and Accessing Demos</h3>
-            <p className="text-gray-600">Everything you need to know about browsing demos</p>
+            <h3 className="text-xl font-semibold text-black mb-2">Performance Insights & System Management</h3>
+            <p className="text-gray-600">Data-driven decisions and administrative control</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <Card className="bg-blue-50 border-blue-200">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-blue-800">
-                    <Search className="w-5 h-5" />
-                    Search & Filter
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Search className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm text-blue-700">Search by title, description, or owner</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Filter className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm text-blue-700">Filter by technology tags</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Eye className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm text-blue-700">Sort by views, date, or name</span>
-                    </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 hover:shadow-lg transition-all">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-blue-800">
+                  <BarChart3 className="w-6 h-6" />
+                  Analytics Dashboard
+                </CardTitle>
+                <CardDescription className="text-blue-700">Comprehensive performance metrics and insights</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="bg-white/70 p-3 rounded-lg">
+                    <h4 className="font-semibold text-blue-800 mb-2">Key Metrics:</h4>
+                    <ul className="text-sm text-blue-700 space-y-1">
+                      <li>• Total demos and cumulative views</li>
+                      <li>• Engagement scores and health metrics</li>
+                      <li>• Growth trends and performance tracking</li>
+                      <li>• Featured demo impact analysis</li>
+                    </ul>
                   </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-green-50 border-green-200">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-green-800">
-                    <ExternalLink className="w-5 h-5" />
-                    Demo Actions
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" className="bg-black text-white text-xs">Try App</Button>
-                      <span className="text-sm text-green-700">Access live demo</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-green-600" />
-                      <span className="text-sm text-green-700">View Excalidraw blueprints</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Database className="w-4 h-4 text-green-600" />
-                      <span className="text-sm text-green-700">Access Supabase backend</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Shield className="w-4 h-4 text-green-600" />
-                      <span className="text-sm text-green-700">Open admin panel</span>
-                    </div>
+                  
+                  <div className="bg-white/70 p-3 rounded-lg">
+                    <h4 className="font-semibold text-blue-800 mb-2">Interactive Charts:</h4>
+                    <ul className="text-sm text-blue-700 space-y-1">
+                      <li>• Top-performing demos by views</li>
+                      <li>• Technology trend analysis</li>
+                      <li>• Creator leaderboards and contributions</li>
+                      <li>• Real-time activity feed</li>
+                      <li>• Demo health scoring system</li>
+                    </ul>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-              <Card className="bg-yellow-50 border-yellow-200">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-yellow-800">
-                    <Lightbulb className="w-5 h-5" />
-                    Pro Tips for AEs
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3 text-sm text-yellow-700">
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 mt-0.5 text-yellow-600" />
-                      <span>Use filters to find demos by specific tech stack</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 mt-0.5 text-yellow-600" />
-                      <span>Check page views to see popular demos</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 mt-0.5 text-yellow-600" />
-                      <span>Screenshots help with quick visual reference</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 mt-0.5 text-yellow-600" />
-                      <span>Owner field shows who built the demo</span>
-                    </div>
+                  
+                  <div className="bg-white/70 p-3 rounded-lg">
+                    <h4 className="font-semibold text-blue-800 mb-2">Use Analytics To:</h4>
+                    <ul className="text-sm text-blue-700 space-y-1">
+                      <li>• Identify most successful demo concepts</li>
+                      <li>• Track which technologies are trending</li>
+                      <li>• Monitor team engagement and usage</li>
+                      <li>• Make data-driven demo selections</li>
+                    </ul>
                   </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-purple-50 border-purple-200">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-purple-800">
-                    <Users className="w-5 h-5" />
-                    Team Usage
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3 text-sm text-purple-700">
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 mt-0.5 text-purple-600" />
-                      <span>Click "Try App" to increment view count</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 mt-0.5 text-purple-600" />
-                      <span>Share demo URLs with prospects</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 mt-0.5 text-purple-600" />
-                      <span>Use analytics to track engagement</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 mt-0.5 text-purple-600" />
-                      <span>Report issues to demo owners</span>
-                    </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {isAdmin && (
+            <Card className="bg-gradient-to-br from-red-50 to-pink-50 border-red-200 hover:shadow-lg transition-all">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-red-800">
+                  <Shield className="w-6 h-6" />
+                  Admin Dashboard
+                  <Badge className="bg-red-100 text-red-800 text-xs">Admin Only</Badge>
+                </CardTitle>
+                <CardDescription className="text-red-700">Complete system management and control</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="bg-white/70 p-3 rounded-lg">
+                    <h4 className="font-semibold text-red-800 mb-2">Demo Management:</h4>
+                    <ul className="text-sm text-red-700 space-y-1">
+                      <li>• Add new demos with rich metadata</li>
+                      <li>• Edit existing demo information</li>
+                      <li>• Feature/unfeature demo curation</li>
+                      <li>• Delete outdated or irrelevant demos</li>
+                      <li>• Upload screenshots and video overviews</li>
+                    </ul>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                  
+                  <div className="bg-white/70 p-3 rounded-lg">
+                    <h4 className="font-semibold text-red-800 mb-2">User Management:</h4>
+                    <ul className="text-sm text-red-700 space-y-1">
+                      <li>• Create and invite new team members</li>
+                      <li>• Manage user roles and permissions</li>
+                      <li>• Monitor user activity and engagement</li>
+                      <li>• View login history and statistics</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="bg-white/70 p-3 rounded-lg">
+                    <h4 className="font-semibold text-red-800 mb-2">System Monitoring:</h4>
+                    <ul className="text-sm text-red-700 space-y-1">
+                      <li>• System health and performance metrics</li>
+                      <li>• Database and security status</li>
+                      <li>• Export data and generate reports</li>
+                      <li>• Configure app settings and features</li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            )}
+            
+            {!isAdmin && (
+            <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 hover:shadow-lg transition-all">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-green-800">
+                  <Plus className="w-6 h-6" />
+                  Add Demo Tab
+                </CardTitle>
+                <CardDescription className="text-green-700">Contribute new demos to the catalog (Admin access required)</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="bg-white/70 p-3 rounded-lg">
+                    <h4 className="font-semibold text-green-800 mb-2">Demo Submission:</h4>
+                    <ul className="text-sm text-green-700 space-y-1">
+                      <li>• Rich form with title, description, tags</li>
+                      <li>• Link to live demos and resources</li>
+                      <li>• Screenshot and video upload</li>
+                      <li>• Owner attribution and metadata</li>
+                      <li>• Feature designation for curation</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="bg-yellow-100 p-3 rounded-lg border border-yellow-200">
+                    <h4 className="font-semibold text-yellow-800 mb-2">⚠️ Admin Access Required</h4>
+                    <p className="text-sm text-yellow-700">
+                      You need admin privileges to add new demos. Contact your system administrator to request access.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            )}
           </div>
-        </div>
-      )
-    },
-    {
-      title: isAdmin ? "Admin Features" : "Understanding Analytics",
-      icon: isAdmin ? <Shield className="w-8 h-8" /> : <BarChart3 className="w-8 h-8" />,
-      content: (
-        <div className="space-y-6">
-          {isAdmin ? (
-            <>
-              <div className="text-center mb-6">
-                <h3 className="text-xl font-semibold text-black mb-2">Admin Capabilities</h3>
-                <p className="text-gray-600">You have full admin access to manage demos</p>
+          
+          <Card className="bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-purple-800">
+                <Sparkles className="w-5 h-5" />
+                Advanced Features & Workflows
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-purple-800">For Sales Professionals:</h4>
+                  <ul className="text-sm text-purple-700 space-y-1">
+                    <li><strong>1. Research Phase:</strong> Use Analytics to identify top performers</li>
+                    <li><strong>2. Discovery:</strong> Search Catalog by client's tech stack</li>
+                    <li><strong>3. Curation:</strong> Build Favorites collection for meeting</li>
+                    <li><strong>4. Presentation:</strong> Use Featured demos for maximum impact</li>
+                    <li><strong>5. Follow-up:</strong> Track engagement from your demos</li>
+                  </ul>
+                </div>
+                
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-purple-800">For Content Managers:</h4>
+                  <ul className="text-sm text-purple-700 space-y-1">
+                    <li><strong>1. Content Planning:</strong> Use Analytics to identify gaps</li>
+                    <li><strong>2. Demo Creation:</strong> Add demos via Admin interface</li>
+                    <li><strong>3. Curation:</strong> Feature high-quality demos</li>
+                    <li><strong>4. Optimization:</strong> Monitor performance and iterate</li>
+                    <li><strong>5. Team Management:</strong> Control access and permissions</li>
+                  </ul>
+                </div>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-                <Card className="bg-red-50 border-red-200">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-red-800">
-                      <Plus className="w-5 h-5" />
-                      Adding Demos
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3 text-sm text-red-700">
-                      <div className="flex items-start gap-2">
-                        <ArrowRight className="w-4 h-4 mt-0.5 text-red-600" />
-                        <span>Fill out title, description, and tags</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <ArrowRight className="w-4 h-4 mt-0.5 text-red-600" />
-                        <span>Add Netlify URL (required)</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <ArrowRight className="w-4 h-4 mt-0.5 text-red-600" />
-                        <span>Include optional links (Excalidraw, Supabase)</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <ArrowRight className="w-4 h-4 mt-0.5 text-red-600" />
-                        <span>Upload screenshot for visual reference</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <ArrowRight className="w-4 h-4 mt-0.5 text-red-600" />
-                        <span>Set owner and publish to catalog</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-blue-50 border-blue-200">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-blue-800">
-                      <Shield className="w-5 h-5" />
-                      Managing Content
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3 text-sm text-blue-700">
-                      <div className="flex items-start gap-2">
-                        <ArrowRight className="w-4 h-4 mt-0.5 text-blue-600" />
-                        <span>Edit or delete existing demos</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <ArrowRight className="w-4 h-4 mt-0.5 text-blue-600" />
-                        <span>Manage technology tags</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <ArrowRight className="w-4 h-4 mt-0.5 text-blue-600" />
-                        <span>Update demo metadata</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <ArrowRight className="w-4 h-4 mt-0.5 text-blue-600" />
-                        <span>Monitor system health</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="text-center mb-6">
-                <h3 className="text-xl font-semibold text-black mb-2">Understanding Analytics</h3>
-                <p className="text-gray-600">Track demo performance and usage patterns</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-                <Card className="bg-blue-50 border-blue-200">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-blue-800">
-                      <BarChart3 className="w-5 h-5" />
-                      Key Metrics
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3 text-sm text-blue-700">
-                      <div className="flex items-start gap-2">
-                        <Eye className="w-4 h-4 mt-0.5 text-blue-600" />
-                        <span>Total page views across all demos</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <BarChart3 className="w-4 h-4 mt-0.5 text-blue-600" />
-                        <span>Top-performing demos by views</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <Filter className="w-4 h-4 mt-0.5 text-blue-600" />
-                        <span>Popular technology tags</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <Users className="w-4 h-4 mt-0.5 text-blue-600" />
-                        <span>Demo owner performance</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-green-50 border-green-200">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-green-800">
-                      <Lightbulb className="w-5 h-5" />
-                      Using Analytics
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3 text-sm text-green-700">
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 mt-0.5 text-green-600" />
-                        <span>Identify most popular demos for client calls</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 mt-0.5 text-green-600" />
-                        <span>Track which technologies get most interest</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 mt-0.5 text-green-600" />
-                        <span>Monitor growth trends over time</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 mt-0.5 text-green-600" />
-                        <span>Report usage metrics to stakeholders</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </>
-          )}
+            </CardContent>
+          </Card>
         </div>
       )
     }
