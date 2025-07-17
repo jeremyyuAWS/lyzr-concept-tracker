@@ -202,7 +202,6 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
   const handleToggleFavorite = async () => {
     if (isFavoriting) return;
     
-    const { user } = await supabase.auth.getUser();
     if (!user) {
       toast.error('Please log in to favorite demos');
       return;
