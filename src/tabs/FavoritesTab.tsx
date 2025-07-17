@@ -185,6 +185,7 @@ export function FavoritesTab({
               onUpdate={onDemoUpdate}
               onDelete={onDemoDelete}
               onToggleFavorite={onToggleFavorite}
+              isFavorited={isFavorited ? isFavorited(demo.id) : true}
             />
           ))}
         </div>

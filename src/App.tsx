@@ -195,7 +195,7 @@ function MainApp() {
   };
 
   const handleToggleFavorite = async (demoId: string) => {
-    return await toggleFavorite(demoId);
+    await toggleFavorite(demoId);
   };
 
   const handleTabChange = (tab: string) => {
@@ -311,6 +311,7 @@ function MainApp() {
                 onDemoDelete={deleteDemo}
                 onRetry={refetchFavorites}
                 onToggleFavorite={handleToggleFavorite}
+                isFavorited={isFavorited}
               />
             </TabsContent>
 
