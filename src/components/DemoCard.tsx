@@ -319,7 +319,7 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
                   className={`h-8 w-8 p-0 transition-all duration-200 ${
                     isFavorited 
                       ? 'text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100' 
-                      : 'text-gray-400 hover:text-red-500 bg-gray-50 hover:bg-red-50'
+                     : 'text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100'
                   }`}
                   title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
                 >
