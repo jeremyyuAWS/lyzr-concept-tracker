@@ -107,40 +107,11 @@ function AppContent() {
   // Setup database on app load
   useEffect(() => {
     if (envValid) {
-      console.log('🔍 Verifying database setup...');
-      
-      // Add a timeout for the entire setup process - much shorter now
-      const setupTimeout = setTimeout(() => {
-        console.error('❌ Database setup timeout - falling back to skip mode');
-        setSkipVerification(true);
-        setDbSetup(true); // Allow app to continue
-      }, 5000); // 5 second timeout
-      
-      verifyDatabaseSetup()
-        .then(result => {
-          clearTimeout(setupTimeout);
-          console.log('Database verification result:', result);
-          setDbSetup(result.success);
-        })
-        .catch(error => {
-          clearTimeout(setupTimeout);
-          console.error('Database verification failed:', error);
-          setDbSetup(false);
-        });
+      console.log('⚡ Skipping database verification - loading app directly');
+      setSkipVerification(true);
+      setDbSetup(true); // Skip verification and allow app to continue
     }
-  }, []);
-
-  // Emergency fallback if verification keeps hanging
-  const handleSkipVerification = () => {
-    console.log('🚨 User requested to skip verification');
-    setSkipVerification(true);
-    
-    skipDatabaseVerification()
-      .then(result => {
-        setDbSetup(result.success);
-      })
-      .catch(() => setDbSetup(false));
-  };
+  }, [envValid]);
 
   // Show welcome modal on first load
   useEffect(() => {
@@ -170,19 +141,6 @@ function AppContent() {
              dbSetup === null ? 'Setting up database...' : 
              'Loading...'}
           </p>
-          <p className="text-xs text-gray-500 mt-2">
-            {envValid === null ? 'Validating configuration' : 
-             dbSetup === null ? 'Connecting to database and verifying setup' : 
-             'Please wait'}
-          </p>
-          {dbSetup === null && (
-            <button
-              onClick={handleSkipVerification}
-              className="mt-4 px-4 py-2 bg-gray-600 text-white rounded text-sm hover:bg-gray-700"
-            >
-              Skip Database Check
-            </button>
-          )}
         </div>
       </div>
     );
