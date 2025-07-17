@@ -212,7 +212,6 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
     try {
         onToggleFavorite(demo.id);
       }
-      }
       
       const result = await favoritesService.toggleFavorite(demo.id);
       toast.success(result ? 'Added to favorites' : 'Removed from favorites');
