@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DemoEditModal } from './DemoEditModal';
 import { useAuth } from '@/contexts/AuthContext';
-import { demoService } from '@/lib/supabase';
+import { demoService, supabase } from '@/lib/supabase';
 import { favoritesService } from '@/lib/supabase';
 import { Demo } from '@/types/demo';
 import { ExternalLink, FileText, Database, Shield, Eye, Edit3, Trash2, MoreHorizontal, Star, Play, Pause, Heart } from 'lucide-react';
