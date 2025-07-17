@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Toaster } from '@/components/ui/sonner';
 import { useDemos } from '@/hooks/useDemos';
 import { useFavorites } from '@/hooks/useFavorites';
+import { useSessionTracking } from '@/hooks/useSessionTracking';
 import { FeaturedTab } from '@/tabs/FeaturedTab';
 import { FavoritesTab } from '@/tabs/FavoritesTab';
 import { CatalogTab } from '@/tabs/CatalogTab';
@@ -149,6 +150,7 @@ function MainApp() {
     isFavorited, 
     refetch: refetchFavorites 
   } = useFavorites();
+  const { trackTabChange } = useSessionTracking();
   const [activeTab, setActiveTab] = useState('featured');
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
@@ -196,6 +198,10 @@ function MainApp() {
     await toggleFavorite(demoId);
   };
 
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    trackTabChange(tab);
+  };
   return (
     <div className="min-h-screen bg-white">
       <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
@@ -234,7 +240,7 @@ function MainApp() {
           onClose={handleCloseWelcome}
         />
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid w-full grid-cols-6 bg-white p-1 rounded-lg border border-gray-200">
             <TabsTrigger 
               value="featured" 

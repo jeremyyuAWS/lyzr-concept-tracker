@@ -16,6 +16,8 @@ import {
   BarChart3, PieChart as PieChartIcon, LineChart as LineChartIcon,
   Sparkles, Trophy, Flame, Crown, TrendingDown, DollarSign, LogIn, MousePointer
 } from 'lucide-react';
+import { RealTimeActivityFeed } from './RealTimeActivityFeed';
+import { DemoHealthScoring } from './DemoHealthScoring';
 
 interface AnalyticsPanelProps {
   demos: Demo[];
@@ -376,6 +378,12 @@ export function AnalyticsPanel({ demos }: AnalyticsPanelProps) {
             Export
           </Button>
         </div>
+      </div>
+
+      {/* Real-Time Activity Feed and Demo Health Scoring */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <RealTimeActivityFeed />
+        <DemoHealthScoring />
       </div>
 
       {/* Hero Metrics */}

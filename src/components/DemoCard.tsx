@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DemoEditModal } from './DemoEditModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSessionTracking } from '@/hooks/useSessionTracking';
 import { demoService, supabase } from '@/lib/supabase';
 import { favoritesService } from '@/lib/supabase';
 import { Demo } from '@/types/demo';
@@ -39,6 +40,7 @@ interface DemoCardProps {
 
 export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFavorite, isFavorited = false }: DemoCardProps) {
   const { isAdmin, user } = useAuth();
+  const { trackDemoView, trackDemoFavorite, trackDemoTryApp } = useSessionTracking();
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -50,6 +52,13 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
   const [videoLoading, setVideoLoading] = useState(false);
   const [videoCanPlay, setVideoCanPlay] = useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+
+  // Track demo view when component mounts
+  useEffect(() => {
+    if (user) {
+      trackDemoView(demo.id, demo.title);
+    }
+  }, [demo.id, demo.title, user]);
 
   // Helper function to detect and convert YouTube URLs
   const getVideoEmbedInfo = (url: string) => {
@@ -134,6 +143,9 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
   
   const handleTryApp = async () => {
     try {
+      // Track the try app action
+      trackDemoTryApp(demo.id, demo.title, demo.netlify_url);
+      
       await demoService.incrementPageViews(demo.id);
       if (onViewIncrement) {
         onViewIncrement(demo.id);
@@ -214,6 +226,10 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
       }
       
       const result = await favoritesService.toggleFavorite(demo.id);
+      
+      // Track the favorite action
+      trackDemoFavorite(demo.id, demo.title, result);
+      
       toast.success(result ? 'Added to favorites' : 'Removed from favorites');
     } catch (error) {
       console.error('Error toggling favorite:', error);

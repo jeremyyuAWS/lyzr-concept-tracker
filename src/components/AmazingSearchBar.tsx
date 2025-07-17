@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { useSessionTracking } from '@/hooks/useSessionTracking';
 import { 
   Search, 
   X, 
@@ -37,6 +38,7 @@ export function AmazingSearchBar({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { trackSearch, trackFilter } = useSessionTracking();
 
   // Load search history from localStorage
   useEffect(() => {
@@ -111,6 +113,15 @@ export function AmazingSearchBar({
   const handleSearchSubmit = (term: string) => {
     onSearchChange(term);
     saveSearchToHistory(term);
+    
+    // Track search activity
+    const filteredDemos = demos.filter(demo => 
+      demo.title.toLowerCase().includes(term.toLowerCase()) ||
+      demo.description.toLowerCase().includes(term.toLowerCase()) ||
+      demo.owner.toLowerCase().includes(term.toLowerCase())
+    );
+    trackSearch(term, filteredDemos.length);
+    
     setShowSuggestions(false);
     inputRef.current?.blur();
   };
@@ -140,6 +151,19 @@ export function AmazingSearchBar({
   const trendingDemos = getTrendingDemos();
   const hasActiveFilters = searchTerm || selectedTag;
 
+  // Handle tag selection with tracking
+  const handleTagSelect = (tag: string) => {
+    console.log('Popular tag clicked:', tag);
+    const newTag = selectedTag === tag ? null : tag;
+    onTagSelect(newTag);
+    
+    // Track filter activity
+    if (newTag) {
+      trackFilter('tag', newTag);
+    }
+    
+    setShowSuggestions(false);
+  };
   return (
     <div className="relative w-full max-w-2xl mx-auto">
       {/* Main Search Input */}
@@ -316,11 +340,7 @@ export function AmazingSearchBar({
                           // Prevent blur from hiding suggestions before click
                           e.preventDefault();
                         }}
-                        onClick={() => {
-                          console.log('Popular tag clicked:', tag);
-                          onTagSelect(selectedTag === tag ? null : tag);
-                          setShowSuggestions(false);
-                        }}
+                        onClick={() => handleTagSelect(tag)}
                         className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-all duration-200 border ${
                           selectedTag === tag
                             ? 'bg-black text-white border-black shadow-md'

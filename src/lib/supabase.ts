@@ -233,6 +233,140 @@ export const favoritesService = {
   }
 };
 
+// Session and Activity Tracking Service
+export const analyticsService = {
+  // Start a new user session
+  async startSession(userAgent?: string, ipAddress?: string, referrer?: string): Promise<string> {
+    const { data, error } = await supabase.rpc('start_user_session', {
+      p_user_agent: userAgent,
+      p_ip_address: ipAddress,
+      p_referrer: referrer
+    });
+    
+    if (error) {
+      console.error('Error starting session:', error);
+      throw error;
+    }
+    
+    return data;
+  },
+
+  // End a user session
+  async endSession(sessionId: string): Promise<void> {
+    const { error } = await supabase.rpc('end_user_session', {
+      p_session_id: sessionId
+    });
+    
+    if (error) {
+      console.error('Error ending session:', error);
+      throw error;
+    }
+  },
+
+  // Log user activity
+  async logActivity(
+    sessionId: string,
+    activityType: string,
+    resourceType: string,
+    resourceId?: string,
+    activityData?: any,
+    durationMs?: number
+  ): Promise<void> {
+    const { error } = await supabase.rpc('log_user_activity', {
+      p_session_id: sessionId,
+      p_activity_type: activityType,
+      p_resource_type: resourceType,
+      p_resource_id: resourceId,
+      p_activity_data: activityData,
+      p_duration_ms: durationMs
+    });
+    
+    if (error) {
+      console.error('Error logging activity:', error);
+      // Don't throw - activity logging should be non-blocking
+    }
+  },
+
+  // Get real-time activities
+  async getRealTimeActivities(limit: number = 50): Promise<any[]> {
+    const { data, error } = await supabase.rpc('get_real_time_activities', {
+      p_limit: limit
+    });
+    
+    if (error) {
+      console.error('Error fetching real-time activities:', error);
+      throw error;
+    }
+    
+    return data || [];
+  },
+
+  // Get user sessions
+  async getUserSessions(limit: number = 50): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('user_sessions')
+      .select('*')
+      .order('session_start', { ascending: false })
+      .limit(limit);
+    
+    if (error) {
+      console.error('Error fetching user sessions:', error);
+      throw error;
+    }
+    
+    return data || [];
+  },
+
+  // Get demo health scores
+  async getDemoHealthScores(): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('demo_health_scores')
+      .select(`
+        *,
+        demos (
+          id,
+          title,
+          owner,
+          page_views,
+          is_featured,
+          created_at
+        )
+      `)
+      .order('health_score', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching demo health scores:', error);
+      throw error;
+    }
+    
+    return data || [];
+  },
+
+  // Calculate demo health score
+  async calculateDemoHealthScore(demoId: string): Promise<number> {
+    const { data, error } = await supabase.rpc('calculate_demo_health_score', {
+      p_demo_id: demoId
+    });
+    
+    if (error) {
+      console.error('Error calculating demo health score:', error);
+      throw error;
+    }
+    
+    return data || 0;
+  },
+
+  // Update all demo health scores
+  async updateAllDemoHealthScores(): Promise<void> {
+    const { error } = await supabase.rpc('update_all_demo_health_scores');
+    
+    if (error) {
+      console.error('Error updating all demo health scores:', error);
+      throw error;
+    }
+  }
+};
+
 // User Profile Service
 export const userService = {
   // Get current user profile
