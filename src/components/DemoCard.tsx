@@ -38,7 +38,7 @@ interface DemoCardProps {
 }
 
 export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFavorite, isFavorited = false }: DemoCardProps) {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -49,6 +49,7 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
   const [videoError, setVideoError] = useState<string | null>(null);
   const [videoLoading, setVideoLoading] = useState(false);
   const [videoCanPlay, setVideoCanPlay] = useState(false);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
   // Helper function to detect and convert YouTube URLs
   const getVideoEmbedInfo = (url: string) => {
@@ -129,7 +130,8 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
     if (demo.video_url && videoInfo?.type === 'google_drive_webpage') {
       console.log('📁 Google Drive URL for demo:', demo.title, demo.video_url);
     }
-  }, [demo.video_url, demo.title]);
+  }, [demo.video_url, demo.title, videoInfo]);
+  
   const handleTryApp = async () => {
     try {
       await demoService.incrementPageViews(demo.id);
@@ -187,10 +189,20 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
     }
   };
 
+  const toggleFavorite = async (demoId: string) => {
+    try {
+      const result = await favoritesService.toggleFavorite(demoId);
+      return result;
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      return undefined;
+    }
+  };
+
   const handleToggleFavorite = async () => {
     if (isFavoriting) return;
     
-    // Check if favorites are available
+    const { user } = await supabase.auth.getUser();
     if (!user) {
       toast.error('Please log in to favorite demos');
       return;
@@ -198,18 +210,14 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
     
     setIsFavoriting(true);
     try {
-      await favoritesService.toggleFavorite(demo.id);
-      if (onToggleFavorite) {
         onToggleFavorite(demo.id);
-      const result = await toggleFavorite(demo.id);
-      if (result !== undefined) {
-        toast.success(result ? 'Added to favorites' : 'Removed from favorites');
-      } else {
-        toast.info('Favorites feature not available yet');
       }
+      }
+      
+      const result = await favoritesService.toggleFavorite(demo.id);
+      toast.success(result ? 'Added to favorites' : 'Removed from favorites');
     } catch (error) {
-      toast.info('Favorites feature not available yet');
-      toast.error('Failed to update favorite');
+      console.error('Error toggling favorite:', error);
     } finally {
       setIsFavoriting(false);
     }
@@ -275,6 +283,7 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
   const handleVideoEnded = () => {
     console.log('🏁 Video ended:', demo.title);
   };
+  
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',

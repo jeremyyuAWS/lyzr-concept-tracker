@@ -41,26 +41,22 @@ export function useFavorites() {
     try {
       const isFavorited = await favoritesService.toggleFavorite(demoId);
       
-      // Only update state if favorites are available
-      if (userFavorites.length > 0 || isFavorited) {
-        if (isFavorited) {
-          // Add to favorites
-          setUserFavorites(prev => [...prev, demoId]);
-        } else {
-          // Remove from favorites
-          setUserFavorites(prev => prev.filter(id => id !== demoId));
-          setFavoritesDemos(prev => prev.filter(demo => demo.id !== demoId));
-        }
-        
-        // Refresh favorites demos list
-        await loadFavoritesDemos();
+      if (isFavorited) {
+        // Add to favorites
+        setUserFavorites(prev => [...prev, demoId]);
+      } else {
+        // Remove from favorites
+        setUserFavorites(prev => prev.filter(id => id !== demoId));
+        setFavoritesDemos(prev => prev.filter(demo => demo.id !== demoId));
       }
+      
+      // Refresh favorites demos list
+      await loadFavoritesDemos();
       
       return isFavorited;
     } catch (err) {
       console.error('Error toggling favorite:', err);
-      // Don't throw - just return false for graceful handling
-      return false;
+      throw err;
     }
   };
 
