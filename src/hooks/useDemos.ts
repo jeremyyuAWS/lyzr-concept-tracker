@@ -6,23 +6,45 @@ export function useDemos() {
   const [demos, setDemos] = useState<Demo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
+
+  const addDebugInfo = (message: string) => {
+    console.log('🔍 DEMOS DEBUG:', message);
+    setDebugInfo(prev => [...prev.slice(-4), `${new Date().toLocaleTimeString()}: ${message}`]);
+  };
 
   const fetchDemos = async () => {
     try {
+      addDebugInfo('Starting demo fetch');
       setLoading(true);
       setError(null);
       const data = await demoService.getDemos();
+      addDebugInfo(`Demos fetched successfully: ${data.length} demos`);
       setDemos(data);
     } catch (err) {
+      addDebugInfo(`Demo fetch failed: ${err}`);
       setError('Failed to load demos');
       console.error('Error fetching demos:', err);
     } finally {
+      addDebugInfo('Demo fetch completed, setting loading to false');
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    addDebugInfo('useDemos hook initialized, starting fetch');
     fetchDemos();
+    
+    // Emergency timeout for demo loading
+    const timeout = setTimeout(() => {
+      if (loading) {
+        addDebugInfo('EMERGENCY: Demo loading timeout after 5s');
+        setLoading(false);
+        setError('Demo loading timed out');
+      }
+    }, 5000);
+    
+    return () => clearTimeout(timeout);
   }, []);
 
   const addDemo = async (demoData: Omit<Demo, 'id' | 'created_at' | 'page_views'>) => {

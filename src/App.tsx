@@ -67,28 +67,34 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
 function AppContent() {
   const [initialized, setInitialized] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
+
+  const addDebugInfo = (message: string) => {
+    console.log('🔍 DEBUG:', message);
+    setDebugInfo(prev => [...prev.slice(-4), `${new Date().toLocaleTimeString()}: ${message}`]);
+  };
 
   // Initialize app with minimal checks
   useEffect(() => {
     try {
-      console.log('🚀 Initializing Lyzr Concept Tracker...');
+      addDebugInfo('Starting app initialization');
       
       // Check environment variables
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
       
       if (!supabaseUrl || !supabaseKey) {
-        console.error('❌ Missing environment variables');
+        addDebugInfo('ERROR: Missing environment variables');
         setInitError('Environment variables not configured');
         return;
       }
       
-      console.log('✅ Environment variables found');
-      console.log('✅ App initialized successfully');
+      addDebugInfo('Environment variables found');
+      addDebugInfo('App initialized successfully');
       setInitialized(true);
       
     } catch (error) {
-      console.error('❌ Initialization error:', error);
+      addDebugInfo(`ERROR: Initialization failed - ${error}`);
       setInitError(error instanceof Error ? error.message : 'Unknown initialization error');
     }
   }, []);
@@ -100,6 +106,13 @@ function AppContent() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading Lyzr Concept Tracker...</p>
+          {debugInfo.length > 0 && (
+            <div className="mt-4 text-xs text-gray-500 max-w-md">
+              {debugInfo.map((info, i) => (
+                <div key={i}>{info}</div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -123,6 +136,14 @@ function AppContent() {
             <p>1. VITE_SUPABASE_URL is set</p>
             <p>2. VITE_SUPABASE_ANON_KEY is set</p>
             <p>3. Variables are deployed to Netlify</p>
+            {debugInfo.length > 0 && (
+              <div className="mt-2 text-xs">
+                <strong>Debug Info:</strong>
+                {debugInfo.map((info, i) => (
+                  <div key={i}>{info}</div>
+                ))}
+              </div>
+            )}
           </div>
           <button 
             onClick={() => window.location.reload()} 
@@ -140,6 +161,38 @@ function AppContent() {
 
 function MainApp() {
   const { user, loading: authLoading } = useAuth();
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
+  const [forceShowApp, setForceShowApp] = useState(false);
+
+  const addDebugInfo = (message: string) => {
+    console.log('🔍 MAIN APP DEBUG:', message);
+    setDebugInfo(prev => [...prev.slice(-4), `${new Date().toLocaleTimeString()}: ${message}`]);
+  };
+
+  // Emergency timeout to force show app after 10 seconds
+  useEffect(() => {
+    addDebugInfo(`MainApp mounted - authLoading: ${authLoading}, user: ${!!user}`);
+    
+    const emergencyTimeout = setTimeout(() => {
+      if (authLoading) {
+        addDebugInfo('EMERGENCY: Forcing app to show after 10 seconds');
+        setForceShowApp(true);
+      }
+    }, 10000);
+    
+    return () => clearTimeout(emergencyTimeout);
+  }, []);
+
+  // Track auth loading changes
+  useEffect(() => {
+    addDebugInfo(`Auth loading changed: ${authLoading}`);
+  }, [authLoading]);
+
+  // Track user changes
+  useEffect(() => {
+    addDebugInfo(`User changed: ${user ? user.email : 'null'}`);
+  }, [user]);
+
   const { demos, loading, error, incrementPageViews, updateDemo, deleteDemo, refetch } = useDemos();
   const { 
     userFavorites, 
@@ -153,6 +206,11 @@ function MainApp() {
   const { trackTabChange } = useSessionTracking();
   const [activeTab, setActiveTab] = useState('featured');
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+
+  // Track demos loading
+  useEffect(() => {
+    addDebugInfo(`Demos loading: ${loading}, demos count: ${demos.length}`);
+  }, [loading, demos.length]);
 
   // Show welcome modal on first load
   useEffect(() => {
@@ -172,26 +230,44 @@ function MainApp() {
   };
 
   // Show loading state for auth
-  if (authLoading) {
-    console.log('🔄 App showing auth loading state');
+  if (authLoading && !forceShowApp) {
+    addDebugInfo('Showing auth loading state');
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your account...</p>
           <p className="text-gray-500 text-sm mt-2">This should only take a moment</p>
+          {debugInfo.length > 0 && (
+            <div className="mt-4 text-xs text-left text-gray-500 max-w-md mx-auto bg-gray-100 p-3 rounded">
+              <strong>Debug Info:</strong>
+              {debugInfo.map((info, i) => (
+                <div key={i}>{info}</div>
+              ))}
+            </div>
+          )}
+          <button 
+            onClick={() => {
+              addDebugInfo('User clicked force continue');
+              setForceShowApp(true);
+            }}
+            className="mt-4 px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+          >
+            Force Continue (Debug)
+          </button>
         </div>
       </div>
     );
   }
 
   // Show login form if not authenticated
-  if (!user) {
-    console.log('🔑 No user found, showing login form');
+  if (!user && !forceShowApp) {
+    addDebugInfo('No user found, showing login form');
     return <LoginForm />;
   }
 
-  console.log('✅ User authenticated, showing main app');
+  addDebugInfo('User authenticated, showing main app');
+  
   const handleDemoAdded = () => {
     refetch();
     refetchFavorites();

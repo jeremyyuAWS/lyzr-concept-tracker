@@ -19,18 +19,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
+
+  const addDebugInfo = (message: string) => {
+    console.log('🔍 AUTH DEBUG:', message);
+    setDebugInfo(prev => [...prev.slice(-4), `${new Date().toLocaleTimeString()}: ${message}`]);
+  };
 
   const refreshProfile = async () => {
+    addDebugInfo('Starting profile refresh');
     if (user) {
       try {
-        console.log('🔍 Loading user profile for:', user.email);
+        addDebugInfo(`Loading user profile for: ${user.email}`);
         const profile = await userService.getCurrentUserProfile();
         if (profile) {
-          console.log('✅ Profile loaded successfully:', profile.display_name);
+          addDebugInfo(`Profile loaded successfully: ${profile.display_name}`);
           setUserProfile(profile);
         } else {
           // Create profile if it doesn't exist
-          console.log('⚠️ No profile found, using fallback...');
+          addDebugInfo('No profile found, using fallback...');
           // Use fallback profile immediately to avoid RLS policy violations
           setUserProfile({
             id: user.id,
@@ -46,7 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
         }
       } catch (error) {
-        console.warn('⚠️ Profile loading failed, using fallback:', error);
+        addDebugInfo(`Profile loading failed, using fallback: ${error}`);
         // If any error occurs, use fallback profile to keep app functional
         if (user) {
           setUserProfile({
@@ -64,28 +71,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     } else {
+      addDebugInfo('No user, clearing profile');
       setUserProfile(null);
     }
   };
 
   useEffect(() => {
+    addDebugInfo('Setting up auth listener');
     // Get initial session
-    authService.getCurrentUser().then(setUser);
+    authService.getCurrentUser().then(user => {
+      addDebugInfo(`Initial user loaded: ${user ? user.email : 'null'}`);
+      setUser(user);
+    });
 
     // Listen for auth changes
-    const { data: { subscription } } = authService.onAuthStateChange(setUser);
+    const { data: { subscription } } = authService.onAuthStateChange(user => {
+      addDebugInfo(`Auth state changed: ${user ? user.email : 'null'}`);
+      setUser(user);
+    });
 
     return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
-    console.log('🔍 Auth state changed, user:', !!user);
+    addDebugInfo(`Auth state changed, user: ${!!user}`);
     if (user) {
       refreshProfile().finally(() => {
-        console.log('✅ Profile refresh complete, setting loading to false');
+        addDebugInfo('Profile refresh complete, setting loading to false');
         setLoading(false);
       });
     } else {
+      addDebugInfo('No user, setting loading to false');
       setUserProfile(null);
       setLoading(false);
     }
@@ -95,17 +111,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const timeout1 = setTimeout(() => {
       if (loading) {
-        console.warn('⚠️ Auth loading timeout at 2s, forcing completion');
+        addDebugInfo('Auth loading timeout at 2s, forcing completion');
         setLoading(false);
       }
-    }, 2000); // 2 second timeout
+    }, 3000); // 3 second timeout
     
     // Emergency timeout
     const timeout2 = setTimeout(() => {
       if (loading) {
-        console.error('🚨 Emergency timeout at 5s, forcing app to load');
+        addDebugInfo('EMERGENCY timeout at 8s, forcing app to load');
         setLoading(false);
         if (user && !userProfile) {
+          addDebugInfo('Creating emergency fallback profile');
           // Create emergency fallback profile
           setUserProfile({
             id: user.id,
@@ -121,7 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
         }
       }
-    }, 5000); // 5 second emergency timeout
+    }, 8000); // 8 second emergency timeout
 
     return () => {
       clearTimeout(timeout1);
