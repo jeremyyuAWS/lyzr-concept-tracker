@@ -210,6 +210,7 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
     
     setIsFavoriting(true);
     try {
+      if (onToggleFavorite) {
         onToggleFavorite(demo.id);
       }
       
