@@ -491,21 +491,22 @@ export function FavoritesTab({
               
               {/* Folder Move Menu */}
               {folders.length > 1 && (
-                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0 bg-white/80 hover:bg-white"
+                        className="h-8 w-8 p-0 bg-white border border-gray-200 hover:bg-gray-50 shadow-sm"
                       >
-                        <MoreHorizontal className="h-4 w-4" />
+                        <FolderOpen className="h-4 w-4 text-blue-600" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem 
                         onClick={() => moveToFolder(demo.id, null)}
                       >
+                        <Folder className="mr-2 h-4 w-4" />
                         Move to Unorganized
                       </DropdownMenuItem>
                       {folders.filter(f => f.id !== 'unorganized').map(folder => (
@@ -513,6 +514,7 @@ export function FavoritesTab({
                           key={folder.id}
                           onClick={() => moveToFolder(demo.id, folder.id)}
                         >
+                          <Folder className="mr-2 h-4 w-4" />
                           Move to {folder.name}
                         </DropdownMenuItem>
                       ))}
