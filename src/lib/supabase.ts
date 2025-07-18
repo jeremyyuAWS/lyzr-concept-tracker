@@ -534,6 +534,88 @@ export const favoritesService = {
       return { folders: [], unorganized: [] };
     }
   },
+
+  async createFolder(name: string, description?: string, color: string = '#6366f1', icon: string = 'folder') {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('favorite_folders')
+        .insert([{
+          user_id: user.id,
+          name,
+          description,
+          color,
+          icon
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error creating folder:', error);
+      throw error;
+    }
+  },
+
+  async updateFolder(folderId: string, updates: { name?: string; description?: string | null; color?: string; icon?: string }) {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('favorite_folders')
+        .update(updates)
+        .eq('id', folderId)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error updating folder:', error);
+      throw error;
+    }
+  },
+
+  async deleteFolder(folderId: string) {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { error } = await supabase
+        .from('favorite_folders')
+        .delete()
+        .eq('id', folderId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error deleting folder:', error);
+      throw error;
+    }
+  },
+
+  async moveFavoriteToFolder(demoId: string, folderId?: string) {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { error } = await supabase
+        .from('user_favorites')
+        .update({ folder_id: folderId || null })
+        .eq('user_id', user.id)
+        .eq('demo_id', demoId);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error moving favorite to folder:', error);
+      throw error;
+    }
+  },
 };
 
 export const analyticsService = {
