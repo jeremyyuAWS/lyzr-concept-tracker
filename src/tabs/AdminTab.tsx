@@ -6,7 +6,7 @@ import { UserManagement } from '@/components/UserManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Settings, Database, Users, Activity, Shield, Clock, User, Crown, ChevronDown, ChevronUp, RefreshCw, Eye, ExternalLink, Heart, Search, TrendingUp, Target } from 'lucide-react';
+import { Settings, Database, Users, Activity, Shield, Clock, User, Crown, ChevronDown, ChevronUp, RefreshCw, Eye, ExternalLink, Heart, Search, TrendingUp, Target, BarChart3 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 
 // Collapsible Section Component
