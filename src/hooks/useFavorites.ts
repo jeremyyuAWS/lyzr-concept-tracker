@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { favoritesService } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { Demo } from '@/types/demo';
 import { useAuth } from '@/contexts/AuthContext';
 
