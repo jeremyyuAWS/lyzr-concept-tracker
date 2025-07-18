@@ -34,21 +34,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           addDebugInfo(`Profile loaded successfully: ${profile.display_name}`);
           setUserProfile(profile);
         } else {
-          // Create profile if it doesn't exist
-          addDebugInfo('No profile found, using fallback...');
-          // Use fallback profile immediately to avoid RLS policy violations
-          setUserProfile({
-            id: user.id,
-            user_id: user.id,
-            email: user.email!,
-            display_name: user.user_metadata?.display_name || user.email!.split('@')[0],
-            role: user.email === 'jeremy@lyzr.ai' || user.email === 'admin@lyzr.ai' ? 'admin' : 'user',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            last_login: null,
-            is_active: true,
-            avatar_url: null
-          });
+          // Profile doesn't exist - try to create it
+          addDebugInfo('No profile found, attempting to create one...');
+          try {
+            const newProfile = await userService.createUserProfile({
+              user_id: user.id,
+              email: user.email!,
+              display_name: user.user_metadata?.display_name || user.email!.split('@')[0],
+              role: user.email === 'jeremy@lyzr.ai' || user.email === 'admin@lyzr.ai' ? 'admin' : 'user'
+            });
+            addDebugInfo('Profile created successfully');
+            setUserProfile(newProfile);
+          } catch (createError) {
+            addDebugInfo(`Profile creation failed: ${createError}`);
+            // Use fallback profile if creation fails
+            setUserProfile({
+              id: user.id,
+              user_id: user.id,
+              email: user.email!,
+              display_name: user.user_metadata?.display_name || user.email!.split('@')[0],
+              role: user.email === 'jeremy@lyzr.ai' || user.email === 'admin@lyzr.ai' ? 'admin' : 'user',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              last_login: null,
+              is_active: true,
+              avatar_url: null
+            });
+          }
         }
       } catch (error) {
         addDebugInfo(`Profile loading failed, using fallback: ${error}`);
@@ -151,6 +163,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, displayName?: string) => {
     const { user } = await authService.signUp(email, password, displayName);
+    
+    // Wait a moment for the trigger to fire, then try to create profile if needed
+    if (user) {
+      setTimeout(async () => {
+        try {
+          const profile = await userService.getCurrentUserProfile();
+          if (!profile) {
+            addDebugInfo('Creating profile manually after signup');
+            await userService.createUserProfile({
+              user_id: user.id,
+              email: user.email!,
+              display_name: displayName || user.email!.split('@')[0],
+              role: user.email === 'jeremy@lyzr.ai' || user.email === 'admin@lyzr.ai' ? 'admin' : 'user'
+            });
+          }
+        } catch (error) {
+          addDebugInfo(`Manual profile creation failed: ${error}`);
+        }
+      }, 1000);
+    }
+    
     setUser(user);
   };
 
