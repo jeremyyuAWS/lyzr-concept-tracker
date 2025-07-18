@@ -228,145 +228,37 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
 
   return (
     <div className="w-full space-y-6">
-      {/* Welcome Card */}
-      <Card className="border-green-200 bg-green-50">
+      {/* Header with Refresh */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-black">Admin Dashboard</h1>
+          <p className="text-gray-600">Real-time metrics and system management</p>
+        </div>
+        <Button
+          onClick={handleRefreshData}
+          disabled={refreshing}
+          className="bg-black hover:bg-gray-800 text-white"
+        >
+          <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+          {refreshing ? 'Refreshing...' : 'Refresh Data'}
+        </Button>
+      </div>
+
+      {/* Real-Time User Login Statistics */}
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-green-800">
-            <Shield className="w-5 h-5" />
-            Admin Dashboard
+          <CardTitle className="flex items-center gap-2">
+            <Users className="w-5 h-5 text-blue-600" />
+            User Login Analytics
           </CardTitle>
-          <CardDescription className="text-green-700">
-            Full administrative access to the Lyzr Concept Tracker
+          <CardDescription>
+            Live user engagement and login patterns
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-sm text-green-700">
-            <p className="font-medium mb-2">🚀 Production Ready</p>
-            <p>Full admin capabilities are now available including user management, demo editing/deletion, image uploads, and comprehensive security features.</p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* User Management Section - Now at the top */}
-      <UserManagement />
-
-      {/* Collapsible Sections */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {/* System Information */}
-        <CollapsibleSection
-          title="System Information"
-          description="Current system status and configuration"
-          icon={<Settings className="w-5 h-5 text-blue-600" />}
-          defaultOpen={false}
-        >
-          <div className="space-y-3">
-            {systemInfo.map((info, index) => (
-              <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
-                <span className="text-sm text-gray-600">{info.label}</span>
-                <span className="text-sm font-medium text-black">{info.value}</span>
-              </div>
-            ))}
-          </div>
-        </CollapsibleSection>
-
-        {/* Quick Actions */}
-        <CollapsibleSection
-          title="Quick Actions"
-          description="Common administrative tasks"
-          icon={<Activity className="w-5 h-5 text-purple-600" />}
-          defaultOpen={false}
-        >
-          <div className="space-y-3">
-            <Button variant="outline" className="w-full justify-start" disabled>
-              <Database className="w-4 h-4 mr-2" />
-              Export Demo Data
-            </Button>
-            <Button variant="outline" className="w-full justify-start" disabled>
-              <Activity className="w-4 h-4 mr-2" />
-              View System Logs
-            </Button>
-            <Button variant="outline" className="w-full justify-start" disabled>
-              <Settings className="w-4 h-4 mr-2" />
-              Configure Settings
-            </Button>
-            <Button variant="outline" className="w-full justify-start" disabled>
-              <Clock className="w-4 h-4 mr-2" />
-              Schedule Maintenance
-            </Button>
-          </div>
-        </CollapsibleSection>
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {/* Active Features */}
-        <CollapsibleSection
-          title="Active Features"
-          description="Currently implemented admin capabilities"
-          icon={<Database className="w-5 h-5 text-green-600" />}
-          defaultOpen={false}
-        >
-          <div className="grid grid-cols-1 gap-4">
-            {adminFeatures.map((feature, index) => (
-              <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                <div className="text-gray-600 mt-0.5">
-                  {feature.icon}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-medium text-black text-sm">{feature.title}</h4>
-                    <Badge variant="outline" className={`text-xs ${
-                      feature.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {feature.status}
-                    </Badge>
-                  </div>
-                  <p className="text-gray-600 text-xs">{feature.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CollapsibleSection>
-
-        {/* Security Features */}
-        <CollapsibleSection
-          title="Security Features"
-          description="Security and access control systems"
-          icon={<Shield className="w-5 h-5 text-red-600" />}
-          defaultOpen={false}
-        >
-          <div className="grid grid-cols-1 gap-4">
-            {securityFeatures.map((feature, index) => (
-              <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                <div className="text-gray-600 mt-0.5">
-                  {feature.icon}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-medium text-black text-sm">{feature.title}</h4>
-                    <Badge variant="outline" className={`text-xs ${
-                      feature.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {feature.status}
-                    </Badge>
-                  </div>
-                  <p className="text-gray-600 text-xs">{feature.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CollapsibleSection>
-      </div>
-
-      {/* Real Usage Statistics */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold text-black">System Statistics</CardTitle>
-          <CardDescription className="text-gray-600">Real-time system usage and performance metrics</CardDescription>
-        </CardHeader>
-        <CardContent>
           {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {[1, 2, 3].map((i) => (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="text-center p-4 bg-gray-50 rounded-lg animate-pulse">
                   <div className="h-8 bg-gray-200 rounded mb-2"></div>
                   <div className="h-4 bg-gray-200 rounded"></div>
@@ -374,41 +266,42 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <div className="text-2xl font-bold text-blue-800">{stats.totalUsers}</div>
-                <div className="text-sm text-blue-600">Total Users</div>
-              </div>
-              <div className="text-center p-4 bg-red-50 rounded-lg border border-red-200">
-                <div className="text-2xl font-bold text-red-800">{stats.adminUsers}</div>
-                <div className="text-sm text-red-600">Admins</div>
+                <div className="text-3xl font-bold text-blue-800">{loginStats.dailyActiveUsers || 0}</div>
+                <div className="text-sm text-blue-600">Daily Active Users</div>
+                <div className="text-xs text-blue-500 mt-1">Today</div>
               </div>
               <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
-                <div className="text-2xl font-bold text-green-800">{stats.activeUsers}</div>
-                <div className="text-sm text-green-600">Active Users</div>
+                <div className="text-3xl font-bold text-green-800">{loginStats.weeklyActiveUsers || 0}</div>
+                <div className="text-sm text-green-600">Weekly Active Users</div>
+                <div className="text-xs text-green-500 mt-1">Last 7 days</div>
               </div>
               <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-200">
-                <div className="text-2xl font-bold text-purple-800">{stats.recentLogins}</div>
-                <div className="text-sm text-purple-600">Recent Logins</div>
+                <div className="text-3xl font-bold text-purple-800">{loginStats.monthlyActiveUsers || 0}</div>
+                <div className="text-sm text-purple-600">Monthly Active Users</div>
+                <div className="text-xs text-purple-500 mt-1">Last 30 days</div>
               </div>
               <div className="text-center p-4 bg-orange-50 rounded-lg border border-orange-200">
-                <div className="text-2xl font-bold text-orange-800">{stats.totalDemos}</div>
-                <div className="text-sm text-orange-600">Total Demos</div>
-              </div>
-              <div className="text-center p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                <div className="text-2xl font-bold text-yellow-800">{stats.totalViews.toLocaleString()}</div>
-                <div className="text-sm text-yellow-600">Total Views</div>
+                <div className="text-3xl font-bold text-orange-800">{loginStats.newUsersThisWeek || 0}</div>
+                <div className="text-sm text-orange-600">New Users</div>
+                <div className="text-xs text-orange-500 mt-1">This week</div>
               </div>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Additional Statistics */}
+      {/* Session Analytics */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-black">Performance Metrics</CardTitle>
-          <CardDescription className="text-gray-600">Demo performance and engagement statistics</CardDescription>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="w-5 h-5 text-green-600" />
+            Session Analytics
+          </CardTitle>
+          <CardDescription>
+            User session data and engagement time
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -423,27 +316,313 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl font-bold text-black">{stats.avgViewsPerDemo}</div>
-                <div className="text-sm text-gray-600">Avg Views/Demo</div>
+                <div className="text-2xl font-bold text-black">{sessionMetrics.todaySessions || 0}</div>
+                <div className="text-sm text-gray-600">Sessions Today</div>
               </div>
               <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl font-bold text-black">{stats.featuredDemos}</div>
-                <div className="text-sm text-gray-600">Featured Demos</div>
+                <div className="text-2xl font-bold text-black">{sessionMetrics.weekSessions || 0}</div>
+                <div className="text-sm text-gray-600">Sessions This Week</div>
               </div>
               <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl font-bold text-black">{stats.recentActivity}</div>
-                <div className="text-sm text-gray-600">Recent Activity</div>
+                <div className="text-2xl font-bold text-black">{sessionMetrics.monthSessions || 0}</div>
+                <div className="text-sm text-gray-600">Sessions This Month</div>
               </div>
               <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl font-bold text-black">
-                  {stats.totalUsers > 0 ? Math.round((stats.activeUsers / stats.totalUsers) * 100) : 0}%
-                </div>
-                <div className="text-sm text-gray-600">Active Rate</div>
+                <div className="text-2xl font-bold text-black">{sessionMetrics.averageSessionDuration || 0}</div>
+                <div className="text-sm text-gray-600">Avg Session (min)</div>
               </div>
             </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Demo Engagement Metrics */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="w-5 h-5 text-purple-600" />
+            Demo Engagement Metrics
+          </CardTitle>
+          <CardDescription>
+            Real-time demo interaction and conversion data
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="text-center p-4 bg-gray-50 rounded-lg animate-pulse">
+                  <div className="h-8 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center justify-center mb-2">
+                    <Eye className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div className="text-2xl font-bold text-blue-800">{demoEngagementMetrics.totalViews || 0}</div>
+                  <div className="text-sm text-blue-600">Demo Views</div>
+                  <div className="text-xs text-blue-500 mt-1">Last 7 days</div>
+                </div>
+                <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
+                  <div className="flex items-center justify-center mb-2">
+                    <ExternalLink className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div className="text-2xl font-bold text-green-800">{demoEngagementMetrics.totalTryApps || 0}</div>
+                  <div className="text-sm text-green-600">Try App Clicks</div>
+                  <div className="text-xs text-green-500 mt-1">Last 7 days</div>
+                </div>
+                <div className="text-center p-4 bg-red-50 rounded-lg border border-red-200">
+                  <div className="flex items-center justify-center mb-2">
+                    <Heart className="w-5 h-5 text-red-600" />
+                  </div>
+                  <div className="text-2xl font-bold text-red-800">{demoEngagementMetrics.totalFavorites || 0}</div>
+                  <div className="text-sm text-red-600">New Favorites</div>
+                  <div className="text-xs text-red-500 mt-1">Last 7 days</div>
+                </div>
+                <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-200">
+                  <div className="flex items-center justify-center mb-2">
+                    <Search className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div className="text-2xl font-bold text-purple-800">{demoEngagementMetrics.totalSearches || 0}</div>
+                  <div className="text-sm text-purple-600">Searches</div>
+                  <div className="text-xs text-purple-500 mt-1">Last 7 days</div>
+                </div>
+                <div className="text-center p-4 bg-orange-50 rounded-lg border border-orange-200">
+                  <div className="flex items-center justify-center mb-2">
+                    <TrendingUp className="w-5 h-5 text-orange-600" />
+                  </div>
+                  <div className="text-2xl font-bold text-orange-800">{demoEngagementMetrics.conversionRate || 0}%</div>
+                  <div className="text-sm text-orange-600">Conversion Rate</div>
+                  <div className="text-xs text-orange-500 mt-1">Try App / Views</div>
+                </div>
+              </div>
+              
+              {/* Conversion Rate Progress Bar */}
+              <div className="mt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700">Demo to Try App Conversion</span>
+                  <span className="text-sm text-gray-600">{demoEngagementMetrics.conversionRate || 0}%</span>
+                </div>
+                <Progress value={demoEngagementMetrics.conversionRate || 0} className="h-3" />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>0%</span>
+                  <span>Good: 15%+</span>
+                  <span>100%</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Top Performing Demos */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-yellow-600" />
+            Top Performing Demos
+          </CardTitle>
+          <CardDescription>
+            Most viewed and favorited demos
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="p-3 bg-gray-50 rounded-lg animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Most Viewed */}
+              <div>
+                <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <Eye className="w-4 h-4" />
+                  Most Viewed
+                </h4>
+                <div className="space-y-3">
+                  {engagementStats.topDemos?.slice(0, 5).map((demo: any, index: number) => (
+                    <div key={demo.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex items-center gap-3">
+                        <Badge className="bg-blue-600 text-white">#{index + 1}</Badge>
+                        <div>
+                          <h5 className="font-medium text-blue-900">{demo.title}</h5>
+                          <p className="text-xs text-blue-700">by {demo.owner}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-blue-800">{demo.page_views.toLocaleString()}</div>
+                        <div className="text-xs text-blue-600">views</div>
+                      </div>
+                    </div>
+                  )) || []}
+                  {!engagementStats.topDemos?.length && (
+                    <p className="text-gray-500 text-sm">No demo data available</p>
+                  )}
+                </div>
+              </div>
+              
+              {/* Most Favorited */}
+              <div>
+                <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <Heart className="w-4 h-4" />
+                  Most Favorited
+                </h4>
+                <div className="space-y-3">
+                  {engagementStats.topFavoritedDemos?.slice(0, 5).map((demo: any, index: number) => (
+                    <div key={demo.demo_id} className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
+                      <div className="flex items-center gap-3">
+                        <Badge className="bg-red-600 text-white">#{index + 1}</Badge>
+                        <div>
+                          <h5 className="font-medium text-red-900">{demo.title}</h5>
+                          <p className="text-xs text-red-700">by {demo.owner}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-red-800">{demo.favorite_count}</div>
+                        <div className="text-xs text-red-600">favorites</div>
+                      </div>
+                    </div>
+                  )) || []}
+                  {!engagementStats.topFavoritedDemos?.length && (
+                    <p className="text-gray-500 text-sm">No favorite data available</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* System Health & Performance */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="w-5 h-5 text-green-600" />
+            System Health & Performance
+          </CardTitle>
+          <CardDescription>
+            Overall system statistics and health indicators
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="text-center p-4 bg-gray-50 rounded-lg animate-pulse">
+                  <div className="h-8 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <div className="text-2xl font-bold text-black">{users.length}</div>
+                <div className="text-sm text-gray-600">Total Users</div>
+              </div>
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <div className="text-2xl font-bold text-black">
+                  {users.filter(u => u.role === 'admin' || u.role === 'super_admin').length}
+                </div>
+                <div className="text-sm text-gray-600">Admins</div>
+              </div>
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <div className="text-2xl font-bold text-black">
+                  {users.filter(u => u.is_active).length}
+                </div>
+                <div className="text-sm text-gray-600">Active Users</div>
+              </div>
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <div className="text-2xl font-bold text-black">{demos.length}</div>
+                <div className="text-sm text-gray-600">Total Demos</div>
+              </div>
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <div className="text-2xl font-bold text-black">
+                  {demos.reduce((sum, demo) => sum + demo.page_views, 0).toLocaleString()}
+                </div>
+                <div className="text-sm text-gray-600">Total Views</div>
+              </div>
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <div className="text-2xl font-bold text-black">{demos.filter(d => d.is_featured).length}</div>
+                <div className="text-sm text-gray-600">Featured Demos</div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Advanced Analytics Components */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <DemoHealthScoring />
+        <RealTimeActivityFeed />
+      </div>
+
+      {/* User Management - Keep this at the bottom */}
+      <UserManagement />
+
+      {/* Collapsible System Information */}
+      <CollapsibleSection
+        title="System Information"
+        description="Technical system details and configuration"
+        icon={<Settings className="w-5 h-5 text-gray-600" />}
+        defaultOpen={false}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-3">
+            <h4 className="font-semibold text-gray-800">Application Details</h4>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm text-gray-600">App Version</span>
+                <span className="text-sm font-medium text-black">v0.1.0</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm text-gray-600">Environment</span>
+                <span className="text-sm font-medium text-black">Production</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm text-gray-600">Your Role</span>
+                <span className="text-sm font-medium text-black">{userProfile?.role || 'Unknown'}</span>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-sm text-gray-600">Last Updated</span>
+                <span className="text-sm font-medium text-black">{new Date().toLocaleDateString()}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="space-y-3">
+            <h4 className="font-semibold text-gray-800">Database & Services</h4>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm text-gray-600">Database</span>
+                <span className="text-sm font-medium text-black">Supabase Postgres</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm text-gray-600">Authentication</span>
+                <span className="text-sm font-medium text-black">Supabase Auth</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm text-gray-600">Storage</span>
+                <span className="text-sm font-medium text-black">Supabase Storage</span>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-sm text-gray-600">Analytics</span>
+                <span className="text-sm font-medium text-black">Real-time Tracking</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </CollapsibleSection>
     </div>
   );
 }
