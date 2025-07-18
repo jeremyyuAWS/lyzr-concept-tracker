@@ -6,7 +6,8 @@ import { UserManagement } from '@/components/UserManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Settings, Database, Users, Activity, Shield, Clock, User, Crown, ChevronDown, ChevronUp } from 'lucide-react';
+import { Settings, Database, Users, Activity, Shield, Clock, User, Crown, ChevronDown, ChevronUp, RefreshCw, Eye, ExternalLink, Heart, Search, TrendingUp, Target } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 
 // Collapsible Section Component
 function CollapsibleSection({ title, description, icon, children, defaultOpen = false }: {
@@ -51,6 +52,30 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loginStats, setLoginStats] = useState({
+    dailyActiveUsers: 0,
+    weeklyActiveUsers: 0,
+    monthlyActiveUsers: 0,
+    newUsersThisWeek: 0
+  });
+  const [sessionMetrics, setSessionMetrics] = useState({
+    todaySessions: 0,
+    weekSessions: 0,
+    monthSessions: 0,
+    averageSessionDuration: 0
+  });
+  const [demoEngagementMetrics, setDemoEngagementMetrics] = useState({
+    totalViews: 0,
+    totalTryApps: 0,
+    totalFavorites: 0,
+    totalSearches: 0,
+    conversionRate: 0
+  });
+  const [engagementStats, setEngagementStats] = useState({
+    topDemos: [],
+    topFavoritedDemos: []
+  });
   const [stats, setStats] = useState({
     totalUsers: 0,
     adminUsers: 0,
@@ -117,6 +142,58 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
       console.error('Error loading admin data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRefreshData = async () => {
+    setRefreshing(true);
+    try {
+      await loadAdminData();
+      
+      // Load additional stats
+      try {
+        const [loginStatsData, sessionStatsData, engagementStatsData, demoStatsData] = await Promise.all([
+          userService.getUserLoginStats().catch(() => ({
+            dailyActiveUsers: 0,
+            weeklyActiveUsers: 0,
+            monthlyActiveUsers: 0,
+            newUsersThisWeek: 0
+          })),
+          userService.getSessionMetrics?.().catch(() => ({
+            todaySessions: 0,
+            weekSessions: 0,
+            monthSessions: 0,
+            averageSessionDuration: 0
+          })) || Promise.resolve({
+            todaySessions: 0,
+            weekSessions: 0,
+            monthSessions: 0,
+            averageSessionDuration: 0
+          }),
+          userService.getDemoEngagementStats().catch(() => ({
+            totalViews: 0,
+            totalTryApps: 0,
+            totalFavorites: 0,
+            totalSearches: 0,
+            conversionRate: 0
+          })),
+          userService.getDemoEngagementStats().catch(() => ({
+            topDemos: [],
+            topFavoritedDemos: []
+          }))
+        ]);
+        
+        setLoginStats(loginStatsData);
+        setSessionMetrics(sessionStatsData);
+        setDemoEngagementMetrics(engagementStatsData);
+        setEngagementStats(demoStatsData);
+      } catch (error) {
+        console.error('Error loading additional stats:', error);
+      }
+    } catch (error) {
+      console.error('Error refreshing admin data:', error);
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -563,8 +640,41 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
 
       {/* Advanced Analytics Components */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <DemoHealthScoring />
-        <RealTimeActivityFeed />
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="w-5 h-5 text-yellow-600" />
+              Demo Health Scoring
+            </CardTitle>
+            <CardDescription>
+              Advanced health metrics (Coming Soon)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8 text-gray-500">
+              <Target className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">Health scoring system in development</p>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="w-5 h-5 text-blue-600" />
+              Real-Time Activity Feed
+            </CardTitle>
+            <CardDescription>
+              Live user activity tracking (Coming Soon)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8 text-gray-500">
+              <Activity className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">Activity feed system in development</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* User Management - Keep this at the bottom */}
