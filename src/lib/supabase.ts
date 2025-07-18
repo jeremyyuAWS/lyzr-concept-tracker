@@ -603,6 +603,8 @@ export const userService = {
 export const authService = {
   // Sign in with email/password
   async signIn(email: string, password: string) {
+    console.log('🔐 Starting sign-in process for:', email);
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
@@ -613,12 +615,45 @@ export const authService = {
       throw error;
     }
 
-    // Update last login
+    // Verify user has an active profile before allowing login
     if (data.user) {
-      await supabase
-        .from('user_profiles')
-        .update({ last_login: new Date().toISOString() })
-        .eq('user_id', data.user.id);
+      console.log('🔍 Verifying user profile exists for:', data.user.id);
+      
+      try {
+        const { data: profileData, error: profileError } = await supabase
+          .rpc('get_verified_user_profile', { p_user_id: data.user.id });
+        
+        if (profileError) {
+          console.error('Error checking user profile:', profileError);
+          throw new Error('Unable to verify user profile');
+        }
+        
+        if (!profileData || profileData.length === 0) {
+          console.error('❌ User has no active profile:', data.user.email);
+          
+          // Sign out the user immediately
+          await supabase.auth.signOut();
+          
+          throw new Error('Access denied: Your account is not properly configured. Please contact an administrator.');
+        }
+        
+        const profile = profileData[0];
+        console.log('✅ Profile verified for user:', profile.email, 'Role:', profile.role);
+        
+        // Update last login
+        await supabase
+          .from('user_profiles')
+          .update({ last_login: new Date().toISOString() })
+          .eq('user_id', data.user.id);
+          
+      } catch (profileCheckError: any) {
+        console.error('Profile verification failed:', profileCheckError);
+        
+        // Sign out the user
+        await supabase.auth.signOut();
+        
+        throw new Error(profileCheckError.message || 'Unable to verify user account');
+      }
     }
     
     return data;

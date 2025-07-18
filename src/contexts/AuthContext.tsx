@@ -91,15 +91,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     addDebugInfo('Setting up auth listener');
     // Get initial session
-    authService.getCurrentUser().then(user => {
+    authService.getCurrentUser().then(async user => {
       addDebugInfo(`Initial user loaded: ${user ? user.email : 'null'}`);
-      setUser(user);
+      
+      if (user) {
+        // Verify user has profile before setting them as authenticated
+        try {
+          const profile = await userService.getCurrentUserProfile();
+          if (!profile || !profile.is_active) {
+            addDebugInfo(`User ${user.email} has no active profile, signing out`);
+            await authService.signOut();
+            setUser(null);
+            return;
+          }
+          addDebugInfo(`User ${user.email} has valid profile, role: ${profile.role}`);
+          setUser(user);
+        } catch (error) {
+          addDebugInfo(`Profile check failed for ${user.email}, signing out`);
+          await authService.signOut();
+          setUser(null);
+        }
+      } else {
+        setUser(user);
+      }
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = authService.onAuthStateChange(user => {
+    const { data: { subscription } } = authService.onAuthStateChange(async user => {
       addDebugInfo(`Auth state changed: ${user ? user.email : 'null'}`);
-      setUser(user);
+      
+      if (user) {
+        // Verify user has profile before setting them as authenticated
+        try {
+          const profile = await userService.getCurrentUserProfile();
+          if (!profile || !profile.is_active) {
+            addDebugInfo(`User ${user.email} has no active profile, blocking access`);
+            await authService.signOut();
+            setUser(null);
+            return;
+          }
+          addDebugInfo(`User ${user.email} has valid profile, allowing access`);
+          setUser(user);
+        } catch (error) {
+          addDebugInfo(`Profile verification failed for ${user.email}, blocking access`);
+          await authService.signOut();
+          setUser(null);
+        }
+      } else {
+        setUser(user);
+      }
     });
 
     return () => subscription.unsubscribe();

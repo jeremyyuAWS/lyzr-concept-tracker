@@ -51,6 +51,10 @@ export function LoginForm() {
         setError('No account found with this email. Please sign up first.');
       } else if (err.message === 'Email not confirmed') {
         setError('Please check your email and confirm your account before signing in.');
+      } else if (err.message.includes('Access denied') || err.message.includes('not properly configured')) {
+        setError('Your account is not properly configured. Please contact an administrator for access.');
+      } else if (err.message.includes('Unable to verify user profile')) {
+        setError('Unable to verify your account. Please try again or contact support.');
       } else {
         setError(err.message || 'An error occurred during authentication');
       }
