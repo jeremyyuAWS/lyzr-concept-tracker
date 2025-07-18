@@ -226,6 +226,30 @@ export const favoritesService = {
 
     return !!data;
   },
+
+  async getFavoritesWithFolders(): Promise<{ folders: any[], unorganized: DatabaseDemo[] }> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { folders: [], unorganized: [] };
+
+    const { data, error } = await supabase
+      .from('user_favorites')
+      .select(`
+        *,
+        demos (*)
+      `)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    // Since we don't have folder support yet, return all demos as unorganized
+    const unorganized = data?.map(fav => fav.demos).filter(Boolean) || [];
+    
+    return {
+      folders: [],
+      unorganized: unorganized
+    };
+  },
 };
 
 export const analyticsService = {

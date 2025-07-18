@@ -210,20 +210,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { user } = await authService.signUp(email, password, displayName);
     addDebugInfo(`Signup successful, user created: ${user?.id}`);
     
-    // Track initial signup
-    if (user) {
-      try {
-        await supabase.rpc('track_user_login', {
-          p_user_id: user.id,
-          p_user_agent: navigator.userAgent,
-          p_ip_address: null
-        });
-        addDebugInfo('Initial login tracked for new user');
-      } catch (trackError) {
-        addDebugInfo(`Failed to track initial login: ${trackError}`);
-      }
-    }
-    
     // Wait for the database trigger to create the profile, then verify it exists
     if (user) {
       addDebugInfo('Waiting for trigger to create profile...');
