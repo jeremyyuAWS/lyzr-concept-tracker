@@ -70,7 +70,7 @@ export function useFavorites() {
         throw new Error('User not authenticated');
       }
       console.log('🔍 Toggling favorite for demo:', demoId);
-      const isFavorited = await favoritesService.toggleFavorite(demoId, user.id);
+      const isFavorited = await favoritesService.toggleFavorite(demoId);
       console.log('✅ Favorite toggled, result:', isFavorited);
       
       if (isFavorited) {

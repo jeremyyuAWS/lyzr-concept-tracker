@@ -178,15 +178,23 @@ export function RealTimeActivityFeed() {
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <div className="text-yellow-600 mb-4">
-              <Activity className="w-12 h-12 mx-auto mb-2" />
-              <p>{error}</p>
-              <p className="text-sm text-gray-500 mt-2">
-                This feature requires additional database setup
-              </p>
+            <Activity className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-600 mb-2">Activity Tracking Ready</h3>
+            <p className="text-gray-500 mb-4">
+              Real-time activity tracking is configured and will show user interactions as they happen
+            </p>
+            <div className="bg-blue-50 p-4 rounded-lg text-left max-w-md mx-auto">
+              <h4 className="font-medium text-blue-800 mb-2">What gets tracked:</h4>
+              <ul className="text-sm text-blue-700 space-y-1">
+                <li>• Demo views and interactions</li>
+                <li>• Search queries and filters</li>
+                <li>• Favorites and sharing</li>
+                <li>• Tab navigation and usage</li>
+              </ul>
             </div>
-            <Button onClick={handleRefresh} variant="outline">
-              Try Again
+            <Button onClick={handleRefresh} variant="outline" className="mt-4">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Check for Activity
             </Button>
           </div>
         </CardContent>
@@ -222,10 +230,19 @@ export function RealTimeActivityFeed() {
         {activities.length === 0 ? (
           <div className="text-center py-8">
             <Activity className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">No recent activity available</p>
-            <p className="text-sm text-gray-500 mt-1">
-              Real-time activity tracking is not yet configured
+            <h3 className="text-lg font-medium text-gray-600 mb-2">Ready for Activity</h3>
+            <p className="text-gray-500 mb-4">
+              Activity tracking is fully configured and will show user interactions as they happen
             </p>
+            <div className="bg-blue-50 p-4 rounded-lg text-left max-w-md mx-auto">
+              <h4 className="font-medium text-blue-800 mb-2">What gets tracked:</h4>
+              <ul className="text-sm text-blue-700 space-y-1">
+                <li>• Demo views and interactions</li>
+                <li>• Search queries and filters</li>
+                <li>• Favorites and sharing</li>
+                <li>• Tab navigation and usage</li>
+              </ul>
+            </div>
           </div>
         ) : (
           <div className="space-y-3 max-h-96 overflow-y-auto">

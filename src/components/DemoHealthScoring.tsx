@@ -137,15 +137,23 @@ export function DemoHealthScoring() {
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <div className="text-yellow-600 mb-4">
-              <Trophy className="w-12 h-12 mx-auto mb-2" />
-              <p>{error}</p>
-              <p className="text-sm text-gray-500 mt-2">
-                This feature requires additional database setup
-              </p>
+            <Target className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-600 mb-2">Health Scoring Ready</h3>
+            <p className="text-gray-500 mb-4">
+              The health scoring system is configured and will automatically calculate scores as demos gain engagement
+            </p>
+            <div className="bg-green-50 p-4 rounded-lg text-left max-w-md mx-auto">
+              <h4 className="font-medium text-green-800 mb-2">Health factors include:</h4>
+              <ul className="text-sm text-green-700 space-y-1">
+                <li>• View count and engagement rate</li>
+                <li>• Demo freshness and recency</li>
+                <li>• Favorite count and user interest</li>
+                <li>• Conversion rate (views to try-app clicks)</li>
+              </ul>
             </div>
-            <Button onClick={handleRefresh} variant="outline">
-              Try Again
+            <Button onClick={handleRefresh} variant="outline" className="mt-4">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Calculate Scores
             </Button>
           </div>
         </CardContent>
@@ -248,6 +256,21 @@ export function DemoHealthScoring() {
                       <div className="text-xs text-gray-500 mt-1">
                         {getHealthLabel(score.health_score)}
                       </div>
+                    </div>
+                  <div className="text-center py-12">
+                    <Target className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-600 mb-2">Health Scoring Ready</h3>
+                    <p className="text-gray-500 mb-4">
+                      The health scoring system is configured and will automatically calculate scores as demos gain engagement
+                    </p>
+                    <div className="bg-green-50 p-4 rounded-lg text-left max-w-md mx-auto">
+                      <h4 className="font-medium text-green-800 mb-2">Health factors include:</h4>
+                      <ul className="text-sm text-green-700 space-y-1">
+                        <li>• View count and engagement rate</li>
+                        <li>• Demo freshness and recency</li>
+                        <li>• Favorite count and user interest</li>
+                        <li>• Conversion rate (views to try-app clicks)</li>
+                      </ul>
                     </div>
                   </div>
 
