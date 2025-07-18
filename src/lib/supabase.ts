@@ -460,6 +460,8 @@ export const userService = {
 
   // Create user profile
   async createUserProfile(profileData: Omit<UserProfile, 'id' | 'created_at' | 'updated_at' | 'last_login' | 'is_active' | 'avatar_url'>): Promise<UserProfile> {
+    console.log('🔍 Creating user profile:', profileData);
+    
     const { data, error } = await supabase
       .from('user_profiles')
       .insert({
@@ -473,9 +475,11 @@ export const userService = {
     
     if (error) {
       console.error('Error creating user profile:', error);
+      console.error('Profile data attempted:', profileData);
       throw error;
     }
-    
+
+    console.log('✅ User profile created successfully:', data);
     return data;
   },
 
@@ -622,6 +626,8 @@ export const authService = {
 
   // Sign up with email/password
   async signUp(email: string, password: string, displayName?: string) {
+    console.log('🔍 Starting signup for:', email);
+    
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -635,6 +641,13 @@ export const authService = {
     if (error) {
       console.error('Error signing up:', error);
       throw error;
+    }
+    
+    console.log('✅ Auth signup successful:', data.user?.id);
+    
+    // Log that we're expecting the trigger to create the profile
+    if (data.user) {
+      console.log('🎯 Database trigger should create profile for user:', data.user.id);
     }
     
     return data;
