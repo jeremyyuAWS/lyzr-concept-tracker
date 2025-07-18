@@ -222,6 +222,7 @@ export function FeaturedTab({ demos, loading, error, onViewIncrement, onDemoUpda
                 onDelete={onDemoDelete}
                 onToggleFavorite={onToggleFavorite}
                 isFavorited={isFavorited ? isFavorited(demo.id) : false}
+                onPromptOrganize={undefined}
               />
             </div>
           ))}

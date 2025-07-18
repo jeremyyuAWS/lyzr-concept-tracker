@@ -36,9 +36,10 @@ interface DemoCardProps {
   onDelete?: (demoId: string) => void;
   onToggleFavorite?: (demoId: string) => void;
   isFavorited?: boolean;
+  onPromptOrganize?: (demoId: string) => void;
 }
 
-export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFavorite, isFavorited = false }: DemoCardProps) {
+export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFavorite, isFavorited = false, onPromptOrganize }: DemoCardProps) {
   const { isAdmin, user } = useAuth();
   const { trackDemoView, trackDemoFavorite, trackDemoTryApp } = useSessionTracking();
   const [showEditModal, setShowEditModal] = useState(false);
@@ -229,7 +230,19 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
       // Track the favorite action
       trackDemoFavorite(demo.id, demo.title, result);
       
-      toast.success(result ? 'Added to favorites' : 'Removed from favorites');
+      if (result) {
+        // Show organize prompt for newly favorited demos
+        toast.success('Added to favorites', {
+          description: 'Want to organize it into a folder?',
+          action: onPromptOrganize ? {
+            label: 'Organize',
+            onClick: () => onPromptOrganize(demo.id)
+          } : undefined,
+          duration: 5000
+        });
+      } else {
+        toast.success('Removed from favorites');
+      }
     } catch (error) {
       console.error('Error toggling favorite:', error);
       toast.error('Failed to update favorite');

@@ -178,6 +178,7 @@ export function CatalogTab({ demos, loading, error, onViewIncrement, onDemoUpdat
               onDelete={onDemoDelete}
               onToggleFavorite={onToggleFavorite}
               isFavorited={isFavorited ? isFavorited(demo.id) : false}
+              onPromptOrganize={undefined}
             />
           ))}
         </div>

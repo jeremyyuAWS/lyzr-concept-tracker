@@ -91,13 +91,15 @@ function QuickMoveModal({
   onClose, 
   selectedDemos, 
   folders, 
-  onMoveToFolder 
+  onMoveToFolder,
+  onCreateNewFolder
 }: {
   isOpen: boolean;
   onClose: () => void;
   selectedDemos: Demo[];
   folders: FavoriteFolder[];
   onMoveToFolder: (folderId?: string) => void;
+  onCreateNewFolder: () => void;
 }) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -113,10 +115,35 @@ function QuickMoveModal({
         </DialogHeader>
         
         <div className="space-y-3 max-h-60 overflow-y-auto">
+          {/* Create New Folder Button */}
+          <button
+            onClick={onCreateNewFolder}
+            className="w-full p-4 text-left rounded-lg border-2 border-dashed border-green-300 hover:border-green-400 hover:bg-green-50 transition-all duration-200 group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-100 rounded group-hover:bg-green-200 transition-colors">
+                <FolderPlus className="w-5 h-5 text-green-600" />
+              </div>
+              <div>
+                <h3 className="font-medium text-green-800 group-hover:text-green-900">Create New Folder</h3>
+                <p className="text-sm text-green-600 group-hover:text-green-700">
+                  Create a new folder for organizing these demos
+                </p>
+              </div>
+              <Plus className="w-5 h-5 text-green-500 ml-auto group-hover:text-green-600" />
+            </div>
+          </button>
+          
+          {folders.length > 0 && (
+            <div className="border-t border-gray-200 pt-3">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Or choose an existing folder:</h4>
+            </div>
+          )}
+          
           {/* Move to Unorganized */}
           <button
             onClick={() => onMoveToFolder(undefined)}
-            className="w-full p-3 text-left rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+            className="w-full p-3 text-left rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
           >
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gray-100 rounded">
@@ -135,11 +162,11 @@ function QuickMoveModal({
             <button
               key={folder.id}
               onClick={() => onMoveToFolder(folder.id)}
-              className="w-full p-3 text-left rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+              className="w-full p-3 text-left rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 group"
             >
               <div className="flex items-center gap-3">
                 <div 
-                  className="p-2 rounded"
+                  className="p-2 rounded group-hover:scale-110 transition-transform duration-200"
                   style={{ backgroundColor: folder.color + '20' }}
                 >
                   <Folder className="w-4 h-4" style={{ color: folder.color }} />
@@ -151,16 +178,16 @@ function QuickMoveModal({
                     {folder.description && ` • ${folder.description}`}
                   </p>
                 </div>
-                <ArrowRight className="w-4 h-4 text-gray-400" />
+                <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all duration-200" />
               </div>
             </button>
           ))}
           
           {folders.length === 0 && (
-            <div className="text-center py-6 text-gray-500">
+            <div className="text-center py-4 text-gray-500">
               <Folder className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No folders created yet</p>
-              <p className="text-xs text-gray-400 mt-1">Create a folder first to organize your demos</p>
+              <p className="text-sm">No existing folders</p>
+              <p className="text-xs text-gray-400 mt-1">Create your first folder above</p>
             </div>
           )}
         </div>
@@ -180,13 +207,15 @@ function DraggableDemo({
   isSelected,
   onSelect,
   onQuickMove,
-  folders
+  folders,
+  onPromptOrganize
 }: {
   demo: Demo;
   isSelected?: boolean;
   onSelect?: (demoId: string, selected: boolean) => void;
   onQuickMove?: (demoId: string) => void;
   folders?: FavoriteFolder[];
+  onPromptOrganize?: (demoId: string) => void;
   onViewIncrement?: (id: string) => void;
   onDemoUpdate?: (updatedDemo: Demo) => void;
   onDemoDelete?: (demoId: string) => void;
@@ -280,6 +309,7 @@ function DraggableDemo({
         onDelete={onDemoDelete}
         onToggleFavorite={onToggleFavorite}
         isFavorited={isFavorited}
+        onPromptOrganize={onPromptOrganize}
       />
     </div>
   );
@@ -294,7 +324,8 @@ function FavoriteFolder({
   onToggleFavorite, 
   isFavorited,
   onEditFolder,
-  onDeleteFolder
+  onDeleteFolder,
+  onPromptOrganize
 }: {
   folder: FavoriteFolder;
   isDropTarget?: boolean;
@@ -305,6 +336,7 @@ function FavoriteFolder({
   isFavorited?: (demoId: string) => boolean;
   onEditFolder: (folder: FavoriteFolder) => void;
   onDeleteFolder: (folderId: string) => void;
+  onPromptOrganize?: (demoId: string) => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
   const {
@@ -322,7 +354,7 @@ function FavoriteFolder({
       ref={setNodeRef}
       className={`transition-all duration-200 border-2 ${
         isOver 
-          ? 'ring-2 ring-blue-500 bg-blue-50 border-blue-300 shadow-lg transform scale-[1.02]' 
+          ? 'ring-4 ring-blue-400 bg-gradient-to-r from-blue-50 to-blue-100 border-blue-400 shadow-2xl transform scale-[1.02]' 
           : 'border-gray-200 hover:shadow-md hover:border-gray-300'
       }`}
     >
@@ -391,9 +423,11 @@ function FavoriteFolder({
         
         {/* Drop Zone Indicator */}
         {isOver && (
-          <div className="absolute inset-0 bg-blue-100/50 border-2 border-dashed border-blue-400 rounded-lg flex items-center justify-center">
-            <div className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-100/80 to-blue-200/80 border-2 border-dashed border-blue-500 rounded-lg flex items-center justify-center z-10 animate-pulse">
+            <div className="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg flex items-center gap-2">
+              <FolderInput className="w-4 h-4" />
               Drop demos here
+              <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
             </div>
           </div>
         )}
@@ -467,6 +501,7 @@ export function FavoritesTab({
   const [selectedDemos, setSelectedDemos] = useState<string[]>([]);
   const [showQuickMoveModal, setShowQuickMoveModal] = useState(false);
   const [bulkMoveMode, setBulkMoveMode] = useState(false);
+  const [organizePromptDemo, setOrganizePromptDemo] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -648,6 +683,17 @@ export function FavoritesTab({
     setSelectedDemos([demoId]);
     setShowQuickMoveModal(true);
   };
+  
+  const handlePromptOrganize = (demoId: string) => {
+    setOrganizePromptDemo(demoId);
+    setSelectedDemos([demoId]);
+    setShowQuickMoveModal(true);
+  };
+  
+  const handleCreateFromQuickMove = () => {
+    setShowQuickMoveModal(false);
+    setShowCreateFolder(true);
+  };
 
   if (loading || foldersLoading) {
     return (
@@ -827,6 +873,8 @@ export function FavoritesTab({
                     isFavorited={isFavorited}
                     onEditFolder={handleEditFolder}
                     onDeleteFolder={handleDeleteFolder}
+                    onPromptOrganize={handlePromptOrganize}
+                    onPromptOrganize={handlePromptOrganize}
                   />
                 ))}
               </div>
@@ -882,6 +930,8 @@ export function FavoritesTab({
                         onDemoDelete={onDemoDelete}
                         onToggleFavorite={onToggleFavorite}
                         isFavorited={isFavorited ? isFavorited(demo.id) : true}
+                        onPromptOrganize={onPromptOrganize}
+                        onPromptOrganize={handlePromptOrganize}
                       />
                     ))}
                   </div>
@@ -919,6 +969,7 @@ export function FavoritesTab({
           isOpen={showQuickMoveModal}
           onClose={() => {
             setShowQuickMoveModal(false);
+            setOrganizePromptDemo(null);
             if (!bulkMoveMode) setSelectedDemos([]);
           }}
           selectedDemos={selectedDemos.map(id => 
@@ -926,6 +977,7 @@ export function FavoritesTab({
           ).filter(Boolean) as Demo[]}
           folders={folders}
           onMoveToFolder={handleBulkMoveToFolder}
+          onCreateNewFolder={handleCreateFromQuickMove}
         />
 
         {/* Drag Overlay */}
