@@ -199,7 +199,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [loading, user]);
 
   const signIn = async (email: string, password: string) => {
+    addDebugInfo(`Starting sign-in for: ${email}`);
     const { user } = await authService.signIn(email, password);
+    addDebugInfo(`Sign-in successful for: ${user?.email}`);
     setUser(user);
   };
 
@@ -207,6 +209,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     addDebugInfo(`Starting signup process for: ${email}`);
     const { user } = await authService.signUp(email, password, displayName);
     addDebugInfo(`Signup successful, user created: ${user?.id}`);
+    
+    // Track initial signup
+    if (user) {
+      try {
+        await supabase.rpc('track_user_login', {
+          p_user_id: user.id,
+          p_user_agent: navigator.userAgent,
+          p_ip_address: null
+        });
+        addDebugInfo('Initial login tracked for new user');
+      } catch (trackError) {
+        addDebugInfo(`Failed to track initial login: ${trackError}`);
+      }
+    }
     
     // Wait for the database trigger to create the profile, then verify it exists
     if (user) {

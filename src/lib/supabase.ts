@@ -351,14 +351,65 @@ export const favoritesService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return [];
     
-    // First get user's favorite demo IDs
+    try {
+      // Use enhanced favorites function for better performance
+      const { data, error } = await supabase.rpc('get_user_favorites_with_folders', {
+        p_user_id: user.id
+      });
+      
+      if (error) {
+        console.error('Error with enhanced favorites function:', error);
+        // Fallback to simple method
+        return this.getFavoritesDemosSimple();
+      }
+      
+      if (!data || data.length === 0) {
+        return [];
+      }
+      
+      const result = data[0];
+      const folders = result.folders || [];
+      const unorganized = result.unorganized || [];
+      
+      // Combine all demos from folders and unorganized
+      const allDemos: DatabaseDemo[] = [];
+      
+      // Add demos from folders
+      if (Array.isArray(folders)) {
+        folders.forEach((folder: any) => {
+          if (folder.demos && Array.isArray(folder.demos)) {
+            allDemos.push(...folder.demos);
+          }
+        });
+      }
+      
+      // Add unorganized demos
+      if (Array.isArray(unorganized)) {
+        allDemos.push(...unorganized);
+      }
+      
+      return allDemos;
+      
+    } catch (err) {
+      console.error('Error fetching favorites with folders:', err);
+      // Fallback to simple method
+      return this.getFavoritesDemosSimple();
+    }
+  },
+  
+  // Fallback method for getting favorites
+  async getFavoritesDemosSimple(): Promise<DatabaseDemo[]> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+    
+    // Get user's favorite demo IDs
     const favoriteIds = await this.getUserFavorites();
     
     if (favoriteIds.length === 0) {
       return [];
     }
     
-    // Then get the actual demos
+    // Get the actual demos
     const { data, error } = await supabase
       .from('demos')
       .select('*')
@@ -372,6 +423,41 @@ export const favoritesService = {
     }
     
     return data || [];
+  }
+  
+  // Enhanced method to get favorites with folder organization
+  async getFavoritesWithFolders(): Promise<{ folders: any[], unorganized: DatabaseDemo[] }> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { folders: [], unorganized: [] };
+    
+    try {
+      const { data, error } = await supabase.rpc('get_user_favorites_with_folders', {
+        p_user_id: user.id
+      });
+      
+      if (error) {
+        console.error('Error with enhanced favorites function:', error);
+        // Fallback to simple structure
+        const demos = await this.getFavoritesDemosSimple();
+        return { folders: [], unorganized: demos };
+      }
+      
+      if (!data || data.length === 0) {
+        return { folders: [], unorganized: [] };
+      }
+      
+      const result = data[0];
+      return {
+        folders: result.folders || [],
+        unorganized: result.unorganized || []
+      };
+      
+    } catch (err) {
+      console.error('Error fetching favorites with folders:', err);
+      // Fallback to simple structure
+      const demos = await this.getFavoritesDemosSimple();
+      return { folders: [], unorganized: demos };
+    }
   }
 };
 
@@ -748,20 +834,38 @@ export const authService = {
       throw error;
     }
 
-    // Verify user has an active profile before allowing login
+    // Track login and verify user has an active profile
     if (data.user) {
       console.log('🔍 Verifying user profile exists for:', data.user.id);
       
+      // Track the login with enhanced analytics
       try {
+        await supabase.rpc('track_user_login', {
+          p_user_id: data.user.id,
+          p_user_agent: navigator.userAgent,
+          p_ip_address: null // IP will be handled server-side
+        });
+        console.log('✅ Login tracked successfully');
+      } catch (trackError) {
+        console.warn('⚠️ Login tracking failed:', trackError);
+        // Don't block login if tracking fails
+      }
+      
+      try {
+        // Use enhanced profile verification
         const { data: profileData, error: profileError } = await supabase
-          .rpc('get_verified_user_profile', { p_user_id: data.user.id });
+          .from('user_profiles')
+          .select('*')
+          .eq('user_id', data.user.id)
+          .eq('is_active', true)
+          .maybeSingle();
         
         if (profileError) {
           console.error('Error checking user profile:', profileError);
           throw new Error('Unable to verify user profile');
         }
         
-        if (!profileData || profileData.length === 0) {
+        if (!profileData) {
           console.error('❌ User has no active profile:', data.user.email);
           
           // Sign out the user immediately
@@ -770,14 +874,9 @@ export const authService = {
           throw new Error('Access denied: Your account is not properly configured. Please contact an administrator.');
         }
         
-        const profile = profileData[0];
-        console.log('✅ Profile verified for user:', profile.email, 'Role:', profile.role);
+        console.log('✅ Profile verified for user:', profileData.email, 'Role:', profileData.role);
         
-        // Update last login
-        await supabase
-          .from('user_profiles')
-          .update({ last_login: new Date().toISOString() })
-          .eq('user_id', data.user.id);
+        // Last login is now handled by track_user_login function
           
       } catch (profileCheckError: any) {
         console.error('Profile verification failed:', profileCheckError);
@@ -884,6 +983,44 @@ export const authService = {
   async hasRole(role: UserProfile['role']): Promise<boolean> {
     const profile = await userService.getCurrentUserProfile();
     return profile?.role === role;
+  },
+
+  // Enhanced engagement tracking
+  async getUserEngagement(userId?: string): Promise<any> {
+    try {
+      const { data, error } = await supabase.rpc('calculate_user_engagement', {
+        p_user_id: userId || undefined
+      });
+      
+      if (error) {
+        console.error('Error calculating user engagement:', error);
+        return null;
+      }
+      
+      return data;
+    } catch (err) {
+      console.error('Error with engagement calculation:', err);
+      return null;
+    }
+  },
+  
+  // Get engagement leaderboard
+  async getEngagementLeaderboard(limit: number = 10): Promise<any[]> {
+    try {
+      const { data, error } = await supabase.rpc('get_engagement_leaderboard', {
+        p_limit: limit
+      });
+      
+      if (error) {
+        console.error('Error getting engagement leaderboard:', error);
+        return [];
+      }
+      
+      return data || [];
+    } catch (err) {
+      console.error('Error with engagement leaderboard:', err);
+      return [];
+    }
   },
 
   // Get auth state changes
