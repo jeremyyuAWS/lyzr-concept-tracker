@@ -119,3 +119,5 @@ function QuickMoveModal({
           <button
             onClick={onCreateNewFolder}
             className="w-full p-4 text-left rounded-lg border-2 border-dashed border-
+  )
+}
