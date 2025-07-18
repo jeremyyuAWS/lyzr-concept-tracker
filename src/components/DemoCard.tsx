@@ -231,14 +231,10 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
       trackDemoFavorite(demo.id, demo.title, result);
       
       if (result) {
-        // Show organize prompt for newly favorited demos
-        toast.success('Added to favorites', {
-          description: 'Want to organize it into a folder?',
-          action: onPromptOrganize ? {
-            label: 'Organize',
-            onClick: () => onPromptOrganize(demo.id)
-          } : undefined,
-          duration: 5000
+        // Show organize prompt for newly favorited demos with better UX
+        toast.success('Added to favorites! 💝', {
+          description: 'Visit the Favorites tab to organize into folders',
+          duration: 4000,
         });
       } else {
         toast.success('Removed from favorites');

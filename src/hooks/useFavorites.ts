@@ -40,7 +40,36 @@ export function useFavorites() {
   const loadFavoritesWithFolders = async (userId: string) => {
     try {
       console.log('🔍 Loading favorites with folders...');
-      const { folders, unorganized } = await favoritesService.getFavoritesWithFolders(userId);
+      
+      // Load favorites directly from database
+      const { data: favoritesData, error: favoritesError } = await supabase
+        .from('user_favorites')
+        .select(`
+          demo_id,
+          folder_id,
+          created_at,
+          demos!inner(*)
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (favoritesError) throw favoritesError;
+
+      // Load folders
+      const { data: foldersData, error: foldersError } = await supabase
+        .from('favorite_folders')
+        .select('*')
+        .eq('user_id', userId)
+        .order('sort_order', { ascending: true });
+
+      if (foldersError) throw foldersError;
+
+      // Organize data
+      const folders = foldersData || [];
+      const unorganized = (favoritesData || [])
+        .filter(f => !f.folder_id)
+        .map(f => f.demos);
+      
       console.log('✅ Folders loaded:', folders?.length || 0);
       console.log('✅ Unorganized loaded:', unorganized?.length || 0);
       
