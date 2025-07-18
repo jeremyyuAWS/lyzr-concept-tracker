@@ -34,19 +34,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           addDebugInfo(`Profile loaded successfully: ${profile.display_name}`);
           setUserProfile(profile);
         } else {
-          // Profile doesn't exist - try to create it
-          addDebugInfo('No profile found, attempting to create one...');
+          // Profile doesn't exist - this shouldn't happen with the trigger, but handle it
+          addDebugInfo('No profile found - this indicates the trigger may not be working');
           try {
+            addDebugInfo('Attempting to create missing profile');
             const newProfile = await userService.createUserProfile({
               user_id: user.id,
               email: user.email!,
               display_name: user.user_metadata?.display_name || user.email!.split('@')[0],
               role: user.email === 'jeremy@lyzr.ai' || user.email === 'admin@lyzr.ai' ? 'admin' : 'user'
             });
-            addDebugInfo('Profile created successfully');
+            addDebugInfo('Missing profile created successfully');
             setUserProfile(newProfile);
           } catch (createError) {
-            addDebugInfo(`Profile creation failed: ${createError}`);
+            addDebugInfo(`Missing profile creation failed: ${createError}`);
             // Use fallback profile if creation fails
             setUserProfile({
               id: user.id,
@@ -63,6 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
       } catch (error) {
+        addDebugInfo(`Profile loading completely failed: ${error}`);
         addDebugInfo(`Profile loading failed, using fallback: ${error}`);
         // If any error occurs, use fallback profile to keep app functional
         if (user) {
@@ -162,28 +164,75 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, displayName?: string) => {
+    addDebugInfo(`Starting signup process for: ${email}`);
     const { user } = await authService.signUp(email, password, displayName);
+    addDebugInfo(`Signup successful, user created: ${user?.id}`);
     
-    // Wait a moment for the trigger to fire, then try to create profile if needed
+    // Wait for the database trigger to create the profile, then verify it exists
     if (user) {
+      addDebugInfo('Waiting for trigger to create profile...');
+      
+      // Wait 2 seconds for the database trigger to fire
       setTimeout(async () => {
-        try {
-          const profile = await userService.getCurrentUserProfile();
-          if (!profile) {
-            addDebugInfo('Creating profile manually after signup');
-            await userService.createUserProfile({
-              user_id: user.id,
-              email: user.email!,
-              display_name: displayName || user.email!.split('@')[0],
-              role: user.email === 'jeremy@lyzr.ai' || user.email === 'admin@lyzr.ai' ? 'admin' : 'user'
-            });
+        let retries = 0;
+        const maxRetries = 5;
+        
+        while (retries < maxRetries) {
+          try {
+            addDebugInfo(`Checking for profile, attempt ${retries + 1}`);
+            const profile = await userService.getCurrentUserProfile();
+            
+            if (profile) {
+              addDebugInfo('Profile found successfully via trigger!');
+              setUserProfile(profile);
+              break;
+            } else {
+              addDebugInfo(`Profile not found, attempt ${retries + 1}/${maxRetries}`);
+              
+              // If no profile after multiple attempts, create manually
+              if (retries === maxRetries - 1) {
+                addDebugInfo('Creating profile manually as fallback');
+                try {
+                  const newProfile = await userService.createUserProfile({
+                    user_id: user.id,
+                    email: user.email!,
+                    display_name: displayName || user.email!.split('@')[0],
+                    role: user.email === 'jeremy@lyzr.ai' || user.email === 'admin@lyzr.ai' ? 'admin' : 'user'
+                  });
+                  addDebugInfo('Manual profile creation successful');
+                  setUserProfile(newProfile);
+                } catch (createError) {
+                  addDebugInfo(`Manual profile creation failed: ${createError}`);
+                  // Create temporary profile to keep app functional
+                  setUserProfile({
+                    id: user.id,
+                    user_id: user.id,
+                    email: user.email!,
+                    display_name: displayName || user.email!.split('@')[0],
+                    role: user.email === 'jeremy@lyzr.ai' || user.email === 'admin@lyzr.ai' ? 'admin' : 'user',
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                    last_login: null,
+                    is_active: true,
+                    avatar_url: null
+                  });
+                }
+              }
+            }
+          } catch (error) {
+            addDebugInfo(`Profile check failed: ${error}`);
           }
-        } catch (error) {
-          addDebugInfo(`Manual profile creation failed: ${error}`);
+          
+          retries++;
+          if (retries < maxRetries) {
+            // Wait before retrying
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
         }
-      }, 1000);
+      }, 2000);
     }
     
+    addDebugInfo('Setting user in auth context');
     setUser(user);
   };
 
