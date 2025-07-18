@@ -5,13 +5,15 @@ import { Demo } from '@/types/demo';
 export function useFavorites() {
   const [userFavorites, setUserFavorites] = useState<string[]>([]);
   const [favoritesDemos, setFavoritesDemos] = useState<Demo[]>([]);
+  const [favoriteFolders, setFavoriteFolders] = useState<any[]>([]);
+  const [unorganizedFavorites, setUnorganizedFavorites] = useState<Demo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Load user's favorites on mount
   useEffect(() => {
     loadUserFavorites();
-    loadFavoritesDemos();
+    loadFavoritesWithFolders();
   }, []);
 
   const loadUserFavorites = async () => {
@@ -27,10 +29,15 @@ export function useFavorites() {
     }
   };
 
-  const loadFavoritesDemos = async () => {
+  const loadFavoritesWithFolders = async () => {
     try {
-      const demos = await favoritesService.getFavoritesDemos();
-      setFavoritesDemos(demos);
+      const { folders, unorganized } = await favoritesService.getFavoritesWithFolders();
+      setFavoriteFolders(folders);
+      setUnorganizedFavorites(unorganized);
+      
+      // Also set the combined demos for backward compatibility
+      const allDemos = [...folders.flatMap((f: any) => f.demos), ...unorganized];
+      setFavoritesDemos(allDemos);
     } catch (err) {
       console.error('Error loading favorite demos:', err);
       setError('Failed to load favorite demos');
@@ -48,10 +55,16 @@ export function useFavorites() {
         // Remove from favorites
         setUserFavorites(prev => prev.filter(id => id !== demoId));
         setFavoritesDemos(prev => prev.filter(demo => demo.id !== demoId));
+        setUnorganizedFavorites(prev => prev.filter(demo => demo.id !== demoId));
+        // Also remove from folders
+        setFavoriteFolders(prev => prev.map(folder => ({
+          ...folder,
+          demos: folder.demos.filter((demo: Demo) => demo.id !== demoId)
+        })));
       }
       
       // Refresh favorites demos list
-      await loadFavoritesDemos();
+      await loadFavoritesWithFolders();
       
       return isFavorited;
     } catch (err) {
@@ -66,12 +79,14 @@ export function useFavorites() {
 
   const refetch = () => {
     loadUserFavorites();
-    loadFavoritesDemos();
+    loadFavoritesWithFolders();
   };
 
   return {
     userFavorites,
     favoritesDemos,
+    favoriteFolders,
+    unorganizedFavorites,
     loading,
     error,
     toggleFavorite,

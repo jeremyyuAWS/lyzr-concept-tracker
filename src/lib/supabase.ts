@@ -167,6 +167,139 @@ export const demoService = {
 
 // Favorites Service
 export const favoritesService = {
+  // Get user's favorite folders
+  async getUserFolders(): Promise<any[]> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+    
+    const { data, error } = await supabase
+      .from('favorite_folders')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('sort_order', { ascending: true });
+    
+    if (error) {
+      console.error('Error fetching user folders:', error);
+      throw error;
+    }
+    
+    return data || [];
+  },
+
+  // Create a new folder
+  async createFolder(name: string, description?: string, color?: string, icon?: string): Promise<string> {
+    const { data, error } = await supabase.rpc('create_favorite_folder', {
+      p_name: name,
+      p_description: description,
+      p_color: color || '#6366f1',
+      p_icon: icon || 'folder'
+    });
+    
+    if (error) {
+      console.error('Error creating folder:', error);
+      throw error;
+    }
+    
+    return data;
+  },
+
+  // Update folder
+  async updateFolder(folderId: string, updates: any): Promise<void> {
+    const { error } = await supabase
+      .from('favorite_folders')
+      .update(updates)
+      .eq('id', folderId);
+    
+    if (error) {
+      console.error('Error updating folder:', error);
+      throw error;
+    }
+  },
+
+  // Delete folder
+  async deleteFolder(folderId: string): Promise<void> {
+    const { error } = await supabase
+      .from('favorite_folders')
+      .delete()
+      .eq('id', folderId);
+    
+    if (error) {
+      console.error('Error deleting folder:', error);
+      throw error;
+    }
+  },
+
+  // Move favorite to folder
+  async moveFavoriteToFolder(demoId: string, folderId?: string, sortOrder?: number): Promise<void> {
+    const { error } = await supabase.rpc('move_favorite_to_folder', {
+      p_demo_id: demoId,
+      p_folder_id: folderId,
+      p_sort_order: sortOrder
+    });
+    
+    if (error) {
+      console.error('Error moving favorite to folder:', error);
+      throw error;
+    }
+  },
+
+  // Get favorites organized by folders
+  async getFavoritesWithFolders(): Promise<{ folders: any[], unorganized: DatabaseDemo[] }> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { folders: [], unorganized: [] };
+    
+    // Get folders with their favorites
+    const { data: foldersData, error: foldersError } = await supabase
+      .from('favorite_folders')
+      .select(`
+        *,
+        user_favorites (
+          demo_id,
+          sort_order,
+          demos (*)
+        )
+      `)
+      .eq('user_id', user.id)
+      .order('sort_order', { ascending: true });
+    
+    if (foldersError) {
+      console.error('Error fetching folders with favorites:', foldersError);
+      throw foldersError;
+    }
+    
+    // Get unorganized favorites (not in any folder)
+    const { data: unorganizedData, error: unorganizedError } = await supabase
+      .from('user_favorites')
+      .select(`
+        demo_id,
+        sort_order,
+        demos (*)
+      `)
+      .eq('user_id', user.id)
+      .is('folder_id', null)
+      .order('sort_order', { ascending: true });
+    
+    if (unorganizedError) {
+      console.error('Error fetching unorganized favorites:', unorganizedError);
+      throw unorganizedError;
+    }
+    
+    // Process the data
+    const folders = (foldersData || []).map(folder => ({
+      ...folder,
+      demos: (folder.user_favorites || [])
+        .sort((a: any, b: any) => a.sort_order - b.sort_order)
+        .map((fav: any) => fav.demos)
+        .filter(Boolean)
+    }));
+    
+    const unorganized = (unorganizedData || [])
+      .map((fav: any) => fav.demos)
+      .filter(Boolean);
+    
+    return { folders, unorganized };
+  },
+
   // Get user's favorited demos
   async getUserFavorites(): Promise<string[]> {
     const { data: { user } } = await supabase.auth.getUser();

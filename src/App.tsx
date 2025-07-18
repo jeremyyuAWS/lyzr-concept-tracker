@@ -331,13 +331,15 @@ function MainApp() {
               <BarChart3 className="w-4 h-4" />
               <span className="hidden sm:inline">Analytics</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="admin" 
-              className="flex items-center gap-2 text-gray-600 bg-transparent hover:bg-blue-50 hover:text-blue-600 data-[state=active]:bg-gray-100 data-[state=active]:text-black data-[state=active]:shadow-sm"
-            >
-              <Shield className="w-4 h-4" />
-              <span className="hidden sm:inline">Admin</span>
-            </TabsTrigger>
+            {isAdmin && (
+              <TabsTrigger 
+                value="admin" 
+                className="flex items-center gap-2 text-gray-600 bg-transparent hover:bg-blue-50 hover:text-blue-600 data-[state=active]:bg-gray-100 data-[state=active]:text-black data-[state=active]:shadow-sm"
+              >
+                <Shield className="w-4 h-4" />
+                <span className="hidden sm:inline">Admin</span>
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <div className="mt-6 w-full">
@@ -392,9 +394,11 @@ function MainApp() {
               <AnalyticsTab demos={demos} />
             </TabsContent>
 
-            <TabsContent value="admin" className="mt-0">
-              <AdminTab />
-            </TabsContent>
+            {isAdmin && (
+              <TabsContent value="admin" className="mt-0">
+                <AdminTab />
+              </TabsContent>
+            )}
           </div>
         </Tabs>
       </div>
