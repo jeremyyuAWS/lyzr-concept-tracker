@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS user_profiles (
 -- Create activity_logs table
 CREATE TABLE IF NOT EXISTS activity_logs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id uuid REFERENCES user_profiles(user_id) ON DELETE CASCADE,
   action text NOT NULL,
   resource_type text NOT NULL,
   resource_id uuid,
