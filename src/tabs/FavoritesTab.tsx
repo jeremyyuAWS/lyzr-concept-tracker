@@ -305,7 +305,7 @@ export function FavoritesTab({
         </div>
         <Button
           onClick={() => setShowCreateFolder(true)}
-          className="bg-black hover:bg-gray-800 text-white"
+          className="bg-white hover:bg-gray-50 text-black border border-gray-300"
         >
           <FolderPlus className="w-4 h-4 mr-2" />
           New Folder
@@ -386,7 +386,7 @@ export function FavoritesTab({
               variant="outline"
               size="sm"
               onClick={() => setSelectedFolder(null)}
-              className="whitespace-nowrap"
+              className="whitespace-nowrap bg-white"
             >
               Show All
             </Button>
@@ -397,7 +397,7 @@ export function FavoritesTab({
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm bg-white"
           >
             <option value="newest">Newest First</option>
             <option value="popular">Most Popular</option>
@@ -409,7 +409,7 @@ export function FavoritesTab({
               variant="ghost"
               size="sm"
               onClick={() => setViewMode('grid')}
-              className={`p-2 ${viewMode === 'grid' ? 'bg-gray-100' : ''}`}
+              className={`p-2 bg-white hover:bg-gray-50 ${viewMode === 'grid' ? 'bg-gray-50' : ''}`}
             >
               <Grid className="w-4 h-4" />
             </Button>
@@ -417,7 +417,7 @@ export function FavoritesTab({
               variant="ghost"
               size="sm"
               onClick={() => setViewMode('list')}
-              className={`p-2 ${viewMode === 'list' ? 'bg-gray-100' : ''}`}
+              className={`p-2 bg-white hover:bg-gray-50 ${viewMode === 'list' ? 'bg-gray-50' : ''}`}
             >
               <List className="w-4 h-4" />
             </Button>
@@ -560,12 +560,14 @@ export function FavoritesTab({
               <Button
                 variant="outline"
                 onClick={() => setShowCreateFolder(false)}
+                className="bg-white"
               >
                 Cancel
               </Button>
               <Button
                 onClick={createFolder}
                 disabled={!newFolderName.trim() || isCreatingFolder}
+                className="bg-white hover:bg-gray-50 text-black"
               >
                 {isCreatingFolder ? 'Creating...' : 'Create Folder'}
               </Button>
