@@ -192,7 +192,7 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
             weekSessions: 0,
             monthSessions: 0,
             averageSessionDuration: 0
-          }),
+          })),
           analyticsService.getDemoEngagementMetrics().catch(() => ({
             totalViews: 0,
             totalTryApps: 0,
