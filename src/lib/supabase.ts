@@ -128,17 +128,22 @@ export const userService = {
   },
 
   async getActivityLogs(limit: number = 100) {
-    const { data, error } = await supabase
-      .from('activity_logs')
-      .select(`
-        *,
-        user_profiles!inner(display_name, email)
-      `)
-      .order('created_at', { ascending: false })
-      .limit(limit);
-
-    if (error) throw error;
-    return data || [];
+    try {
+      const { data, error } = await supabase.rpc('get_real_time_activities', { p_limit: limit });
+      if (error) throw error;
+      
+      // Map the data to match the expected structure
+      return (data || []).map((activity: any) => ({
+        ...activity,
+        user_profiles: {
+          display_name: activity.display_name,
+          email: activity.email
+        }
+      }));
+    } catch (error) {
+      console.warn('Real-time activities function not available:', error);
+      return [];
+    }
   },
 
   async getUserLoginStats() {
