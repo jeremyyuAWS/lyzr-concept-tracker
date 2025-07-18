@@ -227,3 +227,85 @@ export const favoritesService = {
     return !!data;
   },
 };
+
+export const analyticsService = {
+  async startSession(userId: string, sessionData: any) {
+    const { data, error } = await supabase
+      .from('user_sessions')
+      .insert([{
+        user_id: userId,
+        session_start: new Date().toISOString(),
+        user_agent: sessionData.userAgent,
+        ip_address: sessionData.ipAddress,
+        referrer: sessionData.referrer
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async endSession(sessionId: string) {
+    const { data, error } = await supabase
+      .from('user_sessions')
+      .update({
+        session_end: new Date().toISOString(),
+        duration_ms: supabase.sql`EXTRACT(EPOCH FROM (now() - session_start)) * 1000`
+      })
+      .eq('id', sessionId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async logActivity(userId: string, action: string, resourceType: string, resourceId?: string, details?: any) {
+    const { data, error } = await supabase
+      .from('activity_logs')
+      .insert([{
+        user_id: userId,
+        action,
+        resource_type: resourceType,
+        resource_id: resourceId,
+        details,
+        created_at: new Date().toISOString()
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async getDemoHealthScores() {
+    const { data, error } = await supabase
+      .from('demos')
+      .select('id, title, page_views, created_at, updated_at')
+      .order('page_views', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  async updateAllDemoHealthScores() {
+    // This would typically call a stored procedure or function
+    // For now, we'll just return the current demo data
+    return this.getDemoHealthScores();
+  },
+
+  async getRealTimeActivities() {
+    const { data, error } = await supabase
+      .from('activity_logs')
+      .select(`
+        *,
+        user_profiles!inner(display_name, email)
+      `)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (error) throw error;
+    return data || [];
+  },
+};
