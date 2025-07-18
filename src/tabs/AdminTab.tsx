@@ -33,7 +33,6 @@ function CollapsibleSection({ title, description, icon, children, defaultOpen = 
             </CardTitle>
             <CardDescription className="text-gray-600">{description}</CardDescription>
           </div>
-          <Button variant="ghost" size="sm" className="p-1">
           <Button variant="ghost" size="sm" className="p-1 bg-white hover:bg-gray-100 border border-gray-200">
             {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </Button>
