@@ -34,6 +34,7 @@ function CollapsibleSection({ title, description, icon, children, defaultOpen = 
             <CardDescription className="text-gray-600">{description}</CardDescription>
           </div>
           <Button variant="ghost" size="sm" className="p-1">
+          <Button variant="ghost" size="sm" className="p-1 bg-white hover:bg-gray-100 border border-gray-200">
             {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </Button>
         </div>
@@ -361,7 +362,7 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
         <Button
           onClick={handleRefreshData}
           disabled={refreshing}
-          className="bg-black hover:bg-gray-800 text-white"
+          className="bg-white hover:bg-gray-50 text-black border border-gray-300"
         >
           <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
           {refreshing ? 'Refreshing...' : 'Refresh Data'}
