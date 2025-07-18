@@ -4,12 +4,10 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [react()],
-  server: {
-    headers: {
-      'Content-Type': 'application/javascript'
-    }
-  },
   build: {
+    outDir: 'dist',
+    sourcemap: false,
+    minify: 'terser',
     assetsDir: 'assets',
     rollupOptions: {
       output: {
@@ -24,7 +22,9 @@ export default defineConfig({
             return `css/[name]-[hash][extname]`;
           }
           return `assets/[name]-[hash][extname]`;
-        }
+        },
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js'
       }
     }
   },
@@ -32,8 +32,5 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
-  },
-  optimizeDeps: {
-    exclude: ['lucide-react'],
   },
 });
