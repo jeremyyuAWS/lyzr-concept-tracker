@@ -361,7 +361,7 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
         <Button
           onClick={handleRefreshData}
           disabled={refreshing}
-          className="bg-black hover:bg-gray-800 text-white"
+          className="bg-white hover:bg-gray-50 text-black border border-gray-300"
         >
           <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
           {refreshing ? 'Refreshing...' : 'Refresh Data'}

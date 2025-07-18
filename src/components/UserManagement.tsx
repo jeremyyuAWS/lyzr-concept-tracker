@@ -476,7 +476,7 @@ export function UserManagement() {
                 <Button
                   type="submit"
                   disabled={inviteLoading}
-                  className="bg-black hover:bg-blue-600 text-white"
+                  className="bg-white hover:bg-gray-50 text-black border border-gray-300"
                 >
                   {inviteLoading ? (
                     <>
@@ -510,7 +510,7 @@ export function UserManagement() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteUser}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-white hover:bg-gray-50 text-black border border-gray-300"
             >
               Delete User
             </AlertDialogAction>

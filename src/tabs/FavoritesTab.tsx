@@ -625,7 +625,7 @@ export function FavoritesTab({
             setFolderForm({ name: '', description: '', color: '#6366f1', icon: 'folder' });
           }
         }}>
-          <DialogContent>
+          <DialogContent className="[&>button.absolute]:bg-white [&>button.absolute]:text-black [&>button.absolute:hover]:bg-gray-100 [&>button.absolute]:rounded-md">
             <DialogHeader>
               <DialogTitle>{editingFolder ? 'Edit Folder' : 'Create New Folder'}</DialogTitle>
               <DialogDescription>
@@ -688,7 +688,8 @@ export function FavoritesTab({
               <div className="flex justify-end gap-2 pt-4">
                 <Button 
                   type="button" 
-                  variant="outline"
+                  variant="outline" 
+                  className="bg-white hover:bg-gray-50 text-black border-gray-300"
                   onClick={() => {
                     setShowCreateFolder(false);
                     setEditingFolder(null);
@@ -698,7 +699,7 @@ export function FavoritesTab({
                 </Button>
                 <Button 
                   type="submit" 
-                  className="bg-pink-600 hover:bg-pink-700 text-white"
+                  className="bg-white hover:bg-gray-50 text-black border border-gray-300"
                 >
                   {editingFolder ? 'Update Folder' : 'Create Folder'}
                 </Button>
