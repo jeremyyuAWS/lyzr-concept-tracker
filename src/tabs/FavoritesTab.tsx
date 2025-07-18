@@ -42,7 +42,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import {
   DndContext,
@@ -246,7 +245,7 @@ function DraggableDemo({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Move to Folder</DropdownMenuLabel>
+              <div className="px-2 py-1.5 text-sm font-semibold text-gray-900">Move to Folder</div>
               <DropdownMenuSeparator />
               {folders.map((folder) => (
                 <DropdownMenuItem
