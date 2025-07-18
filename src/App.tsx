@@ -143,7 +143,7 @@ function AppContent() {
 }
 
 function MainApp() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isAdmin } = useAuth();
   const [forceShowApp, setForceShowApp] = useState(false);
 
   const addDebugInfo = (message: string) => {
