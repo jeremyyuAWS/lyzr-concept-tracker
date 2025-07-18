@@ -1,272 +1,463 @@
-import { useState, useEffect } from 'react';
-import { Demo } from '@/types/demo';
-import { DemoCard } from '@/components/DemoCard';
-import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { ErrorMessage } from '@/components/ErrorMessage';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { 
-  Heart, 
-  Search, 
-  Filter, 
-  Grid, 
-  List, 
-  Star, 
-  Clock, 
-  TrendingUp, 
-  FolderPlus,
-  Folder,
-  FolderOpen,
-  Plus,
-  Edit3,
-  Trash2,
-  MoreHorizontal,
-  Move,
-  GripVertical,
-  ArrowRight,
-  CheckSquare,
-  Square,
-  FolderInput,
-  Zap,
-  Target,
-  Users
-} from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
-import {
-  DndContext,
-  DragEndEvent,
-  DragOverEvent,
-  DragOverlay,
-  DragStartEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  closestCenter,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-  useSortable,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { favoritesService } from '@/lib/supabase';
-import { toast } from 'sonner';
+import { createClient } from '@supabase/supabase-js';
 
-interface FavoritesTabProps {
-  favoritesDemos: Demo[];
-  loading: boolean;
-  error: string | null;
-  onViewIncrement?: (id: string) => void;
-  onDemoUpdate?: (updatedDemo: Demo) => void;
-  onDemoDelete?: (demoId: string) => void;
-  onRetry?: () => void;
-  onToggleFavorite?: (demoId: string) => void;
-  isFavorited?: (demoId: string) => boolean;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables');
 }
 
-interface FavoriteFolder {
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Database types
+export interface DatabaseDemo {
   id: string;
-  name: string;
-  description?: string;
-  color: string;
-  icon: string;
-  demos: Demo[];
-  sort_order: number;
+  title: string;
+  description: string;
+  tags: string[];
+  netlify_url: string;
+  excalidraw_url?: string;
+  supabase_url?: string;
+  admin_url?: string;
+  screenshot_url?: string;
+  owner: string;
+  page_views: number;
+  created_at: string;
+  updated_at: string;
+  status: string;
+  is_featured?: boolean;
+  video_url?: string;
 }
 
-// Quick Move Modal Component
-function QuickMoveModal({ 
-  isOpen, 
-  onClose, 
-  selectedDemos, 
-  folders, 
-  onMoveToFolder,
-  onCreateNewFolder
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  selectedDemos: Demo[];
-  folders: FavoriteFolder[];
-  onMoveToFolder: (folderId?: string) => void;
-  onCreateNewFolder: () => void;
-}) {
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="[&>button.absolute]:bg-white [&>button.absolute]:text-black [&>button.absolute:hover]:bg-gray-100 [&>button.absolute]:rounded-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FolderInput className="w-5 h-5" />
-            Move {selectedDemos.length} Demo{selectedDemos.length > 1 ? 's' : ''} to Folder
-          </DialogTitle>
-          <DialogDescription>
-            Choose a destination folder for the selected demos
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="space-y-3 max-h-60 overflow-y-auto">
-          {/* Create New Folder Button */}
-          <button
-            onClick={onCreateNewFolder}
-            className="w-full p-4 text-left rounded-lg border-2 border-dashed border-gray-400 hover:border-gray-500 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <Plus className="w-5 h-5 text-gray-400" />
-              <div>
-                <p className="font-medium">Create New Folder</p>
-                <p className="text-sm text-gray-500">Organize your favorites</p>
-              </div>
-            </div>
-          </button>
-          
-          {/* Existing Folders */}
-          {folders.map((folder) => (
-            <button
-              key={folder.id}
-              onClick={() => onMoveToFolder(folder.id)}
-              className="w-full p-4 text-left rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <Folder className="w-5 h-5 text-gray-400" />
-                <div>
-                  <p className="font-medium">{folder.name}</p>
-                  <p className="text-sm text-gray-500">{folder.demos.length} demos</p>
-                </div>
-              </div>
-            </button>
-          ))}
-          
-          {/* No Folder Option */}
-          <button
-            onClick={() => onMoveToFolder(undefined)}
-            className="w-full p-4 text-left rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <Heart className="w-5 h-5 text-gray-400" />
-              <div>
-                <p className="font-medium">All Favorites</p>
-                <p className="text-sm text-gray-500">Move to main favorites</p>
-              </div>
-            </div>
-          </button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
+export interface UserProfile {
+  id: string;
+  user_id: string;
+  email: string;
+  display_name?: string;
+  role: 'user' | 'admin' | 'super_admin';
+  avatar_url?: string;
+  created_at: string;
+  updated_at: string;
+  last_login?: string;
+  is_active: boolean;
 }
 
-// Sortable Demo Component
-function SortableDemo({ demo, onViewIncrement, onToggleFavorite, isFavorited }: {
-  demo: Demo;
-  onViewIncrement?: (id: string) => void;
-  onToggleFavorite?: (demoId: string) => void;
-  isFavorited?: (demoId: string) => boolean;
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: demo.id });
+// Auth Service
+export const authService = {
+  getCurrentUser: async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    return user;
+  },
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
+  signIn: async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="relative group"
-    >
-      <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10">
-        <button
-          {...attributes}
-          {...listeners}
-          className="p-1 rounded hover:bg-gray-100 cursor-grab active:cursor-grabbing"
-        >
-          <GripVertical className="w-4 h-4 text-gray-400" />
-        </button>
-      </div>
-      <div className="pl-8">
-        <DemoCard
-          demo={demo}
-          onViewIncrement={onViewIncrement}
-          onToggleFavorite={onToggleFavorite}
-          isFavorited={isFavorited}
-        />
-      </div>
-    </div>
-  );
-}
+    if (error) throw error;
+    return data;
+  },
 
-// Draggable Demo Component
-function DraggableDemo({ demo, onViewIncrement, onToggleFavorite, isFavorited, onSelect, isSelected }: {
-  demo: Demo;
-  onViewIncrement?: (id: string) => void;
-  onToggleFavorite?: (demoId: string) => void;
-  isFavorited?: (demoId: string) => boolean;
-  onSelect?: (demoId: string) => void;
-  isSelected?: boolean;
-}) {
-  return (
-    <div className="relative group">
-      <div className="absolute left-2 top-2 z-10">
-        <Checkbox
-          checked={isSelected}
-          onCheckedChange={() => onSelect?.(demo.id)}
-          className="bg-white border-gray-300"
-        />
-      </div>
-      <div className="pl-8">
-        <DemoCard
-          demo={demo}
-          onViewIncrement={onViewIncrement}
-          onToggleFavorite={onToggleFavorite}
-          isFavorited={isFavorited}
-        />
-      </div>
-    </div>
-  );
-}
+  signUp: async (email: string, password: string, displayName?: string) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          display_name: displayName,
+        },
+      },
+    });
 
-export function FavoritesTab({ 
-  favoritesDemos, 
-  loading, 
-  error, 
-  onViewIncrement, 
-  onDemoUpdate, 
-  onDemoDelete, 
-  onRetry, 
-  onToggleFavorite, 
-  isFavorited 
-}: FavoritesTabProps) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<'newest' | 'popular' | 'name'>('newest');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [showFilters, setShowFilters] = useState(false);
-  const [folders, setFolders] = useState<FavoriteFolder[]>([]);
-  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
-  const [isOrganizing, setIsOrganizing] = useState(false);
-  const [selectedDemos, setSelectedDemos] = useState<string[]>([]);
-  const [showQuickMove, setShowQuickMove] = useState(false);
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
-  const [newFolderName, setNewFolderName] = useState('');
-  const [newFolderDescription, setNewFolderDescription] = useState('');
-}
+    if (error) throw error;
+    return data;
+  },
+
+  signOut: async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+  },
+
+  resetPassword: async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    if (error) throw error;
+  },
+
+  onAuthStateChange: (callback: (user: any) => void) => {
+    return supabase.auth.onAuthStateChange((event, session) => {
+      callback(session?.user || null);
+    });
+  },
+};
+
+// Demo Service
+export const demoService = {
+  getAllDemos: async (): Promise<DatabaseDemo[]> => {
+    const { data, error } = await supabase
+      .from('demos')
+      .select('*')
+      .eq('status', 'published')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  addDemo: async (demoData: Omit<DatabaseDemo, 'id' | 'created_at' | 'updated_at' | 'page_views'>) => {
+    const { data, error } = await supabase
+      .from('demos')
+      .insert([demoData])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  updateDemo: async (id: string, updates: Partial<DatabaseDemo>) => {
+    const { data, error } = await supabase
+      .from('demos')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  deleteDemo: async (id: string) => {
+    const { error } = await supabase
+      .from('demos')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  },
+
+  incrementPageViews: async (id: string) => {
+    const { error } = await supabase.rpc('increment_page_views', {
+      demo_id: id,
+    });
+
+    if (error) throw error;
+  },
+};
+
+// User Service
+export const userService = {
+  getCurrentUserProfile: async (): Promise<UserProfile | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .maybeSingle();
+
+      if (error) {
+        // Handle PGRST116 error specifically (no rows returned)
+        if (error.code === 'PGRST116') {
+          return null;
+        }
+        throw error;
+      }
+
+      return data;
+    } catch (error: any) {
+      // Handle PGRST116 error specifically (no rows returned)
+      if (error.code === 'PGRST116') {
+        return null;
+      }
+      throw error;
+    }
+  },
+
+  createUserProfile: async (profileData: Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>) => {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .insert([profileData])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  getAllUserProfiles: async (): Promise<UserProfile[]> => {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  updateUserRole: async (userId: string, role: UserProfile['role']) => {
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ role })
+      .eq('user_id', userId);
+
+    if (error) throw error;
+  },
+
+  deleteUser: async (userId: string) => {
+    const { error } = await supabase
+      .from('user_profiles')
+      .delete()
+      .eq('user_id', userId);
+
+    if (error) throw error;
+  },
+
+  createUser: async (userData: {
+    email: string;
+    password: string;
+    displayName?: string;
+    role: UserProfile['role'];
+  }) => {
+    // First create the auth user
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email: userData.email,
+      password: userData.password,
+      user_metadata: {
+        display_name: userData.displayName,
+      },
+    });
+
+    if (authError) throw authError;
+
+    // Then create the profile
+    const { data: profileData, error: profileError } = await supabase
+      .from('user_profiles')
+      .insert([{
+        user_id: authData.user.id,
+        email: userData.email,
+        display_name: userData.displayName || userData.email.split('@')[0],
+        role: userData.role,
+      }])
+      .select()
+      .single();
+
+    if (profileError) throw profileError;
+
+    return { data: authData, error: null };
+  },
+
+  getActivityLogs: async (limit: number = 50) => {
+    const { data, error } = await supabase
+      .from('activity_logs')
+      .select(`
+        *,
+        user_profiles!inner(display_name, email)
+      `)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  getUserLoginStats: async () => {
+    const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    const { data: profiles, error } = await supabase
+      .from('user_profiles')
+      .select('last_login, created_at');
+
+    if (error) throw error;
+
+    const dailyActiveUsers = profiles.filter(p => 
+      p.last_login && new Date(p.last_login) > oneDayAgo
+    ).length;
+
+    const weeklyActiveUsers = profiles.filter(p => 
+      p.last_login && new Date(p.last_login) > oneWeekAgo
+    ).length;
+
+    const monthlyActiveUsers = profiles.filter(p => 
+      p.last_login && new Date(p.last_login) > oneMonthAgo
+    ).length;
+
+    const newUsersThisWeek = profiles.filter(p => 
+      new Date(p.created_at) > oneWeekAgo
+    ).length;
+
+    return {
+      dailyActiveUsers,
+      weeklyActiveUsers,
+      monthlyActiveUsers,
+      newUsersThisWeek
+    };
+  },
+
+  getDemoEngagementStats: async () => {
+    // Get top demos by views
+    const { data: topDemos, error: topError } = await supabase
+      .from('demos')
+      .select('*')
+      .order('page_views', { ascending: false })
+      .limit(10);
+
+    if (topError) throw topError;
+
+    // Get most favorited demos
+    const { data: topFavorited, error: favError } = await supabase
+      .from('user_favorites')
+      .select(`
+        demo_id,
+        demos!inner(title, owner),
+        count:demo_id
+      `)
+      .limit(10);
+
+    if (favError) throw favError;
+
+    return {
+      topDemos: topDemos || [],
+      topFavoritedDemos: topFavorited || []
+    };
+  },
+};
+
+// Favorites Service
+export const favoritesService = {
+  getUserFavorites: async (userId: string): Promise<string[]> => {
+    const { data, error } = await supabase
+      .from('user_favorites')
+      .select('demo_id')
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    return (data || []).map(f => f.demo_id);
+  },
+
+  getFavoritesWithFolders: async (userId: string) => {
+    // For now, just get all favorites without folder organization
+    // This can be expanded later with actual folder functionality
+    const { data: favorites, error } = await supabase
+      .from('user_favorites')
+      .select(`
+        demo_id,
+        demos!inner(*)
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    const demos = (favorites || []).map(f => f.demos).filter(Boolean);
+    
+    return {
+      folders: [], // No folders implemented yet
+      unorganized: demos
+    };
+  },
+
+  toggleFavorite: async (demoId: string): Promise<boolean> => {
+    const { data, error } = await supabase.rpc('toggle_favorite', {
+      p_demo_id: demoId,
+    });
+
+    if (error) throw error;
+    return data;
+  },
+};
+
+// Analytics Service
+export const analyticsService = {
+  startSession: async (userAgent?: string, ipAddress?: string, referrer?: string): Promise<string> => {
+    const { data, error } = await supabase.rpc('start_user_session', {
+      p_user_agent: userAgent,
+      p_ip_address: ipAddress,
+      p_referrer: referrer,
+    });
+
+    if (error) throw error;
+    return data;
+  },
+
+  endSession: async (sessionId: string) => {
+    const { error } = await supabase.rpc('end_user_session', {
+      p_session_id: sessionId,
+    });
+
+    if (error) throw error;
+  },
+
+  logActivity: async (
+    sessionId: string,
+    activityType: string,
+    resourceType: string,
+    resourceId?: string,
+    activityData?: any,
+    durationMs?: number
+  ) => {
+    const { error } = await supabase.rpc('log_user_activity', {
+      p_action: activityType,
+      p_resource_type: resourceType,
+      p_resource_id: resourceId,
+      p_details: activityData,
+    });
+
+    if (error) throw error;
+  },
+
+  getRealTimeActivities: async (limit: number = 50) => {
+    const { data, error } = await supabase.rpc('get_real_time_activities', {
+      p_limit: limit,
+    });
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  getDemoHealthScores: async () => {
+    const { data, error } = await supabase
+      .from('demo_health_scores')
+      .select(`
+        *,
+        demos!inner(*)
+      `)
+      .order('health_score', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  updateAllDemoHealthScores: async () => {
+    const { error } = await supabase.rpc('update_all_demo_health_scores');
+    if (error) throw error;
+  },
+
+  getDemoEngagementMetrics: async () => {
+    // Calculate engagement metrics based on available data
+    const { data: demos, error: demoError } = await supabase
+      .from('demos')
+      .select('id, page_views');
+
+    if (demoError) throw demoError;
+
+    const { data: favorites, error: favError } = await supabase
+      .from('user_favorites')
+      .select('demo_id');
+
+    if (favError) throw favError;
+
+    const totalViews = (demos || []).reduce((sum, demo) => sum + demo.page_views, 0);
+    const totalFavorites = (favorites || []).length;
+
+    return {
+      totalViews,
+      totalTryApps: 0, // Would need to implement tracking
+      totalFavorites,
+      totalSearches: 0, // Would need to implement tracking
+      conversionRate: 0 // Would need to implement tracking
+    };
+  },
+};
