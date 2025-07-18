@@ -55,6 +55,10 @@ export function LoginForm() {
         setError('Your account is not properly configured. Please contact an administrator for access.');
       } else if (err.message.includes('Unable to verify user profile')) {
         setError('Unable to verify your account. Please try again or contact support.');
+      } else if (err.message.includes('Failed to create user profile')) {
+        setError('Account created but profile setup failed. Please try signing in or contact support.');
+      } else if (err.message.includes('Database error')) {
+        setError('Database connection issue. Please try again in a moment.');
       } else {
         setError(err.message || 'An error occurred during authentication');
       }

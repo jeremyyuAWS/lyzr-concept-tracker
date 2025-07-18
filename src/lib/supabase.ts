@@ -95,14 +95,39 @@ export const userService = {
   },
 
   async createUserProfile(profile: Partial<UserProfile>): Promise<UserProfile> {
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .insert([profile])
-      .select()
-      .single();
+    try {
+      // First try the safe creation function
+      const { data, error } = await supabase.rpc('create_user_profile_safe', {
+        p_user_id: profile.user_id,
+        p_email: profile.email,
+        p_display_name: profile.display_name,
+        p_role: profile.role
+      });
 
-    if (error) throw error;
-    return data;
+      if (error) throw error;
+      return data;
+    } catch (rpcError) {
+      console.warn('Safe creation function not available, using direct insert:', rpcError);
+      
+      // Fallback to direct insert
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .insert([{
+          user_id: profile.user_id,
+          email: profile.email!,
+          display_name: profile.display_name || profile.email!.split('@')[0],
+          role: profile.role || 'user',
+          is_active: true
+        }])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Direct insert also failed:', error);
+        throw new Error(`Failed to create user profile: ${error.message}`);
+      }
+      return data;
+    }
   },
 
   async updateUserProfile(userId: string, updates: Partial<UserProfile>): Promise<UserProfile> {
