@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { favoritesService } from '@/lib/supabase';
 import { Demo } from '@/types/demo';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function useFavorites() {
+  const { user, loading: authLoading } = useAuth();
   const [userFavorites, setUserFavorites] = useState<string[]>([]);
   const [favoritesDemos, setFavoritesDemos] = useState<Demo[]>([]);
   const [favoriteFolders, setFavoriteFolders] = useState<any[]>([]);
@@ -12,15 +14,21 @@ export function useFavorites() {
 
   // Load user's favorites on mount
   useEffect(() => {
-    loadUserFavorites();
-    loadFavoritesWithFolders();
-  }, []);
+    if (user && !authLoading) {
+      loadUserFavorites(user.id);
+      loadFavoritesWithFolders(user.id);
+    }
+  }, [user, authLoading]);
 
-  const loadUserFavorites = async () => {
+  const loadUserFavorites = async (userId: string) => {
     try {
       setLoading(true);
-      const favorites = await favoritesService.getUserFavorites();
-      setUserFavorites(favorites);
+      const favorites = await favoritesService.getUserFavorites(userId);
+      // Ensure we map to demo_id strings if favorites are objects
+      const favoriteIds = Array.isArray(favorites) 
+        ? favorites.map(f => typeof f === 'string' ? f : f.demo_id)
+        : [];
+      setUserFavorites(favoriteIds);
     } catch (err) {
       console.error('Error loading user favorites:', err);
       setError('Failed to load favorites');
@@ -29,10 +37,10 @@ export function useFavorites() {
     }
   };
 
-  const loadFavoritesWithFolders = async () => {
+  const loadFavoritesWithFolders = async (userId: string) => {
     try {
       console.log('🔍 Loading favorites with folders...');
-      const { folders, unorganized } = await favoritesService.getFavoritesWithFolders();
+      const { folders, unorganized } = await favoritesService.getFavoritesWithFolders(userId);
       console.log('✅ Folders loaded:', folders?.length || 0);
       console.log('✅ Unorganized loaded:', unorganized?.length || 0);
       
@@ -58,8 +66,11 @@ export function useFavorites() {
 
   const toggleFavorite = async (demoId: string): Promise<boolean> => {
     try {
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
       console.log('🔍 Toggling favorite for demo:', demoId);
-      const isFavorited = await favoritesService.toggleFavorite(demoId);
+      const isFavorited = await favoritesService.toggleFavorite(demoId, user.id);
       console.log('✅ Favorite toggled, result:', isFavorited);
       
       if (isFavorited) {
@@ -78,7 +89,7 @@ export function useFavorites() {
       }
       
       // Refresh favorites demos list
-      setTimeout(() => loadFavoritesWithFolders(), 100); // Small delay to ensure DB is updated
+      setTimeout(() => loadFavoritesWithFolders(user.id), 100); // Small delay to ensure DB is updated
       
       return isFavorited;
     } catch (err) {
@@ -94,9 +105,13 @@ export function useFavorites() {
   };
 
   const refetch = () => {
+    if (!user) {
+      console.log('🔍 Cannot refetch favorites - user not authenticated');
+      return;
+    }
     console.log('🔍 Refetching favorites data...');
-    loadUserFavorites();
-    loadFavoritesWithFolders();
+    loadUserFavorites(user.id);
+    loadFavoritesWithFolders(user.id);
   };
 
   return {

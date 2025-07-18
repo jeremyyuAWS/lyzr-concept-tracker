@@ -16,7 +16,7 @@ export function useDemos() {
       addDebugInfo('Starting demo fetch');
       setLoading(true);
       setError(null);
-      const data = await demoService.getDemos();
+      const data = await demoService.getAllDemos();
       addDebugInfo(`Demos fetched successfully: ${data.length} demos`);
       setDemos(data);
     } catch (err) {
