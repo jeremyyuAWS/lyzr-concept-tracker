@@ -240,6 +240,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Toggle favorite function
+DROP FUNCTION IF EXISTS toggle_favorite(uuid, uuid);
 CREATE OR REPLACE FUNCTION toggle_favorite(p_demo_id uuid)
 RETURNS boolean AS $$
 DECLARE
