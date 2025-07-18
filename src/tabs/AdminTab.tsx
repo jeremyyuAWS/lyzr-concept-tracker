@@ -88,6 +88,14 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
     recentActivity: 0
   });
 
+  // Skeleton loading component
+  const SkeletonCard = () => (
+    <div className="text-center p-4 bg-gray-50 rounded-lg animate-pulse">
+      <div className="h-8 bg-gray-200 rounded mb-2"></div>
+      <div className="h-4 bg-gray-200 rounded"></div>
+    </div>
+  );
+
   useEffect(() => {
     if (isAdmin) {
       loadAdminData();
@@ -96,7 +104,10 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
 
   const loadAdminData = async () => {
     try {
-      setLoading(true);
+      // Don't set loading to true if we already have data (for refreshes)
+      if (users.length === 0) {
+        setLoading(true);
+      }
       
       // Load users
       const userList = await userService.getAllUserProfiles();
@@ -333,14 +344,9 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {loading && users.length === 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="text-center p-4 bg-gray-50 rounded-lg animate-pulse">
-                  <div className="h-8 bg-gray-200 rounded mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded"></div>
-                </div>
-              ))}
+              {[1, 2, 3, 4].map((i) => <SkeletonCard key={i} />)}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -381,30 +387,25 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {loading && users.length === 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="text-center p-4 bg-gray-50 rounded-lg animate-pulse">
-                  <div className="h-8 bg-gray-200 rounded mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded"></div>
-                </div>
-              ))}
+              {[1, 2, 3, 4].map((i) => <SkeletonCard key={i} />)}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <div className="text-center p-4 bg-gray-50 rounded-lg min-h-[80px] flex flex-col justify-center">
                 <div className="text-2xl font-bold text-black">{sessionMetrics.todaySessions || 0}</div>
                 <div className="text-sm text-gray-600">Sessions Today</div>
               </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <div className="text-center p-4 bg-gray-50 rounded-lg min-h-[80px] flex flex-col justify-center">
                 <div className="text-2xl font-bold text-black">{sessionMetrics.weekSessions || 0}</div>
                 <div className="text-sm text-gray-600">Sessions This Week</div>
               </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <div className="text-center p-4 bg-gray-50 rounded-lg min-h-[80px] flex flex-col justify-center">
                 <div className="text-2xl font-bold text-black">{sessionMetrics.monthSessions || 0}</div>
                 <div className="text-sm text-gray-600">Sessions This Month</div>
               </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <div className="text-center p-4 bg-gray-50 rounded-lg min-h-[80px] flex flex-col justify-center">
                 <div className="text-2xl font-bold text-black">{sessionMetrics.averageSessionDuration || 0}</div>
                 <div className="text-sm text-gray-600">Avg Session (min)</div>
               </div>
@@ -425,19 +426,14 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {loading && users.length === 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="text-center p-4 bg-gray-50 rounded-lg animate-pulse">
-                  <div className="h-8 bg-gray-200 rounded mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded"></div>
-                </div>
-              ))}
+              {[1, 2, 3, 4, 5].map((i) => <SkeletonCard key={i} />)}
             </div>
           ) : (
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200 min-h-[100px] flex flex-col justify-center">
                   <div className="flex items-center justify-center mb-2">
                     <Eye className="w-5 h-5 text-blue-600" />
                   </div>
@@ -445,7 +441,7 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
                   <div className="text-sm text-blue-600">Demo Views</div>
                   <div className="text-xs text-blue-500 mt-1">Last 7 days</div>
                 </div>
-                <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
+                <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200 min-h-[100px] flex flex-col justify-center">
                   <div className="flex items-center justify-center mb-2">
                     <ExternalLink className="w-5 h-5 text-green-600" />
                   </div>
@@ -453,7 +449,7 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
                   <div className="text-sm text-green-600">Try App Clicks</div>
                   <div className="text-xs text-green-500 mt-1">Last 7 days</div>
                 </div>
-                <div className="text-center p-4 bg-red-50 rounded-lg border border-red-200">
+                <div className="text-center p-4 bg-red-50 rounded-lg border border-red-200 min-h-[100px] flex flex-col justify-center">
                   <div className="flex items-center justify-center mb-2">
                     <Heart className="w-5 h-5 text-red-600" />
                   </div>
@@ -461,7 +457,7 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
                   <div className="text-sm text-red-600">New Favorites</div>
                   <div className="text-xs text-red-500 mt-1">Last 7 days</div>
                 </div>
-                <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-200">
+                <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-200 min-h-[100px] flex flex-col justify-center">
                   <div className="flex items-center justify-center mb-2">
                     <Search className="w-5 h-5 text-purple-600" />
                   </div>
@@ -469,7 +465,7 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
                   <div className="text-sm text-purple-600">Searches</div>
                   <div className="text-xs text-purple-500 mt-1">Last 7 days</div>
                 </div>
-                <div className="text-center p-4 bg-orange-50 rounded-lg border border-orange-200">
+                <div className="text-center p-4 bg-orange-50 rounded-lg border border-orange-200 min-h-[100px] flex flex-col justify-center">
                   <div className="flex items-center justify-center mb-2">
                     <TrendingUp className="w-5 h-5 text-orange-600" />
                   </div>
@@ -480,7 +476,7 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
               </div>
               
               {/* Conversion Rate Progress Bar */}
-              <div className="mt-4">
+              <div className="mt-6">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700">Demo to Try App Conversion</span>
                   <span className="text-sm text-gray-600">{demoEngagementMetrics.conversionRate || 0}%</span>
@@ -509,10 +505,10 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {loading && users.length === 0 ? (
             <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="p-3 bg-gray-50 rounded-lg animate-pulse">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="p-3 bg-gray-50 rounded-lg animate-pulse min-h-[60px]">
                   <div className="h-4 bg-gray-200 rounded mb-2"></div>
                   <div className="h-3 bg-gray-200 rounded w-1/2"></div>
                 </div>
@@ -526,9 +522,9 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
                   <Eye className="w-4 h-4" />
                   Most Viewed
                 </h4>
-                <div className="space-y-3">
+                <div className="space-y-3 min-h-[200px]">
                   {engagementStats.topDemos?.slice(0, 5).map((demo: any, index: number) => (
-                    <div key={demo.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <div key={demo.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200 min-h-[60px]">
                       <div className="flex items-center gap-3">
                         <Badge className="bg-blue-600 text-white">#{index + 1}</Badge>
                         <div>
@@ -543,7 +539,9 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
                     </div>
                   )) || []}
                   {!engagementStats.topDemos?.length && (
-                    <p className="text-gray-500 text-sm">No demo data available</p>
+                    <div className="flex items-center justify-center h-32">
+                      <p className="text-gray-500 text-sm">No demo data available</p>
+                    </div>
                   )}
                 </div>
               </div>
@@ -554,9 +552,9 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
                   <Heart className="w-4 h-4" />
                   Most Favorited
                 </h4>
-                <div className="space-y-3">
+                <div className="space-y-3 min-h-[200px]">
                   {engagementStats.topFavoritedDemos?.slice(0, 5).map((demo: any, index: number) => (
-                    <div key={demo.demo_id} className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
+                    <div key={demo.demo_id} className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200 min-h-[60px]">
                       <div className="flex items-center gap-3">
                         <Badge className="bg-red-600 text-white">#{index + 1}</Badge>
                         <div>
@@ -571,7 +569,9 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
                     </div>
                   )) || []}
                   {!engagementStats.topFavoritedDemos?.length && (
-                    <p className="text-gray-500 text-sm">No favorite data available</p>
+                    <div className="flex items-center justify-center h-32">
+                      <p className="text-gray-500 text-sm">No favorite data available</p>
+                    </div>
                   )}
                 </div>
               </div>
@@ -592,44 +592,39 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {loading && users.length === 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="text-center p-4 bg-gray-50 rounded-lg animate-pulse">
-                  <div className="h-8 bg-gray-200 rounded mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded"></div>
-                </div>
-              ))}
+              {[1, 2, 3, 4, 5, 6].map((i) => <SkeletonCard key={i} />)}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <div className="text-center p-4 bg-gray-50 rounded-lg min-h-[80px] flex flex-col justify-center">
                 <div className="text-2xl font-bold text-black">{users.length}</div>
                 <div className="text-sm text-gray-600">Total Users</div>
               </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <div className="text-center p-4 bg-gray-50 rounded-lg min-h-[80px] flex flex-col justify-center">
                 <div className="text-2xl font-bold text-black">
                   {users.filter(u => u.role === 'admin' || u.role === 'super_admin').length}
                 </div>
                 <div className="text-sm text-gray-600">Admins</div>
               </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <div className="text-center p-4 bg-gray-50 rounded-lg min-h-[80px] flex flex-col justify-center">
                 <div className="text-2xl font-bold text-black">
                   {users.filter(u => u.is_active).length}
                 </div>
                 <div className="text-sm text-gray-600">Active Users</div>
               </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <div className="text-center p-4 bg-gray-50 rounded-lg min-h-[80px] flex flex-col justify-center">
                 <div className="text-2xl font-bold text-black">{demos.length}</div>
                 <div className="text-sm text-gray-600">Total Demos</div>
               </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <div className="text-center p-4 bg-gray-50 rounded-lg min-h-[80px] flex flex-col justify-center">
                 <div className="text-2xl font-bold text-black">
                   {demos.reduce((sum, demo) => sum + demo.page_views, 0).toLocaleString()}
                 </div>
                 <div className="text-sm text-gray-600">Total Views</div>
               </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <div className="text-center p-4 bg-gray-50 rounded-lg min-h-[80px] flex flex-col justify-center">
                 <div className="text-2xl font-bold text-black">{demos.filter(d => d.is_featured).length}</div>
                 <div className="text-sm text-gray-600">Featured Demos</div>
               </div>
@@ -651,7 +646,7 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-500 min-h-[120px] flex flex-col justify-center">
               <Target className="w-12 h-12 mx-auto mb-2 opacity-50" />
               <p className="text-sm">Health scoring system in development</p>
             </div>
@@ -669,7 +664,7 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-500 min-h-[120px] flex flex-col justify-center">
               <Activity className="w-12 h-12 mx-auto mb-2 opacity-50" />
               <p className="text-sm">Activity feed system in development</p>
             </div>
