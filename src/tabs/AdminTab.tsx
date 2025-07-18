@@ -316,7 +316,7 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
       title: 'Audit Trail',
       description: 'Complete activity logging system',
       status: 'Active'
-    },
+    }
   ];
 
   const systemInfo = [
@@ -361,7 +361,7 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
         <Button
           onClick={handleRefreshData}
           disabled={refreshing}
-          className="bg-white hover:bg-gray-50 text-black border border-gray-300"
+          className="bg-black hover:bg-gray-800 text-white"
         >
           <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
           {refreshing ? 'Refreshing...' : 'Refresh Data'}
