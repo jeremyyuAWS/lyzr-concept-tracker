@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import React, { memo } from 'react';
 
 interface DemoCardProps {
   demo: Demo;
@@ -37,6 +38,7 @@ interface DemoCardProps {
   onToggleFavorite?: (demoId: string) => void;
   isFavorited?: boolean;
   onPromptOrganize?: (demoId: string) => void;
+}
 
 export const DemoCard = memo(({ demo, onViewIncrement, onUpdate, onDelete, onToggleFavorite, isFavorited = false, onPromptOrganize }: DemoCardProps) => {
   const { isAdmin, user } = useAuth();
@@ -681,5 +683,5 @@ export const DemoCard = memo(({ demo, onViewIncrement, onUpdate, onDelete, onTog
       </div>
     )}
     </>
-import React, { memo } from 'react';
   );
+});
