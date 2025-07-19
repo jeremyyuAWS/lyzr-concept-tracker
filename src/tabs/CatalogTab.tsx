@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Demo } from '@/types/demo';
 import { DemoCard } from '@/components/DemoCard';
 import { AmazingSearchBar } from '@/components/AmazingSearchBar';
@@ -7,6 +7,7 @@ import { ErrorMessage } from '@/components/ErrorMessage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Grid, List, Filter, Search } from 'lucide-react';
+import React from 'react';
 
 interface CatalogTabProps {
   demos: Demo[];
@@ -20,14 +21,20 @@ interface CatalogTabProps {
   isFavorited?: (demoId: string) => boolean;
 }
 
-export function CatalogTab({ demos, loading, error, onViewIncrement, onDemoUpdate, onDemoDelete, onRetry, onToggleFavorite, isFavorited }: CatalogTabProps) {
+const MemoizedDemoCard = React.memo(DemoCard);
+
+export const CatalogTab = React.memo(({ demos, loading, error, onViewIncrement, onDemoUpdate, onDemoDelete, onRetry, onToggleFavorite, isFavorited }: CatalogTabProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const allTags = Array.from(new Set(demos.flatMap(demo => demo.tags))).sort();
+  // Memoized calculations for performance
+  const allTags = useMemo(() => 
+    Array.from(new Set(demos.flatMap(demo => demo.tags))).sort(),
+    [demos]
+  );
 
-  const filteredDemos = demos.filter(demo => {
+  const filteredDemos = useMemo(() => demos.filter(demo => {
     const matchesSearch = demo.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          demo.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          demo.owner.toLowerCase().includes(searchTerm.toLowerCase());
@@ -35,16 +42,16 @@ export function CatalogTab({ demos, loading, error, onViewIncrement, onDemoUpdat
     const matchesTag = !selectedTag || demo.tags.includes(selectedTag);
     
     return matchesSearch && matchesTag;
-  });
+  }), [demos, searchTerm, selectedTag]);
 
-  const handleTagFilter = (tag: string) => {
+  const handleTagFilter = useCallback((tag: string) => {
     setSelectedTag(selectedTag === tag ? null : tag);
-  };
+  }, [selectedTag]);
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setSearchTerm('');
     setSelectedTag(null);
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -64,6 +71,7 @@ export function CatalogTab({ demos, loading, error, onViewIncrement, onDemoUpdat
       />
     );
   }
+
   if (demos.length === 0) {
     return (
       <div className="text-center py-12">
@@ -170,7 +178,7 @@ export function CatalogTab({ demos, loading, error, onViewIncrement, onDemoUpdat
             : 'space-y-4'
         }>
           {filteredDemos.map((demo) => (
-            <DemoCard
+            <MemoizedDemoCard
               key={demo.id}
               demo={demo}
               onViewIncrement={onViewIncrement}
@@ -185,4 +193,3 @@ export function CatalogTab({ demos, loading, error, onViewIncrement, onDemoUpdat
       )}
     </div>
   );
-}

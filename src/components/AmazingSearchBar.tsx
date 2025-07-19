@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Demo } from '@/types/demo';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,23 @@ import {
   ArrowRight,
   Command
 } from 'lucide-react';
+
+// Debounce hook for search optimization
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 interface AmazingSearchBarProps {
   demos: Demo[];
@@ -39,6 +56,9 @@ export function AmazingSearchBar({
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const { trackSearch, trackFilter } = useSessionTracking();
+  
+  // Debounce search term for performance
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   // Load search history from localStorage
   useEffect(() => {
@@ -49,20 +69,20 @@ export function AmazingSearchBar({
   }, []);
 
   // Save search to history
-  const saveSearchToHistory = (term: string) => {
+  const saveSearchToHistory = useCallback((term: string) => {
     if (term.trim() && !searchHistory.includes(term)) {
       const newHistory = [term, ...searchHistory.slice(0, 4)]; // Keep last 5 searches
       setSearchHistory(newHistory);
       localStorage.setItem('lyzr-search-history', JSON.stringify(newHistory));
     }
-  };
+  }, [searchHistory]);
 
-  // Get search suggestions
-  const getSearchSuggestions = () => {
-    if (!searchTerm) return [];
+  // Memoized search suggestions
+  const searchSuggestions = useMemo(() => {
+    if (!debouncedSearchTerm) return [];
     
     const suggestions = new Set<string>();
-    const term = searchTerm.toLowerCase();
+    const term = debouncedSearchTerm.toLowerCase();
     
     demos.forEach(demo => {
       // Title suggestions
@@ -84,10 +104,10 @@ export function AmazingSearchBar({
     });
     
     return Array.from(suggestions).slice(0, 6);
-  };
+  }, [demos, debouncedSearchTerm]);
 
-  // Get popular tags
-  const getPopularTags = () => {
+  // Memoized popular tags
+  const popularTags = useMemo(() => {
     const tagCounts = demos.reduce((acc, demo) => {
       demo.tags.forEach(tag => {
         acc[tag] = (acc[tag] || 0) + 1;
@@ -99,18 +119,18 @@ export function AmazingSearchBar({
       .sort(([,a], [,b]) => b - a)
       .slice(0, 8)
       .map(([tag]) => tag);
-  };
+  }, [demos]);
 
-  // Get trending demos (high views)
-  const getTrendingDemos = () => {
+  // Memoized trending demos
+  const trendingDemos = useMemo(() => {
     return demos
       .filter(demo => demo.page_views > 10)
       .sort((a, b) => b.page_views - a.page_views)
       .slice(0, 4);
-  };
+  }, [demos]);
 
   // Handle search submission
-  const handleSearchSubmit = (term: string) => {
+  const handleSearchSubmit = useCallback((term: string) => {
     onSearchChange(term);
     saveSearchToHistory(term);
     
@@ -124,7 +144,7 @@ export function AmazingSearchBar({
     
     setShowSuggestions(false);
     inputRef.current?.blur();
-  };
+  }, [onSearchChange, saveSearchToHistory, demos, trackSearch]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -146,13 +166,10 @@ export function AmazingSearchBar({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const suggestions = getSearchSuggestions();
-  const popularTags = getPopularTags();
-  const trendingDemos = getTrendingDemos();
   const hasActiveFilters = searchTerm || selectedTag;
 
   // Handle tag selection with tracking
-  const handleTagSelect = (tag: string) => {
+  const handleTagSelect = useCallback((tag: string) => {
     console.log('Popular tag clicked:', tag);
     const newTag = selectedTag === tag ? null : tag;
     onTagSelect(newTag);
@@ -163,7 +180,8 @@ export function AmazingSearchBar({
     }
     
     setShowSuggestions(false);
-  };
+  }, [selectedTag, onTagSelect, trackFilter]);
+
   return (
     <div className="relative w-full max-w-2xl mx-auto">
       {/* Main Search Input */}
@@ -280,14 +298,14 @@ export function AmazingSearchBar({
             <div className="max-h-96 overflow-y-auto">
               
               {/* Live Suggestions */}
-              {suggestions.length > 0 && (
+              {searchSuggestions.length > 0 && (
                 <div className="p-4 border-b border-gray-100">
                   <div className="flex items-center gap-2 mb-3">
                     <Zap className="w-4 h-4 text-orange-500" />
                     <span className="text-sm font-medium text-gray-700">Suggestions</span>
                   </div>
                   <div className="space-y-1">
-                    {suggestions.map((suggestion, index) => (
+                    {searchSuggestions.map((suggestion, index) => (
                       <button
                         key={index}
                         onClick={() => handleSearchSubmit(suggestion)}
@@ -386,7 +404,7 @@ export function AmazingSearchBar({
               )}
               
               {/* Empty State */}
-              {searchTerm && suggestions.length === 0 && (
+              {searchTerm && searchSuggestions.length === 0 && (
                 <div className="p-8 text-center">
                   <Search className="w-8 h-8 text-gray-300 mx-auto mb-2" />
                   <p className="text-sm text-gray-500">No suggestions found</p>

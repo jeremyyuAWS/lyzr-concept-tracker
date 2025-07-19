@@ -27,7 +27,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 
 interface DemoCardProps {
   demo: Demo;
@@ -37,9 +37,8 @@ interface DemoCardProps {
   onToggleFavorite?: (demoId: string) => void;
   isFavorited?: boolean;
   onPromptOrganize?: (demoId: string) => void;
-}
 
-export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFavorite, isFavorited = false, onPromptOrganize }: DemoCardProps) {
+export const DemoCard = memo(({ demo, onViewIncrement, onUpdate, onDelete, onToggleFavorite, isFavorited = false, onPromptOrganize }: DemoCardProps) => {
   const { isAdmin, user } = useAuth();
   const { trackDemoView, trackDemoFavorite, trackDemoTryApp } = useSessionTracking();
   const [showEditModal, setShowEditModal] = useState(false);
@@ -59,10 +58,13 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
     if (user) {
       trackDemoView(demo.id, demo.title);
     }
-  }, [demo.id, demo.title, user]);
+  }, [demo.id, demo.title, user, trackDemoView]);
 
-  // Helper function to detect and convert YouTube URLs
-  const getVideoEmbedInfo = (url: string) => {
+  // Memoized video info calculation
+  const videoInfo = useMemo(() => {
+    if (!demo.video_url) return null;
+    
+    const url = demo.video_url;
     if (!url) return null;
     
     // Check if it's a Google Drive view URL
@@ -104,9 +106,7 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
       embedUrl: url,
       originalUrl: url
     };
-  };
-
-  const videoInfo = demo.video_url ? getVideoEmbedInfo(demo.video_url) : null;
+  }, [demo.video_url]);
 
   // Debug video URL and test accessibility
   useEffect(() => {
@@ -142,7 +142,7 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
     }
   }, [demo.video_url, demo.title, videoInfo]);
   
-  const handleTryApp = async () => {
+  const handleTryApp = useCallback(async () => {
     try {
       // Track the try app action
       trackDemoTryApp(demo.id, demo.title, demo.netlify_url);
@@ -155,13 +155,13 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
       console.error('Failed to increment page views:', error);
     }
     window.open(demo.netlify_url, '_blank');
-  };
+  }, [demo.id, demo.title, demo.netlify_url, trackDemoTryApp, onViewIncrement]);
 
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     setShowEditModal(true);
-  };
+  }, []);
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     setIsDeleting(true);
     try {
       await demoService.deleteDemo(demo.id);
@@ -176,15 +176,15 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
       setIsDeleting(false);
       setShowDeleteDialog(false);
     }
-  };
+  }, [demo.id, onDelete]);
 
-  const handleUpdateSuccess = (updatedDemo: Demo) => {
+  const handleUpdateSuccess = useCallback((updatedDemo: Demo) => {
     if (onUpdate) {
       onUpdate(updatedDemo);
     }
-  };
+  }, [onUpdate]);
 
-  const handleToggleFeatured = async (featured: boolean) => {
+  const handleToggleFeatured = useCallback(async (featured: boolean) => {
     if (!isAdmin) return;
     
     setIsUpdatingFeatured(true);
@@ -200,9 +200,9 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
     } finally {
       setIsUpdatingFeatured(false);
     }
-  };
+  }, [demo.id, isAdmin, onUpdate]);
 
-  const toggleFavorite = async (demoId: string) => {
+  const toggleFavorite = useCallback(async (demoId: string) => {
     try {
       const result = await favoritesService.toggleFavorite(demoId);
       return result;
@@ -210,9 +210,9 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
       console.error('Error toggling favorite:', error);
       return undefined;
     }
-  };
+  }, []);
 
-  const handleToggleFavorite = async () => {
+  const handleToggleFavorite = useCallback(async () => {
     if (isFavoriting) return;
     
     if (!user) {
@@ -245,9 +245,9 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
     } finally {
       setIsFavoriting(false);
     }
-  };
+  }, [isFavoriting, user, onToggleFavorite, demo.id, demo.title, trackDemoFavorite]);
 
-  const handleVideoToggle = () => {
+  const handleVideoToggle = useCallback(() => {
     if (videoRef.current) {
       if (isVideoPlaying) {
         videoRef.current.pause();
@@ -258,21 +258,21 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
         setIsVideoPlaying(true);
       }
     }
-  };
+  }, [isVideoPlaying]);
 
-  const handleVideoLoadStart = () => {
+  const handleVideoLoadStart = useCallback(() => {
     console.log('🔄 Video loading started for:', demo.title);
     setVideoLoading(true);
     setVideoError(null);
-  };
+  }, [demo.title]);
 
-  const handleVideoCanPlay = () => {
+  const handleVideoCanPlay = useCallback(() => {
     console.log('✅ Video can play:', demo.title);
     setVideoLoading(false);
     setVideoCanPlay(true);
-  };
+  }, [demo.title]);
 
-  const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+  const handleVideoError = useCallback((e: React.SyntheticEvent<HTMLVideoElement>) => {
     const video = e.currentTarget;
     const error = video.error;
     console.error('❌ Video error for:', demo.title, {
@@ -294,27 +294,29 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
     };
     
     setVideoError(errorMessages[error?.code as keyof typeof errorMessages] || 'Unknown video error');
-  };
+  }, [demo.title, demo.video_url]);
 
-  const handleVideoPlay = () => {
+  const handleVideoPlay = useCallback(() => {
     console.log('▶️ Video started playing:', demo.title);
-  };
+  }, [demo.title]);
 
-  const handleVideoPause = () => {
+  const handleVideoPause = useCallback(() => {
     console.log('⏸️ Video paused:', demo.title);
-  };
+  }, [demo.title]);
 
-  const handleVideoEnded = () => {
+  const handleVideoEnded = useCallback(() => {
     console.log('🏁 Video ended:', demo.title);
-  };
+  }, [demo.title]);
   
-  const formatDate = (dateString: string) => {
+  const formatDate = useCallback((dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
     });
-  };
+  }, []);
+
+  const formattedDate = useMemo(() => formatDate(demo.created_at), [demo.created_at, formatDate]);
 
   return (
     <>
@@ -555,7 +557,7 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
             <div>
               <span className="font-medium">{demo.owner}</span>
               <span className="mx-2">•</span>
-              <span>{formatDate(demo.created_at)}</span>
+              <span>{formattedDate}</span>
             </div>
           </div>
           
@@ -673,11 +675,11 @@ export function DemoCard({ demo, onViewIncrement, onUpdate, onDelete, onToggleFa
           {/* Image Caption */}
           <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white p-4 rounded-b-lg">
             <h3 className="font-semibold text-lg">{demo.title}</h3>
-            <p className="text-gray-300 text-sm">{demo.owner} • {new Date(demo.created_at).toLocaleDateString()}</p>
+            <p className="text-gray-300 text-sm">{demo.owner} • {formattedDate}</p>
           </div>
         </div>
       </div>
     )}
     </>
+import React, { memo } from 'react';
   );
-}

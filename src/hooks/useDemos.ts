@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useCallback, useMemo } from 'react';
 import { demoService } from '@/lib/supabase';
 import { Demo } from '@/types/demo';
 
@@ -11,7 +12,7 @@ export function useDemos() {
     console.log('🔍 DEMOS DEBUG:', message);
   };
 
-  const fetchDemos = async () => {
+  const fetchDemos = useCallback(async () => {
     try {
       addDebugInfo('Starting demo fetch');
       setLoading(true);
@@ -27,14 +28,14 @@ export function useDemos() {
       addDebugInfo('Demo fetch completed, setting loading to false');
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     addDebugInfo('useDemos hook initialized, starting fetch');
     fetchDemos();
-  }, []);
+  }, [fetchDemos]);
 
-  const addDemo = async (demoData: Omit<Demo, 'id' | 'created_at' | 'page_views'>) => {
+  const addDemo = useCallback(async (demoData: Omit<Demo, 'id' | 'created_at' | 'page_views'>) => {
     try {
       const newDemo = await demoService.addDemo(demoData);
       setDemos(prev => [newDemo, ...prev]);
@@ -43,9 +44,9 @@ export function useDemos() {
       console.error('Error adding demo:', err);
       throw err;
     }
-  };
+  }, []);
 
-  const incrementPageViews = (demoId: string) => {
+  const incrementPageViews = useCallback((demoId: string) => {
     setDemos(prev =>
       prev.map(demo =>
         demo.id === demoId
@@ -53,23 +54,37 @@ export function useDemos() {
           : demo
       )
     );
-  };
+  }, []);
 
-  const refetch = () => {
+  const refetch = useCallback(() => {
     fetchDemos();
-  };
+  }, [fetchDemos]);
 
-  const updateDemo = (updatedDemo: Demo) => {
+  const updateDemo = useCallback((updatedDemo: Demo) => {
     setDemos(prev =>
       prev.map(demo =>
         demo.id === updatedDemo.id ? updatedDemo : demo
       )
     );
-  };
+  }, []);
 
-  const deleteDemo = (demoId: string) => {
+  const deleteDemo = useCallback((demoId: string) => {
     setDemos(prev => prev.filter(demo => demo.id !== demoId));
-  };
+  }, []);
+
+  // Memoized computed values
+  const memoizedStats = useMemo(() => {
+    const totalViews = demos.reduce((sum, demo) => sum + demo.page_views, 0);
+    const featuredCount = demos.filter(demo => demo.is_featured).length;
+    const avgViews = demos.length > 0 ? Math.round(totalViews / demos.length) : 0;
+    
+    return {
+      totalDemos: demos.length,
+      totalViews,
+      featuredCount,
+      avgViews
+    };
+  }, [demos]);
 
   return {
     demos,
@@ -79,6 +94,7 @@ export function useDemos() {
     incrementPageViews,
     updateDemo,
     deleteDemo,
-    refetch
+    refetch,
+    stats: memoizedStats
   };
 }

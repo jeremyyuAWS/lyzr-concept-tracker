@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { favoritesService } from '@/lib/supabase';
 import { supabase } from '@/lib/supabase';
 import { Demo } from '@/types/demo';
@@ -19,9 +19,9 @@ export function useFavorites() {
       loadUserFavorites(user.id);
       loadFavoritesWithFolders(user.id);
     }
-  }, [user, authLoading]);
+  }, [user?.id, authLoading]);
 
-  const loadUserFavorites = async (userId: string) => {
+  const loadUserFavorites = useCallback(async (userId: string) => {
     try {
       setLoading(true);
       const favorites = await favoritesService.getUserFavorites(userId);
@@ -36,9 +36,9 @@ export function useFavorites() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const loadFavoritesWithFolders = async (userId: string) => {
+  const loadFavoritesWithFolders = useCallback(async (userId: string) => {
     try {
       console.log('🔍 Loading favorites with folders...');
       
@@ -92,9 +92,9 @@ export function useFavorites() {
       setUnorganizedFavorites([]);
       setFavoritesDemos([]);
     }
-  };
+  }, []);
 
-  const toggleFavorite = async (demoId: string): Promise<boolean> => {
+  const toggleFavorite = useCallback(async (demoId: string): Promise<boolean> => {
     try {
       if (!user) {
         throw new Error('User not authenticated');
@@ -126,15 +126,15 @@ export function useFavorites() {
       console.error('Error toggling favorite:', err);
       throw err;
     }
-  };
+  }, [user, loadFavoritesWithFolders]);
 
-  const isFavorited = (demoId: string): boolean => {
+  const isFavorited = useCallback((demoId: string): boolean => {
     const result = userFavorites.includes(demoId);
     console.log('🔍 Checking if favorited:', demoId, 'Result:', result);
     return result;
-  };
+  }, [userFavorites]);
 
-  const refetch = () => {
+  const refetch = useCallback(() => {
     if (!user) {
       console.log('🔍 Cannot refetch favorites - user not authenticated');
       return;
@@ -142,7 +142,15 @@ export function useFavorites() {
     console.log('🔍 Refetching favorites data...');
     loadUserFavorites(user.id);
     loadFavoritesWithFolders(user.id);
-  };
+  }, [user, loadUserFavorites, loadFavoritesWithFolders]);
+
+  // Memoized stats for performance
+  const stats = useMemo(() => ({
+    totalFavorites: favoritesDemos.length,
+    totalFolders: favoriteFolders.length,
+    unorganizedCount: unorganizedFavorites.length,
+    organizedCount: favoriteFolders.reduce((sum, folder) => sum + (folder.demos?.length || 0), 0)
+  }), [favoritesDemos.length, favoriteFolders.length, unorganizedFavorites.length]);
 
   return {
     userFavorites,
@@ -153,6 +161,7 @@ export function useFavorites() {
     error,
     toggleFavorite,
     isFavorited,
-    refetch
+    refetch,
+    stats
   };
 }
