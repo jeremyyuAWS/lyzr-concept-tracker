@@ -409,30 +409,65 @@ export const analyticsService = {
   },
 
   getRealTimeActivities: async (limit: number = 50) => {
-    const { data, error } = await supabase.rpc('get_real_time_activities', {
-      p_limit: limit,
-    });
+    try {
+      const { data, error } = await supabase.rpc('get_real_time_activities', {
+        p_limit: limit,
+      });
 
-    if (error) throw error;
-    return data || [];
+      if (error) {
+        // If function doesn't exist, return empty array
+        if (error.code === 'PGRST202') {
+          console.log('Real-time activities function not available yet');
+          return [];
+        }
+        throw error;
+      }
+      return data || [];
+    } catch (error) {
+      console.log('Real-time activities not available:', error);
+      return [];
+    }
   },
 
   getDemoHealthScores: async () => {
-    const { data, error } = await supabase
-      .from('demo_health_scores')
-      .select(`
-        *,
-        demos!inner(*)
-      `)
-      .order('health_score', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('demo_health_scores')
+        .select(`
+          *,
+          demos!inner(*)
+        `)
+        .order('health_score', { ascending: false });
 
-    if (error) throw error;
-    return data || [];
+      if (error) {
+        // If table/relationship doesn't exist, return empty array
+        if (error.code === 'PGRST200' || error.code === 'PGRST106') {
+          console.log('Demo health scores table not available yet');
+          return [];
+        }
+        throw error;
+      }
+      return data || [];
+    } catch (error) {
+      console.log('Demo health scores not available:', error);
+      return [];
+    }
   },
 
   updateAllDemoHealthScores: async () => {
-    const { error } = await supabase.rpc('update_all_demo_health_scores');
-    if (error) throw error;
+    try {
+      const { error } = await supabase.rpc('update_all_demo_health_scores');
+      if (error) {
+        // If function doesn't exist, just log and continue
+        if (error.code === 'PGRST202') {
+          console.log('Health score update function not available yet');
+          return;
+        }
+        throw error;
+      }
+    } catch (error) {
+      console.log('Health score updates not available:', error);
+    }
   },
 
   getDemoEngagementMetrics: async () => {

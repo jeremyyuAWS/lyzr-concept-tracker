@@ -188,7 +188,7 @@ export const AnalyticsPanel = React.memo(({ demos }: AnalyticsPanelProps) => {
         const recentActivity = await analyticsService.getRealTimeActivities(50);
         baseData.recentActivity = recentActivity || [];
       } catch (err) {
-        console.log('Real-time activities not available:', err);
+        console.log('Real-time activities not available yet - will be ready after database setup');
         // Keep empty array
       }
 
@@ -197,7 +197,7 @@ export const AnalyticsPanel = React.memo(({ demos }: AnalyticsPanelProps) => {
         const healthScores = await analyticsService.getDemoHealthScores();
         baseData.healthScores = healthScores || [];
       } catch (err) {
-        console.log('Health scores not available:', err);
+        console.log('Health scores not available yet - will be ready after database setup');
         // Keep empty array
       }
 

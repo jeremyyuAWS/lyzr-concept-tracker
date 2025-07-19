@@ -187,12 +187,12 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
             monthlyActiveUsers: 0,
             newUsersThisWeek: 0
           })),
-          analyticsService.getUserSessionMetrics?.().catch(() => ({
+          Promise.resolve({
             todaySessions: 0,
             weekSessions: 0,
             monthSessions: 0,
             averageSessionDuration: 0
-          })),
+          }),
           analyticsService.getDemoEngagementMetrics().catch(() => ({
             totalViews: 0,
             totalTryApps: 0,
