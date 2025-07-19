@@ -193,3 +193,4 @@ export const CatalogTab = React.memo(({ demos, loading, error, onViewIncrement, 
       )}
     </div>
   );
+});
