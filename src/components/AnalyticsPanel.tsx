@@ -448,9 +448,9 @@ export const AnalyticsPanel = React.memo(({ demos }: AnalyticsPanelProps) => {
       {/* Detailed Analytics */}
       <Tabs defaultValue="performance" className="space-y-4">
         <TabsList className="bg-gray-100">
-          <TabsTrigger value="performance" className="data-[state=active]:bg-white data-[state=active]:text-black">Performance</TabsTrigger>
-          <TabsTrigger value="trending" className="data-[state=active]:bg-white data-[state=active]:text-black">Trending</TabsTrigger>
-          <TabsTrigger value="activity" className="data-[state=active]:bg-white data-[state=active]:text-black">Activity</TabsTrigger>
+          <TabsTrigger value="performance" className="data-[state=active]:bg-gray-100 data-[state=active]:text-black">Performance</TabsTrigger>
+          <TabsTrigger value="trending" className="data-[state=active]:bg-gray-100 data-[state=active]:text-black">Trending</TabsTrigger>
+          <TabsTrigger value="activity" className="data-[state=active]:bg-gray-100 data-[state=active]:text-black">Activity</TabsTrigger>
         </TabsList>
 
         <TabsContent value="performance" className="space-y-4">
