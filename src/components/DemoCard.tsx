@@ -8,7 +8,7 @@ import { useSessionTracking } from '@/hooks/useSessionTracking';
 import { demoService, supabase } from '@/lib/supabase';
 import { favoritesService } from '@/lib/supabase';
 import { Demo } from '@/types/demo';
-import { ExternalLink, FileText, Database, Shield, Eye, Edit3, Trash2, MoreHorizontal, Star, Play, Pause, Heart } from 'lucide-react';
+import { ExternalLink, FileText, BookOpen, FolderOpen, Eye, Edit3, Trash2, MoreHorizontal, Star, Play, Pause, Heart } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -580,33 +580,33 @@ export const DemoCard = memo(({ demo, onViewIncrement, onUpdate, onDelete, onTog
                   size="sm"
                   onClick={() => window.open(demo.excalidraw_url, '_blank')}
                   className="p-2 border-gray-300 hover:border-gray-400 bg-gray-50 hover:bg-gray-100"
-                  title="Link to Excalidraw"
+                  title="View Excalidraw Design"
                 >
                   <FileText className="w-4 h-4" />
                 </Button>
               )}
               
-              {demo.supabase_url && (
+              {demo.notion_url && (
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => window.open(demo.supabase_url, '_blank')}
+                  onClick={() => window.open(demo.notion_url, '_blank')}
                   className="p-2 border-gray-300 hover:border-gray-400 bg-gray-50 hover:bg-gray-100"
-                  title="Link to Supabase"
+                  title="View Customer Documentation"
                 >
-                  <Database className="w-4 h-4" />
+                  <BookOpen className="w-4 h-4" />
                 </Button>
               )}
               
-              {demo.admin_url && (
+              {demo.drive_url && (
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => window.open(demo.admin_url, '_blank')}
+                  onClick={() => window.open(demo.drive_url, '_blank')}
                   className="p-2 border-gray-300 hover:border-gray-400 bg-gray-50 hover:bg-gray-100"
-                  title="Link to Github Repository"
+                  title="Access Customer Resources"
                 >
-                  <Shield className="w-4 h-4" />
+                  <FolderOpen className="w-4 h-4" />
                 </Button>
               )}
             </div>

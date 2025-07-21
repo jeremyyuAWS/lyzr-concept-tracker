@@ -17,8 +17,8 @@ export interface DatabaseDemo {
   tags: string[];
   netlify_url: string;
   excalidraw_url?: string;
-  supabase_url?: string;
-  admin_url?: string;
+  notion_url?: string;
+  drive_url?: string;
   screenshot_url?: string;
   owner: string;
   page_views: number;

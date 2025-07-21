@@ -39,8 +39,8 @@ export function AddDemoForm({ onSubmit, onSuccess }: AddDemoFormProps) {
     tags: [],
     netlify_url: '',
     excalidraw_url: '',
-    supabase_url: '',
-    admin_url: '',
+    notion_url: '',
+    drive_url: '',
     screenshot_url: '',
     owner: userProfile?.display_name || userProfile?.email || '',
     video_url: '',
@@ -110,8 +110,8 @@ export function AddDemoForm({ onSubmit, onSuccess }: AddDemoFormProps) {
         tags: formData.tags,
         netlify_url: formData.netlify_url,
         excalidraw_url: formData.excalidraw_url || undefined,
-        supabase_url: formData.supabase_url || undefined,
-        admin_url: formData.admin_url || undefined,
+        notion_url: formData.notion_url || undefined,
+        drive_url: formData.drive_url || undefined,
         screenshot_url: formData.screenshot_url || undefined,
         owner: formData.owner,
         video_url: formData.video_url || undefined,
@@ -132,8 +132,8 @@ export function AddDemoForm({ onSubmit, onSuccess }: AddDemoFormProps) {
         tags: [],
         netlify_url: '',
         excalidraw_url: '',
-        supabase_url: '',
-        admin_url: '',
+        notion_url: '',
+        drive_url: '',
         screenshot_url: '',
         owner: '',
         video_url: '',
@@ -278,27 +278,27 @@ export function AddDemoForm({ onSubmit, onSuccess }: AddDemoFormProps) {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="supabase_url" className="text-sm font-medium text-black">
-                Supabase URL
+              <Label htmlFor="notion_url" className="text-sm font-medium text-black">
+                Customer Documentation (Notion)
               </Label>
               <Input
-                id="supabase_url"
-                value={formData.supabase_url}
-                onChange={(e) => handleInputChange('supabase_url', e.target.value)}
-                placeholder="https://supabase.com/..."
+                id="notion_url"
+                value={formData.notion_url}
+                onChange={(e) => handleInputChange('notion_url', e.target.value)}
+                placeholder="https://notion.so/..."
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="admin_url" className="text-sm font-medium text-black">
-              Github URL
+            <Label htmlFor="drive_url" className="text-sm font-medium text-black">
+              Customer Resources (Google Drive)
             </Label>
             <Input
-              id="admin_url"
-              value={formData.admin_url}
-              onChange={(e) => handleInputChange('admin_url', e.target.value)}
-              placeholder="https://github.com/username/repo"
+              id="drive_url"
+              value={formData.drive_url}
+              onChange={(e) => handleInputChange('drive_url', e.target.value)}
+              placeholder="https://drive.google.com/drive/folders/..."
             />
           </div>
 
