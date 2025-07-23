@@ -760,75 +760,75 @@ export const AnalyticsPanel = React.memo(({ demos }: AnalyticsPanelProps) => {
         <TabsContent value="insights" className="space-y-6">
           {/* Key Insights Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="shadow-lg border-0 bg-gradient-to-br from-yellow-50 to-yellow-100">
+            <Card className="shadow-lg border-0 bg-gradient-to-br from-yellow-400 to-amber-500">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-yellow-800">
-                  <Award className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Award className="h-5 w-5 text-white" />
                   Top Performer
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {demos.length > 0 ? (
                   <>
-                    <div className="font-bold text-lg text-yellow-900 mb-1">
+                    <div className="font-bold text-lg text-white mb-1">
                       {demos.sort((a, b) => (b.page_views || 0) - (a.page_views || 0))[0]?.title}
                     </div>
-                    <div className="text-sm text-yellow-700">
+                    <div className="text-sm text-yellow-100">
                       {demos.sort((a, b) => (b.page_views || 0) - (a.page_views || 0))[0]?.page_views.toLocaleString()} views
                     </div>
-                    <div className="text-xs text-yellow-600 mt-2">
+                    <div className="text-xs text-yellow-200 mt-2">
                       Leading by {Math.round(((demos.sort((a, b) => (b.page_views || 0) - (a.page_views || 0))[0]?.page_views || 0) - (demos.sort((a, b) => (b.page_views || 0) - (a.page_views || 0))[1]?.page_views || 0)) / (demos.sort((a, b) => (b.page_views || 0) - (a.page_views || 0))[0]?.page_views || 1) * 100)}% over #2
                     </div>
                   </>
                 ) : (
-                  <div className="text-yellow-700">No demos available</div>
+                  <div className="text-yellow-100">No demos available</div>
                 )}
               </CardContent>
             </Card>
 
-            <Card className="shadow-lg border-0 bg-gradient-to-br from-blue-50 to-blue-100">
+            <Card className="shadow-lg border-0 bg-gradient-to-br from-blue-400 to-indigo-500">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-blue-800">
-                  <Hash className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Hash className="h-5 w-5 text-white" />
                   Trending Tech
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {chartData.tagDistribution.length > 0 ? (
                   <>
-                    <div className="font-bold text-lg text-blue-900 mb-1">
+                    <div className="font-bold text-lg text-white mb-1">
                       {chartData.tagDistribution[0]?.name}
                     </div>
-                    <div className="text-sm text-blue-700">
+                    <div className="text-sm text-blue-100">
                       Used in {chartData.tagDistribution[0]?.value} demos
                     </div>
-                    <div className="text-xs text-blue-600 mt-2">
+                    <div className="text-xs text-blue-200 mt-2">
                       {Math.round((chartData.tagDistribution[0]?.value || 0) / demos.length * 100)}% of all demos
                     </div>
                   </>
                 ) : (
-                  <div className="text-blue-700">No technology data</div>
+                  <div className="text-blue-100">No technology data</div>
                 )}
               </CardContent>
             </Card>
 
-            <Card className="shadow-lg border-0 bg-gradient-to-br from-green-50 to-green-100">
+            <Card className="shadow-lg border-0 bg-gradient-to-br from-emerald-400 to-teal-500">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-green-800">
-                  <Globe className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Globe className="h-5 w-5 text-white" />
                   Engagement Health
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="font-bold text-lg text-green-900 mb-1">
+                <div className="font-bold text-lg text-white mb-1">
                   {analyticsData.engagementMetrics.conversionRate > 15 ? 'Excellent' : 
                    analyticsData.engagementMetrics.conversionRate > 10 ? 'Good' : 
                    analyticsData.engagementMetrics.conversionRate > 5 ? 'Average' : 'Needs Improvement'}
                 </div>
-                <div className="text-sm text-green-700">
+                <div className="text-sm text-emerald-100">
                   {analyticsData.engagementMetrics.conversionRate}% conversion rate
                 </div>
-                <div className="text-xs text-green-600 mt-2">
+                <div className="text-xs text-emerald-200 mt-2">
                   {analyticsData.engagementMetrics.conversionRate > 15 ? 
                     'Above industry average' : 
                     'Room for optimization'}

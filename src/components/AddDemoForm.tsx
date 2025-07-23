@@ -292,13 +292,13 @@ export function AddDemoForm({ onSubmit, onSuccess }: AddDemoFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="drive_url" className="text-sm font-medium text-black">
-              Customer Resources (Google Drive)
+              Customer Resources (Google Drive/Github)
             </Label>
             <Input
               id="drive_url"
               value={formData.drive_url}
               onChange={(e) => handleInputChange('drive_url', e.target.value)}
-              placeholder="https://drive.google.com/drive/folders/..."
+              placeholder="https://drive.google.com/drive/folders/... or https://github.com/..."
             />
           </div>
 
