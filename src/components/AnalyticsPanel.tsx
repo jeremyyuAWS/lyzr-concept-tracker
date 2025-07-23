@@ -470,7 +470,6 @@ export const AnalyticsPanel = React.memo(({ demos }: AnalyticsPanelProps) => {
                             <stop offset="100%" stopColor="#1d4ed8" stopOpacity={0.7}/>
                           </linearGradient>
                         </defs>
-                      >
                         <defs>
                           <linearGradient id="funnelGradient" x1="0" y1="0" x2="1" y2="0">
                             <stop offset="0%" stopColor="#10b981" stopOpacity={0.9}/>
@@ -765,4 +764,21 @@ export const AnalyticsPanel = React.memo(({ demos }: AnalyticsPanelProps) => {
                     <div className="text-xs text-purple-600 mt-1">Industry: 2-8%</div>
                   </div>
                 </div>
-                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Insights Tab */}
+        <TabsContent value="insights" className="space-y-6">
+          <div className="text-center text-gray-500">
+            <Award className="w-12 h-12 mx-auto mb-4" />
+            <p>Advanced insights coming soon...</p>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+});
