@@ -765,6 +765,14 @@ export const AnalyticsPanel = React.memo(({ demos }: AnalyticsPanelProps) => {
                   </div>
                 </div>
                 <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <div className="flex items-center gap-2 text-amber-800 mb-2">
+                    <AlertCircle className="w-4 h-4" />
+                    <span className="font-medium">Optimization Tips</span>
+                  </div>
+                  <p className="text-sm text-amber-700">
+                    Your engagement rates are performing well above industry averages. 
+                    Consider promoting your top-performing demos to increase overall visibility.
+                  </p>
                 </div>
               </div>
             </CardContent>
