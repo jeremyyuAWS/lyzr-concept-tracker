@@ -72,15 +72,17 @@ interface AnalyticsPanelProps {
 }
 
 // Custom color palette for charts
-const COLORS = [
-  '#1f2937', // gray-800
-  '#374151', // gray-700
-  '#4b5563', // gray-600
-  '#6b7280', // gray-500
-  '#9ca3af', // gray-400
-  '#d1d5db', // gray-300
-  '#e5e7eb', // gray-200
-  '#f3f4f6', // gray-100
+const VIBRANT_COLORS = [
+  '#3b82f6', // blue-500
+  '#ef4444', // red-500
+  '#10b981', // emerald-500
+  '#f59e0b', // amber-500
+  '#8b5cf6', // violet-500
+  '#ec4899', // pink-500
+  '#06b6d4', // cyan-500
+  '#84cc16', // lime-500
+  '#f97316', // orange-500
+  '#6366f1', // indigo-500
 ];
 
 const PERFORMANCE_COLORS = {
@@ -214,7 +216,7 @@ export const AnalyticsPanel = React.memo(({ demos }: AnalyticsPanelProps) => {
         name: tag,
         value: count,
         demos: count,
-        fill: COLORS[index % COLORS.length]
+        fill: VIBRANT_COLORS[index % VIBRANT_COLORS.length]
       }));
 
     // Views Distribution by Demo Age
@@ -261,10 +263,10 @@ export const AnalyticsPanel = React.memo(({ demos }: AnalyticsPanelProps) => {
     const estimatedShares = Math.round(totalViews * 0.05); // 5% share rate estimate
 
     const funnelData = [
-      { name: 'Demo Views', value: totalViews, percentage: 100, fill: COLORS[0] },
-      { name: 'Try App Clicks', value: estimatedTryApps, percentage: Math.round((estimatedTryApps / totalViews) * 100), fill: COLORS[1] },
-      { name: 'Favorites Added', value: estimatedFavorites, percentage: Math.round((estimatedFavorites / totalViews) * 100), fill: COLORS[2] },
-      { name: 'Shared/Referred', value: estimatedShares, percentage: Math.round((estimatedShares / totalViews) * 100), fill: COLORS[3] }
+      { name: 'Demo Views', value: totalViews, percentage: 100, fill: '#3b82f6' },
+      { name: 'Try App Clicks', value: estimatedTryApps, percentage: Math.round((estimatedTryApps / totalViews) * 100), fill: '#10b981' },
+      { name: 'Favorites Added', value: estimatedFavorites, percentage: Math.round((estimatedFavorites / totalViews) * 100), fill: '#f59e0b' },
+      { name: 'Shared/Referred', value: estimatedShares, percentage: Math.round((estimatedShares / totalViews) * 100), fill: '#8b5cf6' }
     ];
 
     return {
@@ -459,9 +461,23 @@ export const AnalyticsPanel = React.memo(({ demos }: AnalyticsPanelProps) => {
                       <Tooltip content={<CustomTooltip />} />
                       <Bar 
                         dataKey="views" 
-                        fill="#1f2937"
+                        fill="url(#funnelGradient)"
                         radius={[4, 4, 0, 0]}
-                      />
+                      >
+                        <defs>
+                          <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.9}/>
+                            <stop offset="100%" stopColor="#1d4ed8" stopOpacity={0.7}/>
+                          </linearGradient>
+                        </defs>
+                      >
+                        <defs>
+                          <linearGradient id="funnelGradient" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stopColor="#10b981" stopOpacity={0.9}/>
+                            <stop offset="100%" stopColor="#059669" stopOpacity={0.7}/>
+                          </linearGradient>
+                        </defs>
+                      </Bar>
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -711,7 +727,44 @@ export const AnalyticsPanel = React.memo(({ demos }: AnalyticsPanelProps) => {
                     {chartData.funnelData.map((step, index) => (
                       <div key={step.name} className="relative">
                         <div 
-                          className="h-16 bg-gradient-to-r from-gray-600 to-gray-800 text-white flex items-center justify-center relative rounded-lg shadow-md"
+                          className="h-16 text-white flex items-center justify-center relative rounded-lg shadow-md"
+                          style={{ 
+                            background: `linear-gradient(135deg, ${step.fill}, ${step.fill}dd)`,
+                            width: `${Math.max(step.percentage, 20)}%`,
+                            marginLeft: index === 0 ? '0' : `${(100 - step.percentage) / 2}%`
+                          }}
+                        >
+                          <div className="text-center">
+                            <div className="text-lg font-bold">{step.value.toLocaleString()}</div>
+                            <div className="text-xs opacity-90">{step.name}</div>
+                          </div>
+                        </div>
+                        <div className="text-center mt-1">
+                          <span className="text-sm font-medium text-gray-600">{step.percentage}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Conversion Rate Insights */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-4 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-lg border border-emerald-300">
+                    <div className="text-2xl font-bold text-emerald-800">15%</div>
+                    <div className="text-sm text-emerald-700 font-medium">View to Try Rate</div>
+                    <div className="text-xs text-emerald-600 mt-1">Industry: 10-20%</div>
+                  </div>
+                  <div className="text-center p-4 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg border border-blue-300">
+                    <div className="text-2xl font-bold text-blue-800">8%</div>
+                    <div className="text-sm text-blue-700 font-medium">Favorite Rate</div>
+                    <div className="text-xs text-blue-600 mt-1">Industry: 5-12%</div>
+                  </div>
+                  <div className="text-center p-4 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg border border-purple-300">
+                    <div className="text-2xl font-bold text-purple-800">5%</div>
+                    <div className="text-sm text-purple-700 font-medium">Share Rate</div>
+                    <div className="text-xs text-purple-600 mt-1">Industry: 2-8%</div>
+                  </div>
+                </div>
                           style={{ 
                             width: `${Math.max(step.percentage, 20)}%`,
                             marginLeft: index === 0 ? '0' : `${(100 - step.percentage) / 2}%`
