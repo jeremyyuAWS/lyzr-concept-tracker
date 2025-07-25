@@ -490,6 +490,7 @@ export function FavoritesTab({
                           : 'hover:bg-gray-50 border-gray-200 hover:border-gray-400'
                       } ${folderViewMode === 'compact' ? 'h-20' : 'h-24'}`}
                       onClick={() => setSelectedFolder(selectedFolder === folder.id ? null : folder.id)}
+                      title={folder.description || `Global folder containing ${folder.demos.length} demo${folder.demos.length !== 1 ? 's' : ''}`}
                     >
                       <CardHeader className={`${folderViewMode === 'compact' ? 'pb-1 px-3 pt-2' : 'pb-2'}`}>
                         <div className="flex items-center justify-between">
@@ -614,6 +615,7 @@ export function FavoritesTab({
                       : 'hover:bg-gray-50'
                   } ${folderViewMode === 'compact' ? 'h-20' : 'h-24'}`}
                   onClick={() => setSelectedFolder(selectedFolder === folder.id ? null : folder.id)}
+                  title={folder.description || `Personal folder containing ${folder.demos.length} demo${folder.demos.length !== 1 ? 's' : ''}`}
                 >
                   <CardHeader className={`${folderViewMode === 'compact' ? 'pb-1 px-3 pt-2' : 'pb-2'}`}>
                     <div className="flex items-center justify-between">

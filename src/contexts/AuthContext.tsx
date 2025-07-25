@@ -61,6 +61,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               is_active: true,
               avatar_url: null
             });
+          }
+        }
         // Add connection test before fetching profile
         const { data: testData, error: testError } = await supabase
           .from('user_profiles')
@@ -73,7 +75,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         const profileData = await userService.getCurrentUserProfile();
-        }
       } catch (error) {
         addDebugInfo(`Profile loading completely failed: ${error}`);
         addDebugInfo(`Profile loading failed, using fallback: ${error}`);
@@ -210,6 +211,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           throw new Error('Unable to connect to database. Please check your internet connection and Supabase configuration.');
         }
         
+    return () => {
       clearTimeout(timeout1);
       clearTimeout(timeout2);
     };
