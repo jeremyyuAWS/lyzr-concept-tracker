@@ -64,17 +64,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
         // Add connection test before fetching profile
-        const { data: testData, error: testError } = await supabase
-          .from('user_profiles')
-          .select('count')
-          .limit(1);
-
-        if (testError) {
-          console.error('Supabase connection test failed:', testError);
-          throw new Error(`Database connection failed: ${testError.message}`);
-        }
-
-        const profileData = await userService.getCurrentUserProfile();
       } catch (error) {
         addDebugInfo(`Profile loading completely failed: ${error}`);
         addDebugInfo(`Profile loading failed, using fallback: ${error}`);
@@ -203,15 +192,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     }, 8000); // 8 second emergency timeout
-
-        console.error('Error fetching user profile:', error);
-        
-        // Check if it's a network error
-        if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-          throw new Error('Unable to connect to database. Please check your internet connection and Supabase configuration.');
-        }
-        
-    return () => {
       clearTimeout(timeout1);
       clearTimeout(timeout2);
     };
