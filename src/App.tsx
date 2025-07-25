@@ -83,7 +83,16 @@ function AppContent() {
       
       if (!supabaseUrl || !supabaseKey) {
         addDebugInfo('ERROR: Missing environment variables');
-        setInitError('Environment variables not configured');
+        setInitError('Environment variables not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Netlify.');
+        return;
+      }
+      
+      // Validate URL format
+      try {
+        new URL(supabaseUrl);
+      } catch {
+        addDebugInfo('ERROR: Invalid Supabase URL format');
+        setInitError(`Invalid Supabase URL format: ${supabaseUrl}. Please check your Netlify environment variables.`);
         return;
       }
       
