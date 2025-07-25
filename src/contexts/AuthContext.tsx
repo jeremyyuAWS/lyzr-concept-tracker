@@ -192,6 +192,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     }, 8000); // 8 second emergency timeout
+    
+    return () => {
       clearTimeout(timeout1);
       clearTimeout(timeout2);
     };
