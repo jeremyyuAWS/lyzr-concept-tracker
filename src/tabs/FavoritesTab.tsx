@@ -23,7 +23,10 @@ import {
   MoreHorizontal,
   Star,
   Clock,
-  TrendingUp
+  TrendingUp,
+  Globe,
+  Crown,
+  User
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -78,9 +81,11 @@ export function FavoritesTab({
   const [folders, setFolders] = useState<FavoriteFolder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [globalFolders, setGlobalFolders] = useState<FavoriteFolder[]>([]);
   
   // Folder management
   const [showCreateFolder, setShowCreateFolder] = useState(false);
+  const [showCreateGlobalFolder, setShowCreateGlobalFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [newFolderDescription, setNewFolderDescription] = useState('');
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
@@ -115,11 +120,20 @@ export function FavoritesTab({
       const { data: foldersData, error: foldersError } = await supabase
         .from('favorite_folders')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user?.id) 
+        .eq('is_global', false)
         .order('sort_order', { ascending: true });
 
       if (foldersError) throw foldersError;
 
+      // Load global folders (created by super admins)
+      const { data: globalFoldersData, error: globalFoldersError } = await supabase
+        .from('favorite_folders')
+        .select('*')
+        .eq('is_global', true)
+        .order('sort_order', { ascending: true });
+
+      if (globalFoldersError) throw globalFoldersError;
       // Organize favorites by folder
       const favoriteDemos = (favoritesData || []).map(f => f.demos);
       const folderMap = new Map<string, Demo[]>();
@@ -144,6 +158,10 @@ export function FavoritesTab({
       
       setFavorites(favoriteDemos);
       setFolders(foldersWithDemos);
+      setGlobalFolders((globalFoldersData || []).map(folder => ({
+        ...folder,
+        demos: folderMap.get(folder.id) || []
+      })));
       
       // If we have unorganized demos, add them to the list
       if (unorganizedDemos.length > 0) {
@@ -174,9 +192,11 @@ export function FavoritesTab({
         .from('favorite_folders')
         .insert([{
           user_id: user?.id,
+          created_by: user?.id,
           name: newFolderName,
           description: newFolderDescription,
           color: '#6366f1',
+          is_global: false,
           sort_order: folders.length
         }])
         .select()
@@ -193,6 +213,42 @@ export function FavoritesTab({
     } catch (err) {
       console.error('Error creating folder:', err);
       toast.error('Failed to create folder');
+    } finally {
+      setIsCreatingFolder(false);
+    }
+  };
+
+  const createGlobalFolder = async () => {
+    if (!newFolderName.trim()) return;
+    
+    setIsCreatingFolder(true);
+    try {
+      const { data, error } = await supabase
+        .from('favorite_folders')
+        .insert([{
+          user_id: user?.id,
+          created_by: user?.id,
+          name: newFolderName,
+          description: newFolderDescription,
+          color: '#1f2937',
+          icon: 'globe',
+          is_global: true,
+          sort_order: globalFolders.length
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setGlobalFolders(prev => [...prev, { ...data, demos: [] }]);
+      setNewFolderName('');
+      setNewFolderDescription('');
+      setShowCreateGlobalFolder(false);
+      
+      toast.success('Global folder created successfully!');
+    } catch (err) {
+      console.error('Error creating global folder:', err);
+      toast.error('Failed to create global folder');
     } finally {
       setIsCreatingFolder(false);
     }
@@ -217,12 +273,28 @@ export function FavoritesTab({
   };
 
   const deleteFolder = async (folderId: string) => {
+    // Check if it's a global folder
+    const isGlobalFolder = globalFolders.some(f => f.id === folderId);
+    
+    if (isGlobalFolder) {
+      // Only super admins can delete global folders
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('user_id', user?.id)
+        .single();
+      
+      if (profile?.role !== 'super_admin') {
+        toast.error('Only Super Admins can delete global folders');
+        return;
+      }
+    }
+    
     try {
       // Move all demos in this folder to unorganized
       await supabase
         .from('user_favorites')
         .update({ folder_id: null })
-        .eq('user_id', user?.id)
         .eq('folder_id', folderId);
 
       // Delete the folder
@@ -234,10 +306,10 @@ export function FavoritesTab({
       if (error) throw error;
 
       await loadFavoritesAndFolders();
-      toast.success('Folder deleted successfully!');
+      toast.success(`${isGlobalFolder ? 'Global folder' : 'Folder'} deleted successfully!`);
     } catch (err) {
       console.error('Error deleting folder:', err);
-      toast.error('Failed to delete folder');
+      toast.error(`Failed to delete ${isGlobalFolder ? 'global folder' : 'folder'}`);
     }
   };
 
@@ -276,6 +348,10 @@ export function FavoritesTab({
 
   const displayedDemos = getDisplayedDemos();
 
+  // Check if user is super admin
+  const { userProfile } = useAuth();
+  const isSuperAdmin = userProfile?.role === 'super_admin';
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -303,18 +379,106 @@ export function FavoritesTab({
           <h2 className="text-2xl font-bold text-black">Your Favorites</h2>
           <p className="text-gray-600">Organize and manage your favorite demos</p>
         </div>
-        <Button
-          onClick={() => setShowCreateFolder(true)}
-          className="bg-white hover:bg-gray-50 text-black border border-gray-300"
-        >
-          <FolderPlus className="w-4 h-4 mr-2" />
-          New Folder
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => setShowCreateFolder(true)}
+            className="bg-white hover:bg-gray-50 text-black border border-gray-300"
+          >
+            <FolderPlus className="w-4 h-4 mr-2" />
+            New Folder
+          </Button>
+          {isSuperAdmin && (
+            <Button
+              onClick={() => setShowCreateGlobalFolder(true)}
+              className="bg-gray-800 hover:bg-gray-900 text-white"
+            >
+              <FolderPlus className="w-4 h-4 mr-2" />
+              Global Folder
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Folders Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {folders.map((folder) => (
+      <div className="space-y-6">
+        {/* Global Folders Section */}
+        {globalFolders.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <Globe className="w-5 h-5 text-gray-600" />
+              <h3 className="text-lg font-semibold text-black">Global Folders</h3>
+              <Badge className="bg-gray-800 text-white">
+                Available to Everyone
+              </Badge>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {globalFolders.map((folder) => (
+                <Card
+                  key={folder.id}
+                  className={`cursor-pointer transition-all duration-200 hover:shadow-lg border-2 ${
+                    selectedFolder === folder.id 
+                      ? 'ring-2 ring-gray-800 bg-gray-50 border-gray-800' 
+                      : 'hover:bg-gray-50 border-gray-200 hover:border-gray-400'
+                  }`}
+                  onClick={() => setSelectedFolder(selectedFolder === folder.id ? null : folder.id)}
+                >
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {selectedFolder === folder.id ? (
+                          <FolderOpen className="w-5 h-5 text-gray-800" />
+                        ) : (
+                          <Folder className="w-5 h-5 text-gray-600" />
+                        )}
+                        <CardTitle className="text-lg">{folder.name}</CardTitle>
+                        <Badge className="bg-gray-800 text-white text-xs">
+                          Global
+                        </Badge>
+                      </div>
+                      {isSuperAdmin && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 bg-white hover:bg-gray-100">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => deleteFolder(folder.id)}>
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete Global Folder
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">
+                        {folder.demos.length} demo{folder.demos.length !== 1 ? 's' : ''}
+                      </span>
+                      <Badge variant="secondary" className="text-xs">
+                        {folder.demos.reduce((sum, demo) => sum + demo.page_views, 0)} views
+                      </Badge>
+                    </div>
+                    {folder.description && (
+                      <p className="text-xs text-gray-500 mt-2">{folder.description}</p>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Personal Folders Section */}
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <User className="w-5 h-5 text-gray-600" />
+            <h3 className="text-lg font-semibold text-black">Your Personal Folders</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {folders.map((folder) => (
           <Card
             key={folder.id}
             className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
@@ -365,7 +529,9 @@ export function FavoritesTab({
               )}
             </CardContent>
           </Card>
-        ))}
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Search and Controls */}
@@ -518,6 +684,15 @@ export function FavoritesTab({
                           Move to {folder.name}
                         </DropdownMenuItem>
                       ))}
+                      {globalFolders.map(folder => (
+                        <DropdownMenuItem 
+                          key={folder.id}
+                          onClick={() => moveToFolder(demo.id, folder.id)}
+                        >
+                          <Folder className="mr-2 h-4 w-4" />
+                          Move to {folder.name} (Global)
+                        </DropdownMenuItem>
+                      ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -572,6 +747,70 @@ export function FavoritesTab({
                 className="bg-white hover:bg-gray-50 text-black"
               >
                 {isCreatingFolder ? 'Creating...' : 'Create Folder'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Global Folder Dialog */}
+      <Dialog open={showCreateGlobalFolder} onOpenChange={setShowCreateGlobalFolder}>
+        <DialogContent className="[&>button.absolute]:bg-white [&>button.absolute]:text-black [&>button.absolute:hover]:bg-gray-100 [&>button.absolute]:rounded-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Globe className="w-5 h-5" />
+              Create Global Folder
+            </DialogTitle>
+            <DialogDescription>
+              Create a folder that all users can see and use to organize demos
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-center gap-2 text-yellow-800">
+                <Crown className="w-4 h-4" />
+                <span className="text-sm font-medium">Super Admin Feature</span>
+              </div>
+              <p className="text-xs text-yellow-700 mt-1">
+                This folder will be visible to all users and can be used by anyone to organize their favorites.
+              </p>
+            </div>
+            
+            <div>
+              <Label htmlFor="globalFolderName">Folder Name</Label>
+              <Input
+                id="globalFolderName"
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                placeholder="e.g., Enterprise Demos, Quick Wins"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="globalFolderDescription">Description</Label>
+              <Input
+                id="globalFolderDescription"
+                value={newFolderDescription}
+                onChange={(e) => setNewFolderDescription(e.target.value)}
+                placeholder="e.g., High-impact demos for enterprise presentations"
+              />
+            </div>
+            
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowCreateGlobalFolder(false)}
+                className="bg-white"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={createGlobalFolder}
+                disabled={!newFolderName.trim() || isCreatingFolder}
+                className="bg-gray-800 hover:bg-gray-900 text-white"
+              >
+                {isCreatingFolder ? 'Creating...' : 'Create Global Folder'}
               </Button>
             </div>
           </div>
