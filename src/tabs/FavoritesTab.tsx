@@ -443,7 +443,7 @@ export function FavoritesTab({
             <div className="flex items-center justify-between mb-4">
               <button
                 onClick={() => setShowGlobalFolders(!showGlobalFolders)}
-                className="flex items-center gap-2 hover:bg-gray-50 rounded-lg p-2 -ml-2 transition-colors"
+                className="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 rounded-lg p-2 -ml-2 transition-colors"
               >
                 <div className={`transition-transform duration-200 ${showGlobalFolders ? 'rotate-90' : ''}`}>
                   <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -581,7 +581,7 @@ export function FavoritesTab({
           <div className="flex items-center justify-between mb-4">
             <button
               onClick={() => setShowPersonalFolders(!showPersonalFolders)}
-              className="flex items-center gap-2 hover:bg-gray-50 rounded-lg p-2 -ml-2 transition-colors"
+              className="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 rounded-lg p-2 -ml-2 transition-colors"
             >
               <div className={`transition-transform duration-200 ${showPersonalFolders ? 'rotate-90' : ''}`}>
                 <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
