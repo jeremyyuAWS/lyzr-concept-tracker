@@ -134,6 +134,22 @@ export function FavoritesTab({
         .order('sort_order', { ascending: true });
 
       if (globalFoldersError) throw globalFoldersError;
+
+      // Load ALL demos in global folders (from all users)
+      const { data: globalFolderDemos, error: globalFolderDemosError } = await supabase
+        .from('user_favorites')
+        .select(`
+          demo_id,
+          folder_id,
+          created_at,
+          demos!inner(*)
+        `)
+        .not('folder_id', 'is', null)
+        .in('folder_id', (globalFoldersData || []).map(f => f.id))
+        .order('created_at', { ascending: false });
+
+      if (globalFolderDemosError) throw globalFolderDemosError;
+      
       // Organize favorites by folder
       const favoriteDemos = (favoritesData || []).map(f => f.demos);
       const folderMap = new Map<string, Demo[]>();
@@ -147,6 +163,17 @@ export function FavoritesTab({
         folderMap.get(folderId)?.push(fav.demos);
       });
 
+      // Group global folder demos
+      const globalFolderMap = new Map<string, Demo[]>();
+      (globalFolderDemos || []).forEach(fav => {
+        const folderId = fav.folder_id;
+        if (folderId) {
+          if (!globalFolderMap.has(folderId)) {
+            globalFolderMap.set(folderId, []);
+          }
+          globalFolderMap.get(folderId)?.push(fav.demos);
+        }
+      });
       // Create folder objects with demos
       const foldersWithDemos = (foldersData || []).map(folder => ({
         ...folder,
@@ -160,7 +187,7 @@ export function FavoritesTab({
       setFolders(foldersWithDemos);
       setGlobalFolders((globalFoldersData || []).map(folder => ({
         ...folder,
-        demos: folderMap.get(folder.id) || []
+        demos: globalFolderMap.get(folder.id) || []
       })));
       
       // If we have unorganized demos, add them to the list
@@ -318,7 +345,8 @@ export function FavoritesTab({
     let demosToShow: Demo[] = [];
     
     if (selectedFolder) {
-      const folder = folders.find(f => f.id === selectedFolder);
+      const folder = folders.find(f => f.id === selectedFolder) || 
+                    globalFolders.find(f => f.id === selectedFolder);
       demosToShow = folder?.demos || [];
     } else {
       demosToShow = favorites;
