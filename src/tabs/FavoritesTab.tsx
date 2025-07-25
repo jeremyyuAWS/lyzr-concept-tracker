@@ -89,6 +89,14 @@ export function FavoritesTab({
   const [newFolderName, setNewFolderName] = useState('');
   const [newFolderDescription, setNewFolderDescription] = useState('');
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+  
+  // Folder display management
+  const [showGlobalFolders, setShowGlobalFolders] = useState(true);
+  const [showPersonalFolders, setShowPersonalFolders] = useState(true);
+  const [folderViewMode, setFolderViewMode] = useState<'compact' | 'detailed'>('compact');
+  const [maxFoldersToShow, setMaxFoldersToShow] = useState(8);
+  const [showAllGlobalFolders, setShowAllGlobalFolders] = useState(false);
+  const [showAllPersonalFolders, setShowAllPersonalFolders] = useState(false);
 
   // Load favorites and folders
   useEffect(() => {
@@ -432,133 +440,260 @@ export function FavoritesTab({
         {/* Global Folders Section */}
         {globalFolders.length > 0 && (
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <Globe className="w-5 h-5 text-gray-600" />
-              <h3 className="text-lg font-semibold text-black">Global Folders</h3>
-              <Badge className="bg-gray-800 text-white">
-                Available to Everyone
-              </Badge>
+            <div className="flex items-center justify-between mb-4">
+              <button
+                onClick={() => setShowGlobalFolders(!showGlobalFolders)}
+                className="flex items-center gap-2 hover:bg-gray-50 rounded-lg p-2 -ml-2 transition-colors"
+              >
+                <div className={`transition-transform duration-200 ${showGlobalFolders ? 'rotate-90' : ''}`}>
+                  <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+                <Globe className="w-5 h-5 text-gray-600" />
+                <h3 className="text-lg font-semibold text-black">Global Folders</h3>
+                <Badge className="bg-gray-800 text-white text-xs">
+                  {globalFolders.length}
+                </Badge>
+                <Badge className="bg-gray-200 text-gray-700 text-xs">
+                  Available to Everyone
+                </Badge>
+              </button>
+              
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setFolderViewMode(folderViewMode === 'compact' ? 'detailed' : 'compact')}
+                  className="h-8 px-2 text-xs bg-white hover:bg-gray-50 border border-gray-200"
+                >
+                  {folderViewMode === 'compact' ? 'Detailed' : 'Compact'}
+                </Button>
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {globalFolders.map((folder) => (
+            
+            {showGlobalFolders && (
+              <>
+                <div className={`grid gap-3 ${
+                  folderViewMode === 'compact' 
+                    ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6'
+                    : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                }`}>
+                  {globalFolders
+                    .slice(0, showAllGlobalFolders ? globalFolders.length : maxFoldersToShow)
+                    .map((folder) => (
+                    <Card
+                      key={folder.id}
+                      className={`cursor-pointer transition-all duration-200 hover:shadow-lg border-2 ${
+                        selectedFolder === folder.id 
+                          ? 'ring-2 ring-gray-800 bg-gray-50 border-gray-800' 
+                          : 'hover:bg-gray-50 border-gray-200 hover:border-gray-400'
+                      } ${folderViewMode === 'compact' ? 'h-20' : 'h-24'}`}
+                      onClick={() => setSelectedFolder(selectedFolder === folder.id ? null : folder.id)}
+                    >
+                      <CardHeader className={`${folderViewMode === 'compact' ? 'pb-1 px-3 pt-2' : 'pb-2'}`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 min-w-0">
+                            {selectedFolder === folder.id ? (
+                              <FolderOpen className="w-4 h-4 text-gray-800 flex-shrink-0" />
+                            ) : (
+                              <Folder className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                            )}
+                            <CardTitle className={`${folderViewMode === 'compact' ? 'text-sm' : 'text-base'} truncate`}>
+                              {folder.name}
+                            </CardTitle>
+                            <Badge className="bg-gray-800 text-white text-xs flex-shrink-0">
+                              Global
+                            </Badge>
+                          </div>
+                          {isSuperAdmin && folderViewMode === 'detailed' && (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-6 w-6 p-0 bg-white hover:bg-gray-100">
+                                  <MoreHorizontal className="h-3 w-3" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => deleteFolder(folder.id)}>
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete Global Folder
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )}
+                        </div>
+                      </CardHeader>
+                      {folderViewMode === 'detailed' && (
+                        <CardContent className="pt-0 px-3 pb-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-gray-600">
+                              {folder.demos.length} demo{folder.demos.length !== 1 ? 's' : ''}
+                            </span>
+                            <Badge variant="secondary" className="text-xs">
+                              {folder.demos.reduce((sum, demo) => sum + demo.page_views, 0)} views
+                            </Badge>
+                          </div>
+                          {folder.description && (
+                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">{folder.description}</p>
+                          )}
+                        </CardContent>
+                      )}
+                      {folderViewMode === 'compact' && (
+                        <CardContent className="pt-0 px-3 pb-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-gray-600">
+                              {folder.demos.length} demos
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {folder.demos.reduce((sum, demo) => sum + demo.page_views, 0)} views
+                            </span>
+                          </div>
+                        </CardContent>
+                      )}
+                    </Card>
+                  ))}
+                </div>
+                
+                {/* Show More/Less for Global Folders */}
+                {globalFolders.length > maxFoldersToShow && (
+                  <div className="text-center mt-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowAllGlobalFolders(!showAllGlobalFolders)}
+                      className="bg-white hover:bg-gray-50 text-gray-600"
+                    >
+                      {showAllGlobalFolders ? (
+                        <>Show Less ({maxFoldersToShow} of {globalFolders.length})</>
+                      ) : (
+                        <>Show All {globalFolders.length} Global Folders</>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Personal Folders Section */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={() => setShowPersonalFolders(!showPersonalFolders)}
+              className="flex items-center gap-2 hover:bg-gray-50 rounded-lg p-2 -ml-2 transition-colors"
+            >
+              <div className={`transition-transform duration-200 ${showPersonalFolders ? 'rotate-90' : ''}`}>
+                <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+              <User className="w-5 h-5 text-gray-600" />
+              <h3 className="text-lg font-semibold text-black">Your Personal Folders</h3>
+              <Badge className="bg-blue-100 text-blue-800 text-xs">
+                {folders.length}
+              </Badge>
+            </button>
+          </div>
+          
+          {showPersonalFolders && (
+            <>
+              <div className={`grid gap-3 ${
+                folderViewMode === 'compact' 
+                  ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6'
+                  : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+              }`}>
+                {folders
+                  .slice(0, showAllPersonalFolders ? folders.length : maxFoldersToShow)
+                  .map((folder) => (
                 <Card
                   key={folder.id}
-                  className={`cursor-pointer transition-all duration-200 hover:shadow-lg border-2 ${
+                  className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
                     selectedFolder === folder.id 
-                      ? 'ring-2 ring-gray-800 bg-gray-50 border-gray-800' 
-                      : 'hover:bg-gray-50 border-gray-200 hover:border-gray-400'
-                  }`}
+                      ? 'ring-2 ring-black bg-gray-50' 
+                      : 'hover:bg-gray-50'
+                  } ${folderViewMode === 'compact' ? 'h-20' : 'h-24'}`}
                   onClick={() => setSelectedFolder(selectedFolder === folder.id ? null : folder.id)}
                 >
-                  <CardHeader className="pb-2">
+                  <CardHeader className={`${folderViewMode === 'compact' ? 'pb-1 px-3 pt-2' : 'pb-2'}`}>
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
                         {selectedFolder === folder.id ? (
-                          <FolderOpen className="w-5 h-5 text-gray-800" />
+                          <FolderOpen className="w-4 h-4 text-blue-600 flex-shrink-0" />
                         ) : (
-                          <Folder className="w-5 h-5 text-gray-600" />
+                          <Folder className="w-4 h-4 text-gray-600 flex-shrink-0" />
                         )}
-                        <CardTitle className="text-lg">{folder.name}</CardTitle>
-                        <Badge className="bg-gray-800 text-white text-xs">
-                          Global
-                        </Badge>
+                        <CardTitle className={`${folderViewMode === 'compact' ? 'text-sm' : 'text-base'} truncate`}>
+                          {folder.name}
+                        </CardTitle>
                       </div>
-                      {isSuperAdmin && (
+                      {folder.id !== 'unorganized' && folderViewMode === 'detailed' && (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 bg-white hover:bg-gray-100">
-                              <MoreHorizontal className="h-4 w-4" />
+                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 bg-white hover:bg-gray-100">
+                              <MoreHorizontal className="h-3 w-3" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => deleteFolder(folder.id)}>
                               <Trash2 className="mr-2 h-4 w-4" />
-                              Delete Global Folder
+                              Delete Folder
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       )}
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">
-                        {folder.demos.length} demo{folder.demos.length !== 1 ? 's' : ''}
-                      </span>
-                      <Badge variant="secondary" className="text-xs">
-                        {folder.demos.reduce((sum, demo) => sum + demo.page_views, 0)} views
-                      </Badge>
-                    </div>
-                    {folder.description && (
-                      <p className="text-xs text-gray-500 mt-2">{folder.description}</p>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Personal Folders Section */}
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <User className="w-5 h-5 text-gray-600" />
-            <h3 className="text-lg font-semibold text-black">Your Personal Folders</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {folders.map((folder) => (
-          <Card
-            key={folder.id}
-            className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
-              selectedFolder === folder.id 
-                ? 'ring-2 ring-black bg-gray-50' 
-                : 'hover:bg-gray-50'
-            }`}
-            onClick={() => setSelectedFolder(selectedFolder === folder.id ? null : folder.id)}
-          >
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {selectedFolder === folder.id ? (
-                    <FolderOpen className="w-5 h-5 text-blue-600" />
-                  ) : (
-                    <Folder className="w-5 h-5 text-gray-600" />
+                  {folderViewMode === 'detailed' && (
+                    <CardContent className="pt-0 px-3 pb-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-600">
+                          {folder.demos.length} demo{folder.demos.length !== 1 ? 's' : ''}
+                        </span>
+                        <Badge variant="secondary" className="text-xs">
+                          {folder.demos.reduce((sum, demo) => sum + demo.page_views, 0)} views
+                        </Badge>
+                      </div>
+                      {folder.description && (
+                        <p className="text-xs text-gray-500 mt-1 line-clamp-2">{folder.description}</p>
+                      )}
+                    </CardContent>
                   )}
-                  <CardTitle className="text-lg">{folder.name}</CardTitle>
+                  {folderViewMode === 'compact' && (
+                    <CardContent className="pt-0 px-3 pb-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-600">
+                          {folder.demos.length} demos
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {folder.demos.reduce((sum, demo) => sum + demo.page_views, 0)} views
+                        </span>
+                      </div>
+                    </CardContent>
+                  )}
+                </Card>
+                ))}
+              </div>
+              
+              {/* Show More/Less for Personal Folders */}
+              {folders.length > maxFoldersToShow && (
+                <div className="text-center mt-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowAllPersonalFolders(!showAllPersonalFolders)}
+                    className="bg-white hover:bg-gray-50 text-gray-600"
+                  >
+                    {showAllPersonalFolders ? (
+                      <>Show Less ({maxFoldersToShow} of {folders.length})</>
+                    ) : (
+                      <>Show All {folders.length} Personal Folders</>
+                    )}
+                  </Button>
                 </div>
-                {folder.id !== 'unorganized' && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 bg-white hover:bg-gray-100">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => deleteFolder(folder.id)}>
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete Folder
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">
-                  {folder.demos.length} demo{folder.demos.length !== 1 ? 's' : ''}
-                </span>
-                <Badge variant="secondary" className="text-xs">
-                  {folder.demos.reduce((sum, demo) => sum + demo.page_views, 0)} views
-                </Badge>
-              </div>
-              {folder.description && (
-                <p className="text-xs text-gray-500 mt-2">{folder.description}</p>
               )}
-            </CardContent>
-          </Card>
-            ))}
-          </div>
+            </>
+          )}
         </div>
       </div>
 
