@@ -35,19 +35,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUserProfile(profile);
         } else {
           // Profile doesn't exist - this shouldn't happen with the trigger, but handle it
-          addDebugInfo('No profile found - this indicates the trigger may not be working');
+          addDebugInfo('No profile found - creating fallback profile');
           try {
-            addDebugInfo('Attempting to create missing profile');
             const newProfile = await userService.createUserProfile({
               user_id: user.id,
               email: user.email!,
               display_name: user.user_metadata?.display_name || user.email!.split('@')[0],
               role: user.email === 'jeremy@lyzr.ai' || user.email === 'admin@lyzr.ai' ? 'admin' : 'user'
             });
-            addDebugInfo('Missing profile created successfully');
+            addDebugInfo('Profile created successfully');
             setUserProfile(newProfile);
           } catch (createError) {
-            addDebugInfo(`Missing profile creation failed: ${createError}`);
+            addDebugInfo(`Profile creation failed, using fallback: ${createError}`);
             // Use fallback profile if creation fails
             setUserProfile({
               id: user.id,
@@ -63,9 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             });
           }
         }
-        // Add connection test before fetching profile
       } catch (error) {
-        addDebugInfo(`Profile loading completely failed: ${error}`);
         addDebugInfo(`Profile loading failed, using fallback: ${error}`);
         // If any error occurs, use fallback profile to keep app functional
         if (user) {
@@ -94,35 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Get initial session
     authService.getCurrentUser().then(async user => {
       addDebugInfo(`Initial user loaded: ${user ? user.email : 'null'}`);
-      
-      if (user) {
-        // Verify user has profile before setting them as authenticated
-        try {
-          const profile = await userService.getCurrentUserProfile(user.id);
-          if (!profile || !profile.is_active) {
-            addDebugInfo(`User ${user.email} has no active profile, signing out`);
-            await authService.signOut();
-            setUser(null);
-            return;
-          }
-          addDebugInfo(`User ${user.email} has valid profile, role: ${profile.role}`);
-          setUser(user);
-        } catch (error) {
-          addDebugInfo(`Profile check failed for ${user.email}: ${error}`);
-          
-          // Handle specific error types
-          if (error instanceof Error && error.message.includes('Failed to fetch')) {
-            addDebugInfo('Database connection failed, keeping user but clearing profile');
-            setUser(user); // Keep user authenticated but profile will be null
-          } else {
-            addDebugInfo('Profile verification failed, signing out');
-            await authService.signOut();
-            setUser(null);
-          }
-        }
-      } else {
-        setUser(user);
-      }
+      setUser(user);
     }).catch(error => {
       addDebugInfo(`Initial user load failed: ${error}`);
       // Don't crash the app, just log the error
@@ -131,29 +100,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = authService.onAuthStateChange(async user => {
+    const { data: { subscription } } = authService.onAuthStateChange(user => {
       addDebugInfo(`Auth state changed: ${user ? user.email : 'null'}`);
-      
-      if (user) {
-        // Verify user has profile before setting them as authenticated
-        try {
-          const profile = await userService.getCurrentUserProfile(user.id);
-          if (!profile || !profile.is_active) {
-            addDebugInfo(`User ${user.email} has no active profile, blocking access`);
-            await authService.signOut();
-            setUser(null);
-            return;
-          }
-          addDebugInfo(`User ${user.email} has valid profile, allowing access`);
-          setUser(user);
-        } catch (error) {
-          addDebugInfo(`Profile verification failed for ${user.email}, blocking access`);
-          await authService.signOut();
-          setUser(null);
-        }
-      } else {
-        setUser(user);
-      }
+      setUser(user);
     });
 
     return () => subscription.unsubscribe();
@@ -214,9 +163,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     addDebugInfo(`Starting sign-in for: ${email}`);
-    const { user } = await authService.signIn(email, password);
-    addDebugInfo(`Sign-in successful for: ${user?.email}`);
-    setUser(user);
+    await authService.signIn(email, password);
+    addDebugInfo(`Sign-in request completed`);
+    // Let the auth state change listener handle setting the user
   };
 
   const signUp = async (email: string, password: string, displayName?: string) => {
