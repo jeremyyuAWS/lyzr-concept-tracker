@@ -80,11 +80,13 @@ export const DemoCard = memo(({ demo, onViewIncrement, onUpdate, onDelete, onTog
     }
     
     // Check if it's a Tella.tv URL
-    const tellaRegex = /tella\.tv\/video\//;
+    const tellaRegex = /tella\.tv\/video\/([a-zA-Z0-9_-]+)/;
+    const tellaMatch = url.match(tellaRegex);
     if (tellaRegex.test(url)) {
+      const videoId = tellaMatch ? tellaMatch[1] : '';
       return {
-        type: 'tella_webpage',
-        embedUrl: url,
+        type: 'tella',
+        embedUrl: videoId ? `https://tella.tv/video/${videoId}/embed` : url,
         originalUrl: url
       };
     }
@@ -137,6 +139,10 @@ export const DemoCard = memo(({ demo, onViewIncrement, onUpdate, onDelete, onTog
     
     if (demo.video_url && videoInfo?.type === 'tella_webpage') {
       console.log('📹 Tella.tv URL for demo:', demo.title, demo.video_url);
+    }
+    
+    if (demo.video_url && videoInfo?.type === 'tella') {
+      console.log('📹 Tella.tv embed URL for demo:', demo.title, 'Original:', demo.video_url, 'Embed:', videoInfo.embedUrl);
     }
     
     if (demo.video_url && videoInfo?.type === 'google_drive_webpage') {
@@ -411,7 +417,7 @@ export const DemoCard = memo(({ demo, onViewIncrement, onUpdate, onDelete, onTog
         {/* Video Player */}
         {videoInfo && (
           <div className="mb-4">
-            {videoInfo.type === 'tella_webpage' || videoInfo.type === 'google_drive_webpage' ? (
+            {videoInfo.type === 'google_drive_webpage' ? (
               // External webpage - show preview with open button
               <div className="relative aspect-video bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg overflow-hidden border-2 border-gray-200 flex items-center justify-center">
                 <div className="text-center p-6">
@@ -419,20 +425,17 @@ export const DemoCard = memo(({ demo, onViewIncrement, onUpdate, onDelete, onTog
                     <Play className="w-8 h-8 text-purple-600" />
                   </div>
                   <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                    {videoInfo.type === 'google_drive_webpage' ? 'Video on Google Drive' : 'Video on Tella.tv'}
+                    Video on Google Drive
                   </h3>
                   <p className="text-sm text-gray-600 mb-4">
-                    {videoInfo.type === 'google_drive_webpage' 
-                      ? 'This video is hosted on Google Drive and will open in a new tab'
-                      : 'This video is hosted on Tella.tv and will open in a new tab'
-                    }
+                    This video is hosted on Google Drive and will open in a new tab
                   </p>
                   <Button
                     onClick={() => window.open(demo.video_url, '_blank')}
                     className="bg-purple-600 hover:bg-purple-700 text-white"
                   >
                     <ExternalLink className="w-4 h-4 mr-2" />
-                    {videoInfo.type === 'google_drive_webpage' ? 'View on Google Drive' : 'View on Tella.tv'}
+                    View on Google Drive
                   </Button>
                 </div>
                 
@@ -440,7 +443,27 @@ export const DemoCard = memo(({ demo, onViewIncrement, onUpdate, onDelete, onTog
                 <div className="absolute top-2 left-2">
                   <Badge className="bg-purple-600/90 text-white border-0">
                     <Play className="w-3 h-3 mr-1" />
-                    {videoInfo.type === 'google_drive_webpage' ? 'Google Drive' : 'Tella.tv'}
+                    Google Drive
+                  </Badge>
+                </div>
+              </div>
+            ) : videoInfo.type === 'tella' ? (
+              // Tella.tv embed
+              <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden border-2 border-gray-200">
+                <iframe
+                  src={videoInfo.embedUrl}
+                  title={demo.title}
+                  className="w-full h-full"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+                
+                {/* Platform Badge */}
+                <div className="absolute top-2 left-2">
+                  <Badge className="bg-purple-600/90 text-white border-0">
+                    <Play className="w-3 h-3 mr-1" />
+                    Tella.tv
                   </Badge>
                 </div>
               </div>
@@ -511,7 +534,7 @@ export const DemoCard = memo(({ demo, onViewIncrement, onUpdate, onDelete, onTog
                 <div className="absolute top-2 left-2 flex gap-2">
                   <Badge className="bg-black/70 text-white border-0">
                     <Play className="w-3 h-3 mr-1" />
-                    {videoInfo.type === 'youtube' ? 'YouTube' : 'Video'}
+                    {videoInfo.type === 'youtube' ? 'YouTube' : videoInfo.type === 'tella' ? 'Tella.tv' : 'Video'}
                   </Badge>
                   {videoInfo.type === 'video' && !videoError && (
                     <>
