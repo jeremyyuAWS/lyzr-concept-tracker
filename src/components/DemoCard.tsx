@@ -71,10 +71,12 @@ export const DemoCard = memo(({ demo, onViewIncrement, onUpdate, onDelete, onTog
     
     // Check if it's a Google Drive view URL
     const googleDriveRegex = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)\/view/;
-    if (googleDriveRegex.test(url)) {
+    const googleDriveMatch = url.match(googleDriveRegex);
+    if (googleDriveMatch) {
+      const fileId = googleDriveMatch[1];
       return {
-        type: 'google_drive_webpage',
-        embedUrl: url,
+        type: 'google_drive',
+        embedUrl: `https://drive.google.com/file/d/${fileId}/preview`,
         originalUrl: url
       };
     }
@@ -145,8 +147,8 @@ export const DemoCard = memo(({ demo, onViewIncrement, onUpdate, onDelete, onTog
       console.log('📹 Tella.tv embed URL for demo:', demo.title, 'Original:', demo.video_url, 'Embed:', videoInfo.embedUrl);
     }
     
-    if (demo.video_url && videoInfo?.type === 'google_drive_webpage') {
-      console.log('📁 Google Drive URL for demo:', demo.title, demo.video_url);
+    if (demo.video_url && videoInfo?.type === 'google_drive') {
+      console.log('📁 Google Drive embed URL for demo:', demo.title, 'Original:', demo.video_url, 'Embed:', videoInfo.embedUrl);
     }
   }, [demo.video_url, demo.title, videoInfo]);
   
@@ -417,34 +419,37 @@ export const DemoCard = memo(({ demo, onViewIncrement, onUpdate, onDelete, onTog
         {/* Video Player */}
         {videoInfo && (
           <div className="mb-4">
-            {videoInfo.type === 'google_drive_webpage' ? (
-              // External webpage - show preview with open button
-              <div className="relative aspect-video bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg overflow-hidden border-2 border-gray-200 flex items-center justify-center">
-                <div className="text-center p-6">
-                  <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Play className="w-8 h-8 text-purple-600" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                    Video on Google Drive
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    This video is hosted on Google Drive and will open in a new tab
-                  </p>
-                  <Button
-                    onClick={() => window.open(demo.video_url, '_blank')}
-                    className="bg-purple-600 hover:bg-purple-700 text-white"
-                  >
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    View on Google Drive
-                  </Button>
-                </div>
+            {videoInfo.type === 'google_drive' ? (
+              // Google Drive embed
+              <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden border-2 border-gray-200">
+                <iframe
+                  src={videoInfo.embedUrl}
+                  title={demo.title}
+                  className="w-full h-full"
+                  frameBorder="0"
+                  allow="autoplay; fullscreen"
+                  allowFullScreen
+                />
                 
                 {/* Platform Badge */}
                 <div className="absolute top-2 left-2">
-                  <Badge className="bg-purple-600/90 text-white border-0">
+                  <Badge className="bg-blue-600/90 text-white border-0">
                     <Play className="w-3 h-3 mr-1" />
                     Google Drive
                   </Badge>
+                </div>
+                
+                {/* External Link for Fallback */}
+                <div className="absolute top-2 right-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => window.open(demo.video_url, '_blank')}
+                    className="bg-white/90 hover:bg-white text-gray-700 hover:text-gray-900 h-8 w-8 p-0"
+                    title="Open in Google Drive"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
             ) : videoInfo.type === 'tella' ? (
