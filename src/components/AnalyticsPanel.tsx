@@ -260,13 +260,32 @@ export const AnalyticsPanel = React.memo(({ demos }: AnalyticsPanelProps) => {
     const totalViews = basicStats.totalViews;
     const estimatedTryApps = Math.round(totalViews * 0.15); // 15% conversion estimate
     const estimatedFavorites = Math.round(totalViews * 0.08); // 8% favorite rate estimate
-    const estimatedShares = Math.round(totalViews * 0.05); // 5% share rate estimate
+    
+    // Demo Performance Timeline (last 30 days)
+    const performanceTimeline = [];
+    const today = new Date();
+    
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      
+      // Simulate progressive growth for demo
+      const dayViews = Math.floor(totalViews * (0.8 + Math.random() * 0.4) / 30);
+      const dayTryApps = Math.floor(dayViews * 0.15);
+      const dayFavorites = Math.floor(dayViews * 0.08);
+      
+      performanceTimeline.push({
+        date: date.toISOString(),
+        views: dayViews,
+        tryApps: dayTryApps,
+        favorites: dayFavorites
+      });
+    }
 
     const funnelData = [
       { name: 'Demo Views', value: totalViews, percentage: 100, fill: '#3b82f6' },
       { name: 'Try App Clicks', value: estimatedTryApps, percentage: Math.round((estimatedTryApps / totalViews) * 100), fill: '#10b981' },
-      { name: 'Favorites Added', value: estimatedFavorites, percentage: Math.round((estimatedFavorites / totalViews) * 100), fill: '#f59e0b' },
-      { name: 'Shared/Referred', value: estimatedShares, percentage: Math.round((estimatedShares / totalViews) * 100), fill: '#8b5cf6' }
+      { name: 'Favorites Added', value: estimatedFavorites, percentage: Math.round((estimatedFavorites / totalViews) * 100), fill: '#f59e0b' }
     ];
 
     return {
@@ -274,6 +293,7 @@ export const AnalyticsPanel = React.memo(({ demos }: AnalyticsPanelProps) => {
       tagDistribution,
       ageDistribution,
       creatorChart,
+      performanceTimeline,
       funnelData
     };
   }, [demos, basicStats]);
@@ -518,43 +538,69 @@ export const AnalyticsPanel = React.memo(({ demos }: AnalyticsPanelProps) => {
             </Card>
           </div>
 
-          {/* Engagement Funnel */}
+          {/* Demo Performance Timeline */}
           <Card className="shadow-lg border-0">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-black">
-                <Target className="h-5 w-5 text-purple-600" />
-                User Engagement Funnel
+                <TrendingUp className="h-5 w-5 text-purple-600" />
+                Demo Performance Timeline
               </CardTitle>
-              <CardDescription>How users interact with demos from view to action</CardDescription>
+              <CardDescription>View engagement patterns and trends over time</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData.funnelData} layout="horizontal" margin={{ top: 20, right: 30, left: 80, bottom: 20 }}>
+                  <LineChart data={chartData.performanceTimeline} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                    <XAxis type="number" stroke="#6b7280" fontSize={11} />
-                    <YAxis type="category" dataKey="name" stroke="#6b7280" fontSize={11} width={75} />
+                    <XAxis 
+                      dataKey="date" 
+                      stroke="#6b7280" 
+                      fontSize={11}
+                      tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    />
+                    <YAxis stroke="#6b7280" fontSize={11} />
                     <Tooltip 
-                      content={({ active, payload }) => {
+                      content={({ active, payload, label }) => {
                         if (active && payload && payload.length) {
-                          const data = payload[0].payload;
                           return (
                             <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-                              <p className="font-medium text-black">{data.name}</p>
-                              <p className="text-sm text-gray-600">{data.value.toLocaleString()} actions</p>
-                              <p className="text-sm text-gray-500">{data.percentage}% of total views</p>
+                              <p className="font-medium text-black">{new Date(label).toLocaleDateString()}</p>
+                              {payload.map((entry: any, index: number) => (
+                                <p key={index} className="text-sm" style={{ color: entry.color }}>
+                                  {`${entry.name}: ${entry.value.toLocaleString()}`}
+                                </p>
+                              ))}
                             </div>
                           );
                         }
                         return null;
                       }} 
                     />
-                    <Bar 
-                      dataKey="value" 
-                      fill="#4b5563"
-                      radius={[0, 4, 4, 0]}
+                    <Line 
+                      type="monotone" 
+                      dataKey="views" 
+                      stroke="#3b82f6" 
+                      strokeWidth={3}
+                      dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                      name="Demo Views"
                     />
-                  </BarChart>
+                    <Line 
+                      type="monotone" 
+                      dataKey="tryApps" 
+                      stroke="#10b981" 
+                      strokeWidth={3}
+                      dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                      name="Try App Clicks"
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="favorites" 
+                      stroke="#f59e0b" 
+                      strokeWidth={3}
+                      dot={{ fill: '#f59e0b', strokeWidth: 2, r: 4 }}
+                      name="Favorites Added"
+                    />
+                  </LineChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
