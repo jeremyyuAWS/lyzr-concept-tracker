@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (user) {
       try {
         addDebugInfo(`Loading user profile for: ${user.email}`);
-        const profile = await userService.getCurrentUserProfile();
+        const profile = await userService.getCurrentUserProfile(user.id);
         if (profile) {
           addDebugInfo(`Profile loaded successfully: ${profile.display_name}`);
           setUserProfile(profile);
@@ -98,7 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (user) {
         // Verify user has profile before setting them as authenticated
         try {
-          const profile = await userService.getCurrentUserProfile();
+          const profile = await userService.getCurrentUserProfile(user.id);
           if (!profile || !profile.is_active) {
             addDebugInfo(`User ${user.email} has no active profile, signing out`);
             await authService.signOut();
@@ -137,7 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (user) {
         // Verify user has profile before setting them as authenticated
         try {
-          const profile = await userService.getCurrentUserProfile();
+          const profile = await userService.getCurrentUserProfile(user.id);
           if (!profile || !profile.is_active) {
             addDebugInfo(`User ${user.email} has no active profile, blocking access`);
             await authService.signOut();
@@ -248,7 +248,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const ensureUserProfile = async (user: any, displayName?: string) => {
     try {
       addDebugInfo('Checking if user profile exists...');
-      let profile = await userService.getCurrentUserProfile();
+      let profile = await userService.getCurrentUserProfile(user.id);
       
       if (!profile) {
         addDebugInfo('Profile not found, creating manually...');

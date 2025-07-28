@@ -181,10 +181,26 @@ export const demoService = {
 export const userService = {
   getCurrentUserProfile: async (): Promise<UserProfile | null> => {
     try {
+      // If no userId provided, try to get from current session
+      if (!userId) {
+        const { data: userData, error: userError } = await supabase.auth.getUser();
+        if (userError || !userData.user?.id) {
+          console.log('No valid user session found');
+          return null;
+        }
+        userId = userData.user.id;
+      }
+
+      // Validate userId is a valid UUID format
+      if (!userId || userId === 'undefined' || userId === 'null') {
+        console.log('Invalid user ID provided:', userId);
+        return null;
+      }
+
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .eq('user_id', userId)
         .maybeSingle();
 
       if (error) {
@@ -197,6 +213,12 @@ export const userService = {
 
       return data;
     } catch (error: any) {
+      // Handle session errors gracefully
+      if (error.message?.includes('session_not_found') || error.message?.includes('Session from session_id')) {
+        console.log('Session expired or invalid, user needs to re-authenticate');
+        return null;
+      }
+      
       // Handle PGRST116 error specifically (no rows returned)
       if (error.code === 'PGRST116') {
         return null;
