@@ -273,39 +273,55 @@ export const userService = {
   },
 
   getUserLoginStats: async () => {
-    const now = new Date();
-    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    try {
+      const now = new Date();
+      const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    const { data: profiles, error } = await supabase
-      .from('user_profiles')
-      .select('last_login, created_at');
+      // Get all user profiles with login data
+      const { data: profiles, error } = await supabase
+        .from('user_profiles')
+        .select('last_login, created_at, is_active')
+        .eq('is_active', true);
 
-    if (error) throw error;
+      if (error) throw error;
 
-    const dailyActiveUsers = profiles.filter(p => 
-      p.last_login && new Date(p.last_login) > oneDayAgo
-    ).length;
+      // Calculate stats from real data
+      const dailyActiveUsers = (profiles || []).filter(p => 
+        p.last_login && new Date(p.last_login) > oneDayAgo
+      ).length;
 
-    const weeklyActiveUsers = profiles.filter(p => 
-      p.last_login && new Date(p.last_login) > oneWeekAgo
-    ).length;
+      const weeklyActiveUsers = (profiles || []).filter(p => 
+        p.last_login && new Date(p.last_login) > oneWeekAgo
+      ).length;
 
-    const monthlyActiveUsers = profiles.filter(p => 
-      p.last_login && new Date(p.last_login) > oneMonthAgo
-    ).length;
+      const monthlyActiveUsers = (profiles || []).filter(p => 
+        p.last_login && new Date(p.last_login) > oneMonthAgo
+      ).length;
 
-    const newUsersThisWeek = profiles.filter(p => 
-      new Date(p.created_at) > oneWeekAgo
-    ).length;
+      const newUsersThisWeek = (profiles || []).filter(p => 
+        new Date(p.created_at) > oneWeekAgo
+      ).length;
 
-    return {
-      dailyActiveUsers,
-      weeklyActiveUsers,
-      monthlyActiveUsers,
-      newUsersThisWeek
-    };
+      return {
+        dailyActiveUsers,
+        weeklyActiveUsers,
+        monthlyActiveUsers,
+        newUsersThisWeek,
+        totalActiveUsers: (profiles || []).length
+      };
+    } catch (error) {
+      console.error('Error getting user login stats:', error);
+      // Return fallback values
+      return {
+        dailyActiveUsers: 0,
+        weeklyActiveUsers: 0,
+        monthlyActiveUsers: 0,
+        newUsersThisWeek: 0,
+        totalActiveUsers: 0
+      };
+    }
   },
 
   getDemoEngagementStats: async () => {
