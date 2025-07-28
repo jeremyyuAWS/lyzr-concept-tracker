@@ -201,7 +201,12 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
         console.log('⏱️ Loading session metrics...');
         const realSessionStats = await userService.getSessionStats();
         setSessionMetrics(realSessionStats);
-        console.log('✅ Session stats loaded:', realSessionStats);
+        console.log('✅ Session stats loaded:', {
+          todaySessions: realSessionStats.todaySessions,
+          weekSessions: realSessionStats.weekSessions, 
+          monthSessions: realSessionStats.monthSessions,
+          avgDuration: realSessionStats.averageSessionDuration
+        });
       } catch (error) {
         console.error('❌ Session stats failed:', error);
         setSessionMetrics({

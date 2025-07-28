@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { analyticsService } from '@/lib/supabase';
+import { analyticsService, supabase } from '@/lib/supabase';
 
 export function useSessionTracking() {
   const { user } = useAuth();

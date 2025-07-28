@@ -414,20 +414,23 @@ export const userService = {
 
       if (error) throw error;
 
-      const todaySessions = (sessions || []).filter(s => 
-        new Date(s.session_start) > oneDayAgo
-      ).length;
+      const todaySessions = (sessions || []).filter(s => {
+        const sessionDate = new Date(s.session_start);
+        return sessionDate >= oneDayAgo && sessionDate <= now;
+      }).length;
 
-      const weekSessions = (sessions || []).filter(s => 
-        new Date(s.session_start) > oneWeekAgo
-      ).length;
+      const weekSessions = (sessions || []).filter(s => {
+        const sessionDate = new Date(s.session_start);
+        return sessionDate >= oneWeekAgo && sessionDate <= now;
+      }).length;
 
-      const monthSessions = (sessions || []).filter(s => 
-        new Date(s.session_start) > oneMonthAgo
+      const monthSessions = (sessions || []).filter(s => {
+        const sessionDate = new Date(s.session_start);
+        return sessionDate >= oneMonthAgo && sessionDate <= now;
       ).length;
 
       // Calculate average session duration (in minutes)
-      const completedSessions = (sessions || []).filter(s => s.duration_ms);
+      const completedSessions = (sessions || []).filter(s => s.duration_ms && s.duration_ms > 0);
       const avgDuration = completedSessions.length > 0 
         ? Math.round(completedSessions.reduce((sum, s) => sum + (s.duration_ms || 0), 0) / completedSessions.length / 60000)
         : 0;
@@ -560,12 +563,13 @@ export const analyticsService = {
       return data;
     } catch (error) {
       // Fallback: insert directly if RPC function doesn't exist
+      const { data: userData } = await supabase.auth.getUser();
       const { data, error: insertError } = await supabase
         .from('user_sessions')
         .insert([{
-          user_id: (await supabase.auth.getUser()).data.user?.id,
+          user_id: userData.user?.id,
           user_agent: userAgent,
-          ip_address: ipAddress,
+          ip_address: ipAddress || null,
           referrer: referrer,
           session_start: new Date().toISOString()
         }])
@@ -584,12 +588,21 @@ export const analyticsService = {
       });
       if (error) throw error;
     } catch (error) {
-      // Fallback: update directly
+      // Fallback: update directly with proper duration calculation
+      const { data: sessionData } = await supabase
+        .from('user_sessions')
+        .select('session_start')
+        .eq('id', sessionId)
+        .single();
+      
+      const sessionStart = sessionData ? new Date(sessionData.session_start).getTime() : Date.now();
+      const duration = Date.now() - sessionStart;
+      
       const { error: updateError } = await supabase
         .from('user_sessions')
         .update({
           session_end: new Date().toISOString(),
-          duration_ms: Date.now() - new Date().getTime() // This would need proper calculation
+          duration_ms: duration
         })
         .eq('id', sessionId);
       
