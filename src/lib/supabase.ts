@@ -427,6 +427,7 @@ export const userService = {
       const monthSessions = (sessions || []).filter(s => {
         const sessionDate = new Date(s.session_start);
         return sessionDate >= oneMonthAgo && sessionDate <= now;
+      }
       ).length;
 
       // Calculate average session duration (in minutes)
