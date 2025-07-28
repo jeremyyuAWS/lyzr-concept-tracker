@@ -279,17 +279,42 @@ export const userService = {
   },
 
   getActivityLogs: async (limit: number = 50) => {
-    const { data, error } = await supabase
+    // First get activity logs
+    const { data: activities, error: activitiesError } = await supabase
       .from('activity_logs')
-      .select(`
-        *,
-        user_profiles!inner(display_name, email)
-      `)
+      .select('*')
       .order('created_at', { ascending: false })
       .limit(limit);
 
-    if (error) throw error;
-    return data || [];
+    if (activitiesError) throw activitiesError;
+
+    // Then get user profiles for the user IDs in activities
+    const userIds = activities?.map(activity => activity.user_id).filter(Boolean) || [];
+    
+    if (userIds.length === 0) {
+      return activities?.map(activity => ({
+        ...activity,
+        user_profiles: null
+      })) || [];
+    }
+
+    const { data: profiles, error: profilesError } = await supabase
+      .from('user_profiles')
+      .select('user_id, display_name, email')
+      .in('user_id', userIds);
+
+    if (profilesError) throw profilesError;
+
+    // Merge the data
+    const activitiesWithProfiles = activities?.map(activity => {
+      const profile = profiles?.find(p => p.user_id === activity.user_id);
+      return {
+        ...activity,
+        user_profiles: profile || null
+      };
+    }) || [];
+
+    return activitiesWithProfiles;
   },
 
   getUserLoginStats: async () => {
