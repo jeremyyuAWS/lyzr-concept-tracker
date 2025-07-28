@@ -108,13 +108,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           addDebugInfo(`User ${user.email} has valid profile, role: ${profile.role}`);
           setUser(user);
         } catch (error) {
-          addDebugInfo(`Profile check failed for ${user.email}, signing out`);
-          await authService.signOut();
-          setUser(null);
+          addDebugInfo(`Profile check failed for ${user.email}: ${error}`);
+          
+          // Handle specific error types
+          if (error instanceof Error && error.message.includes('Failed to fetch')) {
+            addDebugInfo('Database connection failed, keeping user but clearing profile');
+            setUser(user); // Keep user authenticated but profile will be null
+          } else {
+            addDebugInfo('Profile verification failed, signing out');
+            await authService.signOut();
+            setUser(null);
+          }
         }
       } else {
         setUser(user);
       }
+    }).catch(error => {
+      addDebugInfo(`Initial user load failed: ${error}`);
+      // Don't crash the app, just log the error
+      console.error('Failed to load initial user:', error);
+      setUser(null);
     });
 
     // Listen for auth changes

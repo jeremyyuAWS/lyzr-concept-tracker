@@ -83,7 +83,20 @@ function AppContent() {
       
       if (!supabaseUrl || !supabaseKey) {
         addDebugInfo('ERROR: Missing environment variables');
-        setInitError('Environment variables not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Netlify.');
+        setInitError(`Environment variables not configured:
+
+FOR LOCAL DEVELOPMENT:
+1. Create a .env file in your project root directory
+2. Add these lines to the .env file:
+   VITE_SUPABASE_URL="https://your-project.supabase.co"
+   VITE_SUPABASE_ANON_KEY="your-anon-key"
+3. Get these values from: Supabase Dashboard > Settings > API
+4. Restart your dev server: npm run dev
+
+FOR NETLIFY PRODUCTION:
+Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Netlify environment variables.
+
+Missing: ${!supabaseUrl ? 'VITE_SUPABASE_URL ' : ''}${!supabaseKey ? 'VITE_SUPABASE_ANON_KEY' : ''}`);
         return;
       }
       
@@ -92,7 +105,12 @@ function AppContent() {
         new URL(supabaseUrl);
       } catch {
         addDebugInfo('ERROR: Invalid Supabase URL format');
-        setInitError(`Invalid Supabase URL format: ${supabaseUrl}. Please check your Netlify environment variables.`);
+        setInitError(`Invalid Supabase URL format: ${supabaseUrl}
+
+Expected format: https://your-project-id.supabase.co
+Received: ${supabaseUrl}
+
+Please check your environment variables and ensure the URL is correct.`);
         return;
       }
       
@@ -102,7 +120,10 @@ function AppContent() {
       
     } catch (error) {
       addDebugInfo(`ERROR: Initialization failed - ${error}`);
-      setInitError(error instanceof Error ? error.message : 'Unknown initialization error');
+      setInitError(`Initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}
+
+This usually means there's an issue with your environment configuration.
+Please check your .env file and Supabase project settings.`);
     }
   }, []);
 

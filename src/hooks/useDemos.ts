@@ -22,7 +22,23 @@ export function useDemos() {
       setDemos(data);
     } catch (err) {
       addDebugInfo(`Demo fetch failed: ${err}`);
-      setError(err instanceof Error ? err.message : 'Failed to load demos');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load demos';
+      
+      // Provide specific guidance for common errors
+      if (errorMessage.includes('Failed to fetch')) {
+        setError(`Database connection failed. This usually means:
+        
+1. Missing environment variables (check .env file)
+2. Supabase project is paused/inactive
+3. Network connectivity issue
+4. Invalid Supabase URL or API key
+
+Original error: ${errorMessage}`);
+      } else if (errorMessage.includes('Missing Supabase environment variables')) {
+        setError(errorMessage);
+      } else {
+        setError(`Error loading demos: ${errorMessage}`);
+      }
       console.error('Error fetching demos:', err);
     } finally {
       addDebugInfo('Demo fetch completed, setting loading to false');
