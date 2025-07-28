@@ -178,108 +178,73 @@ export function AdminTab({ demos = [] }: AdminTabProps) {
     try {
       await loadAdminData();
       
-      // Load real user login statistics
+      console.log('🔄 Refreshing all analytics data...');
+      
+      // Load REAL user login statistics
       try {
-        console.log('🔍 Loading real login statistics...');
-        
-        // Calculate real login statistics from user data
-        const now = new Date();
-        const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-        const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        
-        const dailyActiveUsers = users.filter(u => 
-          u.last_login && new Date(u.last_login) > oneDayAgo
-        ).length;
-        
-        const weeklyActiveUsers = users.filter(u => 
-          u.last_login && new Date(u.last_login) > oneWeekAgo
-        ).length;
-        
-        const monthlyActiveUsers = users.filter(u => 
-          u.last_login && new Date(u.last_login) > oneMonthAgo
-        ).length;
-        
-        const newUsersThisWeek = users.filter(u => 
-          new Date(u.created_at) > oneWeekAgo
-        ).length;
-        
-        const loginStatsData = {
-          dailyActiveUsers,
-          weeklyActiveUsers,
-          monthlyActiveUsers,
-          newUsersThisWeek
-        };
-        
-        console.log('✅ Real login stats calculated:', loginStatsData);
-        
-        // Calculate session metrics from activity logs
-        const sessionStatsData = {
-          todaySessions: activityLogs.filter(log => 
-            new Date(log.created_at) > oneDayAgo
-          ).length,
-          weekSessions: activityLogs.filter(log => 
-            new Date(log.created_at) > oneWeekAgo
-          ).length,
-          monthSessions: activityLogs.filter(log => 
-            new Date(log.created_at) > oneMonthAgo
-          ).length,
-          averageSessionDuration: 0 // This would need session tracking to calculate properly
-        };
-        
-        // Calculate real engagement metrics
-        const totalViews = demos.reduce((sum, demo) => sum + demo.page_views, 0);
-        const estimatedTryApps = Math.round(totalViews * 0.15);
-        const estimatedFavorites = Math.round(totalViews * 0.08);
-        const estimatedSearches = activityLogs.filter(log => log.action === 'search').length;
-        
-        const engagementStatsData = {
-          totalViews,
-          totalTryApps: estimatedTryApps,
-          totalFavorites: estimatedFavorites,
-          totalSearches: estimatedSearches,
-          conversionRate: totalViews > 0 ? Math.round((estimatedTryApps / totalViews) * 100) : 0
-        };
-        
-        // Get demo performance data
-        const demoStatsData = await userService.getDemoEngagementStats().catch(() => ({
-          topDemos: demos.sort((a, b) => b.page_views - a.page_views).slice(0, 5),
-          topFavoritedDemos: []
-        }));
-        
-        setLoginStats(loginStatsData);
-        setSessionMetrics(sessionStatsData);
-        setDemoEngagementMetrics(engagementStatsData);
-        setEngagementStats(demoStatsData);
-        
-        console.log('✅ All analytics data loaded successfully');
+        console.log('📊 Loading real login statistics...');
+        const realLoginStats = await userService.getUserLoginStats();
+        setLoginStats(realLoginStats);
+        console.log('✅ Login stats loaded:', realLoginStats);
       } catch (error) {
-        console.error('Error loading analytics data:', error);
-        // Set fallback values
+        console.error('❌ Login stats failed:', error);
         setLoginStats({
           dailyActiveUsers: 0,
           weeklyActiveUsers: 0,
           monthlyActiveUsers: 0,
           newUsersThisWeek: 0
         });
+      }
+      
+      // Load REAL session metrics
+      try {
+        console.log('⏱️ Loading session metrics...');
+        const realSessionStats = await userService.getSessionStats();
+        setSessionMetrics(realSessionStats);
+        console.log('✅ Session stats loaded:', realSessionStats);
+      } catch (error) {
+        console.error('❌ Session stats failed:', error);
         setSessionMetrics({
           todaySessions: 0,
           weekSessions: 0,
           monthSessions: 0,
           averageSessionDuration: 0
         });
+      }
+      
+      // Load REAL engagement metrics
+      try {
+        console.log('🎯 Loading engagement metrics...');
+        const realEngagementStats = await userService.getRealDemoEngagementMetrics();
+        setDemoEngagementMetrics(realEngagementStats);
+        console.log('✅ Engagement stats loaded:', realEngagementStats);
+      } catch (error) {
+        console.error('❌ Engagement stats failed:', error);
         setDemoEngagementMetrics({
-          totalViews: 0,
+          totalViews: demos.reduce((sum, demo) => sum + demo.page_views, 0),
           totalTryApps: 0,
           totalFavorites: 0,
           totalSearches: 0,
           conversionRate: 0
         });
+      }
+      
+      // Load REAL demo performance data
+      try {
+        console.log('🏆 Loading demo performance...');
+        const realDemoStats = await userService.getDemoEngagementStats();
+        setEngagementStats(realDemoStats);
+        console.log('✅ Demo performance loaded:', realDemoStats);
+      } catch (error) {
+        console.error('❌ Demo performance failed:', error);
         setEngagementStats({
-          topDemos: [],
+          topDemos: demos.sort((a, b) => b.page_views - a.page_views).slice(0, 10),
           topFavoritedDemos: []
         });
       }
+        
+      console.log('✅ All analytics refresh completed successfully');
+      
     } catch (error) {
       console.error('Error refreshing admin data:', error);
     } finally {

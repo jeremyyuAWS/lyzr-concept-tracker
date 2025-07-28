@@ -99,9 +99,29 @@ export function useSessionTracking() {
       const userAgent = navigator.userAgent;
       const referrer = document.referrer;
       
-      const newSessionId = await analyticsService.startSession(userAgent, undefined, referrer);
+      // Get user's IP address (if available)
+      let ipAddress;
+      try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        ipAddress = data.ip;
+      } catch {
+        ipAddress = 'unknown';
+      }
+      
+      const newSessionId = await analyticsService.startSession(userAgent, ipAddress, referrer);
       setSessionId(newSessionId);
       sessionStartRef.current = Date.now();
+      
+      // Also update user's last_login timestamp
+      try {
+        await supabase
+          .from('user_profiles')
+          .update({ last_login: new Date().toISOString() })
+          .eq('user_id', user.id);
+      } catch (error) {
+        console.log('Could not update last_login timestamp:', error);
+      }
       
       console.log('🎯 Session started:', newSessionId);
     } catch (error) {
