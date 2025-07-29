@@ -557,70 +557,165 @@ export const AnalyticsPanel = React.memo(({ demos }: AnalyticsPanelProps) => {
             </Card>
           </div>
 
-          {/* Demo Performance Timeline */}
+          {/* Demo Completeness Analysis */}
           <Card className="shadow-lg border-0">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-black">
-                <TrendingUp className="h-5 w-5 text-purple-600" />
-                Demo Performance Timeline
+                <CheckCircle className="h-5 w-5 text-purple-600" />
+                Demo Resource Completeness
               </CardTitle>
-              <CardDescription>View engagement patterns and trends over time</CardDescription>
+              <CardDescription>Analysis of demo resources and content completeness</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData.performanceTimeline} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                    <XAxis 
-                      dataKey="date" 
-                      stroke="#6b7280" 
-                      fontSize={11}
-                      tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    />
-                    <YAxis stroke="#6b7280" fontSize={11} />
-                    <Tooltip 
-                      content={({ active, payload, label }) => {
-                        if (active && payload && payload.length) {
-                          return (
-                            <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-                              <p className="font-medium text-black">{new Date(label).toLocaleDateString()}</p>
-                              {payload.map((entry: any, index: number) => (
-                                <p key={index} className="text-sm" style={{ color: entry.color }}>
-                                  {`${entry.name}: ${entry.value.toLocaleString()}`}
-                                </p>
-                              ))}
-                            </div>
-                          );
-                        }
-                        return null;
-                      }} 
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="views" 
-                      stroke="#3b82f6" 
-                      strokeWidth={3}
-                      dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-                      name="Demo Views"
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="tryApps" 
-                      stroke="#10b981" 
-                      strokeWidth={3}
-                      dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
-                      name="Try App Clicks"
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="favorites" 
-                      stroke="#f59e0b" 
-                      strokeWidth={3}
-                      dot={{ fill: '#f59e0b', strokeWidth: 2, r: 4 }}
-                      name="Favorites Added"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+              <div className="space-y-6">
+                {/* Resource Summary Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+                  <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="text-lg font-bold text-blue-800">{chartData.resourceSummary.screenshots}</div>
+                    <div className="text-xs text-blue-600">Screenshots</div>
+                    <div className="text-xs text-blue-500 mt-1">
+                      {Math.round((chartData.resourceSummary.screenshots / chartData.resourceSummary.total) * 100)}%
+                    </div>
+                  </div>
+                  <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
+                    <div className="text-lg font-bold text-green-800">{chartData.resourceSummary.videos}</div>
+                    <div className="text-xs text-green-600">Videos</div>
+                    <div className="text-xs text-green-500 mt-1">
+                      {Math.round((chartData.resourceSummary.videos / chartData.resourceSummary.total) * 100)}%
+                    </div>
+                  </div>
+                  <div className="text-center p-3 bg-purple-50 rounded-lg border border-purple-200">
+                    <div className="text-lg font-bold text-purple-800">{chartData.resourceSummary.excalidraw}</div>
+                    <div className="text-xs text-purple-600">Excalidraw</div>
+                    <div className="text-xs text-purple-500 mt-1">
+                      {Math.round((chartData.resourceSummary.excalidraw / chartData.resourceSummary.total) * 100)}%
+                    </div>
+                  </div>
+                  <div className="text-center p-3 bg-orange-50 rounded-lg border border-orange-200">
+                    <div className="text-lg font-bold text-orange-800">{chartData.resourceSummary.documentation}</div>
+                    <div className="text-xs text-orange-600">Docs</div>
+                    <div className="text-xs text-orange-500 mt-1">
+                      {Math.round((chartData.resourceSummary.documentation / chartData.resourceSummary.total) * 100)}%
+                    </div>
+                  </div>
+                  <div className="text-center p-3 bg-indigo-50 rounded-lg border border-indigo-200">
+                    <div className="text-lg font-bold text-indigo-800">{chartData.resourceSummary.resources}</div>
+                    <div className="text-xs text-indigo-600">Resources</div>
+                    <div className="text-xs text-indigo-500 mt-1">
+                      {Math.round((chartData.resourceSummary.resources / chartData.resourceSummary.total) * 100)}%
+                    </div>
+                  </div>
+                  <div className="text-center p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                    <div className="text-lg font-bold text-emerald-800">{chartData.resourceSummary.complete}</div>
+                    <div className="text-xs text-emerald-600">Complete</div>
+                    <div className="text-xs text-emerald-500 mt-1">
+                      {Math.round((chartData.resourceSummary.complete / chartData.resourceSummary.total) * 100)}%
+                    </div>
+                  </div>
+                </div>
+
+                {/* Demo Completeness Chart */}
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData.demoCompleteness} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                      <XAxis 
+                        dataKey="title" 
+                        angle={-45}
+                        textAnchor="end"
+                        height={80}
+                        fontSize={11}
+                        stroke="#6b7280"
+                      />
+                      <YAxis 
+                        stroke="#6b7280" 
+                        fontSize={11}
+                        domain={[0, 100]}
+                        label={{ value: 'Completeness %', angle: -90, position: 'insideLeft' }}
+                      />
+                      <Tooltip 
+                        content={({ active, payload, label }) => {
+                          if (active && payload && payload.length) {
+                            const data = payload[0].payload;
+                            return (
+                              <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+                                <p className="font-medium text-black">{data.title}</p>
+                                <p className="text-sm text-gray-600">{data.completeness}% complete ({data.resourceCount}/5 resources)</p>
+                                <div className="mt-2 space-y-1 text-xs">
+                                  <div className={`flex items-center gap-1 ${data.hasScreenshot ? 'text-green-600' : 'text-gray-400'}`}>
+                                    <span>📸</span> Screenshot {data.hasScreenshot ? '✓' : '✗'}
+                                  </div>
+                                  <div className={`flex items-center gap-1 ${data.hasVideo ? 'text-green-600' : 'text-gray-400'}`}>
+                                    <span>🎥</span> Video {data.hasVideo ? '✓' : '✗'}
+                                  </div>
+                                  <div className={`flex items-center gap-1 ${data.hasExcalidraw ? 'text-green-600' : 'text-gray-400'}`}>
+                                    <span>📐</span> Excalidraw {data.hasExcalidraw ? '✓' : '✗'}
+                                  </div>
+                                  <div className={`flex items-center gap-1 ${data.hasNotionDocs ? 'text-green-600' : 'text-gray-400'}`}>
+                                    <span>📚</span> Documentation {data.hasNotionDocs ? '✓' : '✗'}
+                                  </div>
+                                  <div className={`flex items-center gap-1 ${data.hasDriveResources ? 'text-green-600' : 'text-gray-400'}`}>
+                                    <span>📁</span> Resources {data.hasDriveResources ? '✓' : '✗'}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }} 
+                      />
+                      <Bar 
+                        dataKey="completeness" 
+                        fill={(entry: any) => {
+                          const completeness = entry?.completeness || 0;
+                          if (completeness === 100) return '#10b981'; // green-500 - complete
+                          if (completeness >= 80) return '#3b82f6';   // blue-500 - mostly complete
+                          if (completeness >= 60) return '#f59e0b';   // amber-500 - partially complete
+                          if (completeness >= 40) return '#ef4444';   // red-500 - needs work
+                          return '#6b7280';                           // gray-500 - minimal
+                        }}
+                        radius={[4, 4, 0, 0]}
+                      >
+                        {chartData.demoCompleteness.map((entry, index) => (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={
+                              entry.completeness === 100 ? '#10b981' :
+                              entry.completeness >= 80 ? '#3b82f6' :
+                              entry.completeness >= 60 ? '#f59e0b' :
+                              entry.completeness >= 40 ? '#ef4444' :
+                              '#6b7280'
+                            }
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Completeness Legend */}
+                <div className="flex items-center justify-center gap-4 text-sm flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-emerald-500 rounded"></div>
+                    <span className="text-gray-600">Complete (100%)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-blue-500 rounded"></div>
+                    <span className="text-gray-600">Mostly Complete (80%+)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-amber-500 rounded"></div>
+                    <span className="text-gray-600">Partial (60%+)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-red-500 rounded"></div>
+                    <span className="text-gray-600">Needs Work (40%+)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-gray-500 rounded"></div>
+                    <span className="text-gray-600">Minimal (&lt;40%)</span>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
