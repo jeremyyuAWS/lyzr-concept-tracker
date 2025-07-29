@@ -262,25 +262,43 @@ export const AnalyticsPanel = React.memo(({ demos }: AnalyticsPanelProps) => {
     const estimatedFavorites = Math.round(totalViews * 0.08); // 8% favorite rate estimate
     
     // Demo Performance Timeline (last 30 days)
-    const performanceTimeline = [];
-    const today = new Date();
-    
-    for (let i = 29; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
+    // Demo Completeness Analysis
+    const demoCompleteness = demos.map(demo => {
+      const hasScreenshot = Boolean(demo.screenshot_url);
+      const hasVideo = Boolean(demo.video_url);
+      const hasExcalidraw = Boolean(demo.excalidraw_url);
+      const hasNotionDocs = Boolean(demo.notion_url);
+      const hasDriveResources = Boolean(demo.drive_url);
       
-      // Simulate progressive growth for demo
-      const dayViews = Math.floor(totalViews * (0.8 + Math.random() * 0.4) / 30);
-      const dayTryApps = Math.floor(dayViews * 0.15);
-      const dayFavorites = Math.floor(dayViews * 0.08);
+      const resourceCount = [hasScreenshot, hasVideo, hasExcalidraw, hasNotionDocs, hasDriveResources].filter(Boolean).length;
+      const completenessPercentage = Math.round((resourceCount / 5) * 100);
       
-      performanceTimeline.push({
-        date: date.toISOString(),
-        views: dayViews,
-        tryApps: dayTryApps,
-        favorites: dayFavorites
-      });
-    }
+      return {
+        title: demo.title.length > 20 ? demo.title.substring(0, 20) + '...' : demo.title,
+        completeness: completenessPercentage,
+        resourceCount,
+        hasScreenshot,
+        hasVideo,
+        hasExcalidraw,
+        hasNotionDocs,
+        hasDriveResources,
+        views: demo.page_views || 0,
+        owner: demo.owner
+      };
+    });
+
+    // Resource availability summary
+    const resourceSummary = {
+      screenshots: demos.filter(d => d.screenshot_url).length,
+      videos: demos.filter(d => d.video_url).length,
+      excalidraw: demos.filter(d => d.excalidraw_url).length,
+      documentation: demos.filter(d => d.notion_url).length,
+      resources: demos.filter(d => d.drive_url).length,
+      complete: demos.filter(d => 
+        d.screenshot_url && d.video_url && d.excalidraw_url && d.notion_url && d.drive_url
+      ).length,
+      total: demos.length
+    };
 
     const funnelData = [
       { name: 'Demo Views', value: totalViews, percentage: 100, fill: '#3b82f6' },
@@ -293,7 +311,8 @@ export const AnalyticsPanel = React.memo(({ demos }: AnalyticsPanelProps) => {
       tagDistribution,
       ageDistribution,
       creatorChart,
-      performanceTimeline,
+      demoCompleteness,
+      resourceSummary,
       funnelData
     };
   }, [demos, basicStats]);
